@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  jobscout_bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: jobscout_bot
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      # Persistent volume for SQLite database and logs
+      - ./data:/app/data
+    environment:
+      - DATABASE_URL=sqlite+aiosqlite:////app/data/job_hunter.db
+      - PYTHONUNBUFFERED=1
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"

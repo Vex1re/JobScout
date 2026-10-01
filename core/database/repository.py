@@ -1,0 +1,299 @@
+from typing import List, Optional, Tuple
+from sqlalchemy import select, delete, desc, and_, not_
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
+from core.database.models import User, Resume, Vacancy, UserFavorite, UserHidden, UserMatch
+
+
+class UserRepository:
+    @staticmethod
+    async def get_or_create_user(
+        session: AsyncSession,
+        telegram_id: int,
+        username: Optional[str] = None,
+        first_name: Optional[str] = None
+    ) -> User:
+        stmt = (
+            select(User)
+            .options(selectinload(User.resume))
+            .where(User.telegram_id == telegram_id)
+        )
+        res = await session.execute(stmt)
+        user = res.scalar_one_or_none()
+        
+        if not user:
+            user = User(
+                telegram_id=telegram_id,
+                username=username,
+                first_name=first_name,
+                is_active=True
+            )
+            session.add(user)
+            await session.commit()
+            # Reload with relationships
+            res = await session.execute(stmt)
+            user = res.scalar_one()
+        else:
+            # Update username/first_name if changed
+            if username and user.username != username:
+                user.username = username
+            if first_name and user.first_name != first_name:
+                user.first_name = first_name
+            await session.commit()
+            
+        return user
+
+    @staticmethod
+    async def update_preferences(
+        session: AsyncSession,
+        telegram_id: int,
+        auto_notify: Optional[bool] = None,
+        min_salary: Optional[int] = None,
+        remote_only: Optional[bool] = None,
+        include_freelance: Optional[bool] = None
+    ) -> Optional[User]:
+        stmt = select(User).where(User.telegram_id == telegram_id)
+        res = await session.execute(stmt)
+        user = res.scalar_one_or_none()
+        if not user:
+            return None
+            
+        if auto_notify is not None:
+            user.auto_notify = auto_notify
+        if min_salary is not None:
+            user.min_salary = min_salary
+        if remote_only is not None:
+            user.remote_only = remote_only
+        if include_freelance is not None:
+            user.include_freelance = include_freelance
+            
+        await session.commit()
+        await session.refresh(user)
+        return user
+
+    @staticmethod
+    async def get_active_users_with_resumes(session: AsyncSession) -> List[User]:
+        stmt = (
+            select(User)
+            .options(selectinload(User.resume))
+            .where(User.is_active == True, User.auto_notify == True)
+        )
+        res = await session.execute(stmt)
+        users = res.scalars().all()
+        return [u for u in users if u.resume is not None and len(u.resume.skills) > 0]
+
+
+class ResumeRepository:
+    @staticmethod
+    async def save_or_update_resume(
+        session: AsyncSession,
+        user_id: int,
+        title: str,
+        grade: str,
+        years_of_experience: float,
+        skills: List[str],
+        raw_text: str,
+        salary_expectation: Optional[int] = None
+    ) -> Resume:
+        stmt = select(Resume).where(Resume.user_id == user_id)
+        res = await session.execute(stmt)
+        resume = res.scalar_one_or_none()
+        
+        if resume:
+            resume.title = title
+            resume.grade = grade
+            resume.years_of_experience = years_of_experience
+            resume.skills = skills
+            resume.raw_text = raw_text
+            resume.salary_expectation = salary_expectation
+        else:
+            resume = Resume(
+                user_id=user_id,
+                title=title,
+                grade=grade,
+                years_of_experience=years_of_experience,
+                skills=skills,
+                raw_text=raw_text,
+                salary_expectation=salary_expectation
+            )
+            session.add(resume)
+            
+        await session.commit()
+        await session.refresh(resume)
+        return resume
+
+    @staticmethod
+    async def get_resume(session: AsyncSession, user_id: int) -> Optional[Resume]:
+        stmt = select(Resume).where(Resume.user_id == user_id)
+        res = await session.execute(stmt)
+        return res.scalar_one_or_none()
+
+
+class VacancyRepository:
+    @staticmethod
+    async def upsert_vacancies(session: AsyncSession, vacancies_data: List[dict]) -> int:
+        """Upsert vacancies from aggregators. Returns count of newly added vacancies."""
+        added_count = 0
+        for data in vacancies_data:
+            vac_id = data.get("id")
+            if not vac_id:
+                continue
+            stmt = select(Vacancy).where(Vacancy.id == vac_id)
+            res = await session.execute(stmt)
+            existing = res.scalar_one_or_none()
+            
+            if not existing:
+                vac = Vacancy(
+                    id=vac_id,
+                    source=data.get("source", "unknown"),
+                    title=data.get("title", ""),
+                    company=data.get("company", "Не указана"),
+                    url=data.get("url", ""),
+                    salary_min=data.get("salary_min"),
+                    salary_max=data.get("salary_max"),
+                    currency=data.get("currency", "RUB"),
+                    description=data.get("description", ""),
+                    requirements=data.get("requirements", []),
+                    is_remote=data.get("is_remote", False),
+                    is_freelance=data.get("is_freelance", False),
+                    risk_level=data.get("risk_level", "safe"),
+                    red_flags=data.get("red_flags", []),
+                    published_at=data.get("published_at")
+                )
+                session.add(vac)
+                added_count += 1
+            else:
+                # Update status or details if needed
+                existing.risk_level = data.get("risk_level", existing.risk_level)
+                existing.red_flags = data.get("red_flags", existing.red_flags)
+                
+        await session.commit()
+        return added_count
+
+    @staticmethod
+    async def get_vacancy(session: AsyncSession, vacancy_id: str) -> Optional[Vacancy]:
+        stmt = select(Vacancy).where(Vacancy.id == vacancy_id)
+        res = await session.execute(stmt)
+        return res.scalar_one_or_none()
+
+    @staticmethod
+    async def get_unhidden_vacancies(
+        session: AsyncSession,
+        user_id: int,
+        exclude_blocked: bool = True,
+        remote_only: bool = False,
+        include_freelance: bool = True,
+        min_salary: int = 0
+    ) -> List[Vacancy]:
+        hidden_stmt = select(UserHidden.vacancy_id).where(UserHidden.user_id == user_id)
+        
+        conditions = [not_(Vacancy.id.in_(hidden_stmt))]
+        
+        if exclude_blocked:
+            conditions.append(Vacancy.risk_level != "blocked")
+            
+        if remote_only:
+            conditions.append(Vacancy.is_remote == True)
+            
+        if not include_freelance:
+            conditions.append(Vacancy.is_freelance == False)
+            
+        if min_salary > 0:
+            # Vacancy matches if salary_max >= min_salary or salary_min >= min_salary or salary not specified
+            conditions.append(
+                (Vacancy.salary_max >= min_salary) | 
+                (Vacancy.salary_min >= min_salary) | 
+                (Vacancy.salary_min.is_(None) & Vacancy.salary_max.is_(None))
+            )
+            
+        stmt = select(Vacancy).where(and_(*conditions)).order_by(desc(Vacancy.published_at)).limit(100)
+        res = await session.execute(stmt)
+        return list(res.scalars().all())
+
+
+class InteractionRepository:
+    @staticmethod
+    async def toggle_favorite(session: AsyncSession, user_id: int, vacancy_id: str) -> bool:
+        stmt = select(UserFavorite).where(
+            UserFavorite.user_id == user_id,
+            UserFavorite.vacancy_id == vacancy_id
+        )
+        res = await session.execute(stmt)
+        fav = res.scalar_one_or_none()
+        
+        if fav:
+            await session.delete(fav)
+            await session.commit()
+            return False # removed
+        else:
+            new_fav = UserFavorite(user_id=user_id, vacancy_id=vacancy_id)
+            session.add(new_fav)
+            await session.commit()
+            return True # added
+
+    @staticmethod
+    async def is_favorite(session: AsyncSession, user_id: int, vacancy_id: str) -> bool:
+        stmt = select(UserFavorite).where(
+            UserFavorite.user_id == user_id,
+            UserFavorite.vacancy_id == vacancy_id
+        )
+        res = await session.execute(stmt)
+        return res.scalar_one_or_none() is not None
+
+    @staticmethod
+    async def get_favorites(session: AsyncSession, user_id: int) -> List[Vacancy]:
+        stmt = (
+            select(Vacancy)
+            .join(UserFavorite, UserFavorite.vacancy_id == Vacancy.id)
+            .where(UserFavorite.user_id == user_id)
+            .order_by(desc(UserFavorite.created_at))
+        )
+        res = await session.execute(stmt)
+        return list(res.scalars().all())
+
+    @staticmethod
+    async def hide_vacancy(session: AsyncSession, user_id: int, vacancy_id: str) -> None:
+        stmt = select(UserHidden).where(
+            UserHidden.user_id == user_id,
+            UserHidden.vacancy_id == vacancy_id
+        )
+        res = await session.execute(stmt)
+        if not res.scalar_one_or_none():
+            hidden = UserHidden(user_id=user_id, vacancy_id=vacancy_id)
+            session.add(hidden)
+            await session.commit()
+
+    @staticmethod
+    async def save_or_update_match(
+        session: AsyncSession,
+        user_id: int,
+        vacancy_id: str,
+        score: int,
+        matched_skills: List[str],
+        missing_skills: List[str],
+        is_sent: bool = False
+    ) -> UserMatch:
+        stmt = select(UserMatch).where(
+            UserMatch.user_id == user_id,
+            UserMatch.vacancy_id == vacancy_id
+        )
+        res = await session.execute(stmt)
+        match = res.scalar_one_or_none()
+        if match:
+            match.score = score
+            match.matched_skills = matched_skills
+            match.missing_skills = missing_skills
+            if is_sent:
+                match.is_sent = True
+        else:
+            match = UserMatch(
+                user_id=user_id,
+                vacancy_id=vacancy_id,
+                score=score,
+                matched_skills=matched_skills,
+                missing_skills=missing_skills,
+                is_sent=is_sent
+            )
+            session.add(match)
+        await session.commit()
+        return match
