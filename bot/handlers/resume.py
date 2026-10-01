@@ -10,6 +10,7 @@ from services.resume_analyzer.extractor import ResumeExtractor
 from services.ai.llm_helper import llm_helper
 from bot.keyboards.reply import get_main_menu_keyboard, get_cancel_keyboard
 from bot.keyboards.inline import (
+    get_onboarding_keyboard,
     get_resume_confirm_keyboard,
     get_grade_selection_keyboard,
     get_profile_actions_keyboard

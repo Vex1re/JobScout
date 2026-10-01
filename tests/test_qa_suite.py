@@ -552,3 +552,40 @@ class TestDynamicRotationAndViewTracking:
             )
             assert updated_user.search_page_offset == initial_page + 1
             assert updated_user.last_query_index == initial_query_idx + 1
+
+    def test_resume_handler_get_onboarding_keyboard_imported(self):
+        """Проверка, что get_onboarding_keyboard импортирован и доступен в bot.handlers.resume."""
+        import bot.handlers.resume as resume_mod
+        assert hasattr(resume_mod, "get_onboarding_keyboard")
+        kb = resume_mod.get_onboarding_keyboard()
+        assert kb is not None
+
+    def test_fused_conditions_fixed_in_card_formatter(self):
+        """Проверка, что слипшиеся строки вида 'Можно удалённоМосква' разделяются точкой в карточке."""
+        from bot.formatters.card import format_vacancy_card
+        from core.database.models import Vacancy
+
+        vac = Vacancy(
+            id="habr_test_123",
+            source="habr",
+            title="Backend Developer",
+            company="Tech Corp",
+            url="https://career.habr.com/vacancies/123",
+            description="Навыки: Python, FastAPI\nУсловия: Можно удалённоМосква",
+            is_remote=True,
+            city="Москва",
+            risk_level="safe",
+            red_flags=[]
+        )
+
+        match_info = {
+            "score": 90,
+            "matched_skills": ["Python"],
+            "missing_skills": [],
+            "reason": "OK"
+        }
+
+        card = format_vacancy_card(vac, match_info)
+        assert "удалённоМосква" not in card
+        assert "удалённо • Москва" in card
+

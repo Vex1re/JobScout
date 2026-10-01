@@ -75,22 +75,42 @@ class HabrCareerParser(BaseVacanciesParser):
 
                     # Meta info (remote, city, etc.)
                     meta_elem = card.select_one(".vacancy-card__meta")
-                    meta_text = meta_elem.get_text(strip=True) if meta_elem else ""
+                    unique_meta = []
+                    if meta_elem:
+                        meta_items = [
+                            s.get_text(strip=True)
+                            for s in meta_elem.find_all(True)
+                            if s.get_text(strip=True) and not s.find_all(True)
+                        ]
+                        if not meta_items:
+                            meta_items = [
+                                part.strip()
+                                for part in meta_elem.get_text(separator=" • ", strip=True).split("•")
+                                if part.strip()
+                            ]
+                        seen_meta = set()
+                        for item in meta_items:
+                            item_fixed = re.sub(r"(удаленно|удалённо)([А-ЯA-Z])", r"\1 • \2", item, flags=re.IGNORECASE)
+                            for subpart in item_fixed.split("•"):
+                                subpart = subpart.strip()
+                                if subpart and subpart.lower() not in seen_meta:
+                                    seen_meta.add(subpart.lower())
+                                    unique_meta.append(subpart)
+                        meta_text = " • ".join(unique_meta)
+                    else:
+                        meta_text = ""
+
                     is_remote = "удален" in meta_text.lower() or "remote" in meta_text.lower()
 
                     # Extract city from meta tokens
                     city = None
-                    tokens = re.split(r"[•·,]", meta_text)
-                    for token in tokens:
-                        token_clean = token.strip()
-                        if not token_clean:
-                            continue
-                        norm = CityNormalizer.normalize(token_clean)
+                    for token in unique_meta:
+                        norm = CityNormalizer.normalize(token)
                         if norm and norm != "Удаленно":
                             city = norm
                             break
 
-                    desc = f"Навыки: {', '.join(skills)}\nУсловия: {meta_text}"
+                    desc = f"Навыки: {', '.join(skills)}\nУсловия: {meta_text}" if meta_text else f"Навыки: {', '.join(skills)}"
 
                     vac = self.standardize_vacancy(
                         external_id=external_id,
@@ -105,7 +125,7 @@ class HabrCareerParser(BaseVacanciesParser):
                         is_freelance=False,
                         city=city,
                         requirements=skills,
-                        published_at=datetime.datetime.utcnow()
+                        published_at=datetime.datetime.now(datetime.timezone.utc)
                     )
                     vacancies.append(vac)
 

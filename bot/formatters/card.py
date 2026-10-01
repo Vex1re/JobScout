@@ -1,4 +1,5 @@
 import html
+import re
 from typing import Dict, Any, List, Optional
 from core.database.models import Vacancy, Resume, User
 
@@ -79,6 +80,7 @@ def format_vacancy_card(vacancy: Vacancy, match_info: Dict[str, Any]) -> str:
 
     # Short clean description
     clean_desc = vacancy.description.strip()
+    clean_desc = re.sub(r"(удаленно|удалённо)([А-ЯA-Z])", r"\1 • \2", clean_desc, flags=re.IGNORECASE)
     if len(clean_desc) > 300:
         clean_desc = clean_desc[:297] + "..."
     clean_desc = html.escape(clean_desc)
