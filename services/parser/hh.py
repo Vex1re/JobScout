@@ -22,11 +22,13 @@ class HeadHunterParser(BaseVacanciesParser):
         self,
         query: str,
         limit: int = 30,
-        remote_only: bool = False
+        remote_only: bool = False,
+        page: int = 0
     ) -> List[Dict[str, Any]]:
         params = {
             "text": query,
             "per_page": min(limit, 50),
+            "page": page,
             "order_by": "publication_time",
         }
         if remote_only:
@@ -73,6 +75,10 @@ class HeadHunterParser(BaseVacanciesParser):
                     schedule = item.get("schedule") or {}
                     is_remote = schedule.get("id") == "remote"
 
+                    # City extraction
+                    area = item.get("area") or {}
+                    raw_city = area.get("name")
+
                     # Parse published date
                     published_raw = item.get("published_at")
                     published_at = None
@@ -93,6 +99,7 @@ class HeadHunterParser(BaseVacanciesParser):
                         description=desc,
                         is_remote=is_remote,
                         is_freelance=False,
+                        city=raw_city,
                         published_at=published_at
                     )
                     vacancies.append(vac)

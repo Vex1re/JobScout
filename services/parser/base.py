@@ -25,10 +25,11 @@ class BaseVacanciesParser(ABC):
         self,
         query: str,
         limit: int = 30,
-        remote_only: bool = False
+        remote_only: bool = False,
+        page: int = 0
     ) -> List[Dict[str, Any]]:
         """
-        Fetch vacancies for given search query.
+        Fetch vacancies for given search query and page.
         Returns list of standardized vacancy dicts.
         """
         pass
@@ -45,12 +46,15 @@ class BaseVacanciesParser(ABC):
         description: str,
         is_remote: bool = False,
         is_freelance: bool = False,
+        city: Optional[str] = None,
         requirements: Optional[List[str]] = None,
         published_at: Optional[datetime.datetime] = None
     ) -> Dict[str, Any]:
         """
         Normalizes vacancy data, extracts tech skills and scans for red flags.
         """
+        from services.parser.normalizer import CityNormalizer
+
         # Red flag & scam detection
         scan_result = RedFlagScanner.scan(title=title, description=description, company=company)
 
@@ -62,6 +66,11 @@ class BaseVacanciesParser(ABC):
         curr = (currency or "RUB").upper()
         if curr in ["RUR", "РУБ", "₽"]:
             curr = "RUB"
+
+        # Normalize city
+        norm_city = CityNormalizer.normalize(city)
+        if is_remote and not norm_city:
+            norm_city = "Удаленно"
 
         return {
             "id": f"{self.name}_{external_id}",
@@ -76,6 +85,7 @@ class BaseVacanciesParser(ABC):
             "requirements": requirements,
             "is_remote": is_remote,
             "is_freelance": is_freelance,
+            "city": norm_city,
             "risk_level": scan_result["risk_level"],
             "red_flags": scan_result["red_flags"],
             "published_at": published_at or datetime.datetime.now(datetime.timezone.utc)

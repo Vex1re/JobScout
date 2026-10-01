@@ -8,3 +8,5 @@ class ProfileStates(StatesGroup):
     editing_grade = State()
     waiting_min_salary = State()
     waiting_custom_query = State()
+    waiting_city = State()
+

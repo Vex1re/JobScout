@@ -15,7 +15,11 @@ from core.database.repository import (
 from services.parser.manager import aggregator_manager
 from services.ai.llm_helper import llm_helper
 from bot.formatters.card import format_vacancy_card
-from bot.keyboards.inline import get_vacancy_card_keyboard, get_onboarding_keyboard
+from bot.keyboards.inline import (
+    get_vacancy_card_keyboard,
+    get_onboarding_keyboard,
+    get_empty_feed_keyboard
+)
 
 router = Router(name="vacancies")
 
@@ -63,12 +67,13 @@ async def trigger_search(event: types.Message | types.CallbackQuery, session: As
 
     if not results:
         await status_msg.edit_text(
-            "😔 <b>По вашему запросу сейчас ничего не найдено.</b>\n\n"
+            "😔 <b>Новых вакансий по вашему запросу сейчас не найдено.</b>\n\n"
+            "Возможно, все текущие предложения уже просмотрены или скрыты.\n\n"
             "Попробуйте:\n"
-            "• Добавить больше ключевых навыков в резюме (/profile)\n"
-            "• Смягчить фильтры поиска в /settings\n\n"
-            "Бот продолжит фоновый мониторинг и сразу пришлет уведомление, "
-            "когда появятся подходящие вакансии! 🔔"
+            "• Нажать <b>«🔄 Обновить подборку»</b> (поиск по другим навыкам и страницам)\n"
+            "• Нажать <b>«🔄 Сбросить историю просмотров»</b>\n"
+            "• Смягчить фильтры поиска в /settings",
+            reply_markup=get_empty_feed_keyboard()
         )
         return
 
@@ -87,10 +92,18 @@ async def _send_vacancy_page(
 ):
     results = USER_SEARCH_RESULTS.get(user_id, [])
     if not results or index >= len(results) or index < 0:
-        await message.edit_text("ℹ️ Нет доступных вакансий в текущей подборке.")
+        await message.edit_text(
+            "ℹ️ <b>Все вакансии из текущей подборки просмотрены.</b>\n\n"
+            "Вы можете запросить свежие вакансии или сбросить историю просмотров:",
+            reply_markup=get_empty_feed_keyboard()
+        )
         return
 
     vac, match_info = results[index]
+
+    # Track as viewed in database
+    await InteractionRepository.mark_as_viewed(session=session, user_id=user_id, vacancy_id=vac.id)
+
     is_fav = await InteractionRepository.is_favorite(session=session, user_id=user_id, vacancy_id=vac.id)
 
     card_text = format_vacancy_card(vac, match_info)
@@ -160,10 +173,97 @@ async def handle_hide_vacancy(callback: types.CallbackQuery, session: AsyncSessi
     await callback.answer("🚫 Вакансия скрыта и больше не появится в ленте.")
 
     if not results:
-        await callback.message.edit_text("ℹ️ Все вакансии из этой подборки просмотрены или скрыты.")
+        await callback.message.edit_text(
+            "ℹ️ <b>Все вакансии из этой подборки просмотрены или скрыты.</b>\n\n"
+            "Вы можете запросить свежие вакансии или сбросить историю просмотров:",
+            reply_markup=get_empty_feed_keyboard()
+        )
     else:
         new_index = min(curr_index, len(results) - 1)
         await _send_vacancy_page(callback.message, user_id, new_index, session, edit=True)
+
+
+@router.callback_query(F.data == "vac_refresh_feed")
+async def handle_refresh_feed(callback: types.CallbackQuery, session: AsyncSession):
+    user_id = callback.from_user.id
+    await callback.answer("🔄 Запрашиваю свежие вакансии...")
+
+    user = await UserRepository.get_or_create_user(session=session, telegram_id=user_id)
+    resume = await ResumeRepository.get_resume(session=session, user_id=user_id)
+
+    if not resume:
+        await callback.message.answer(
+            "⚠️ Резюме не найдено. Пожалуйста, загрузите резюме (/profile).",
+            reply_markup=get_onboarding_keyboard()
+        )
+        return
+
+    status_msg = await callback.message.edit_text(
+        "🔎 <b>Ищу новые вакансии на агрегаторах...</b>\n"
+        "Ротирую поисковые запросы и опрашиваю следующие страницы выдачи..."
+    )
+
+    results = await aggregator_manager.search_and_match_for_user(
+        session=session,
+        user=user,
+        resume=resume
+    )
+
+    if not results:
+        await status_msg.edit_text(
+            "ℹ️ <b>Все найденные вакансии уже просмотрены или скрыты.</b>\n\n"
+            "Вы можете сбросить историю просмотров, чтобы пересмотреть подходящие предложения, "
+            "или обновить подборку позже.",
+            reply_markup=get_empty_feed_keyboard()
+        )
+        return
+
+    USER_SEARCH_RESULTS[user_id] = results
+    await _send_vacancy_page(status_msg, user_id, index=0, session=session, edit=True)
+
+
+@router.callback_query(F.data == "vac_reset_history")
+async def handle_reset_history(callback: types.CallbackQuery, session: AsyncSession):
+    user_id = callback.from_user.id
+    count = await InteractionRepository.reset_viewed_history(session=session, user_id=user_id)
+    await UserRepository.update_preferences(
+        session=session,
+        telegram_id=user_id,
+        search_page_offset=0,
+        last_query_index=0
+    )
+
+    await callback.answer(f"История просмотров сброшена ({count} вакансий).", show_alert=True)
+
+    user = await UserRepository.get_or_create_user(session=session, telegram_id=user_id)
+    resume = await ResumeRepository.get_resume(session=session, user_id=user_id)
+
+    if not resume:
+        await callback.message.edit_text(
+            "⚠️ Резюме не найдено.",
+            reply_markup=get_onboarding_keyboard()
+        )
+        return
+
+    status_msg = await callback.message.edit_text(
+        "🔄 <b>История просмотров сброшена!</b>\n\nФормирую подборку заново..."
+    )
+
+    results = await aggregator_manager.search_and_match_for_user(
+        session=session,
+        user=user,
+        resume=resume
+    )
+
+    if not results:
+        await status_msg.edit_text(
+            "😔 Вакансий по текущим критериям не найдено.",
+            reply_markup=get_empty_feed_keyboard()
+        )
+        return
+
+    USER_SEARCH_RESULTS[user_id] = results
+    await _send_vacancy_page(status_msg, user_id, index=0, session=session, edit=True)
 
 
 @router.callback_query(F.data.startswith("ai_tip:"))

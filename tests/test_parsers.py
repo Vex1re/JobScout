@@ -22,8 +22,23 @@ def test_standardize_vacancy():
     assert vac["id"] == "hh_12345"
     assert vac["currency"] == "RUB"
     assert vac["is_remote"] is True
+    assert vac["city"] == "Удаленно"
     assert "FastAPI" in vac["requirements"]
     assert vac["risk_level"] == "safe"
+
+    vac_office = parser.standardize_vacancy(
+        external_id="12346",
+        title="Office Developer",
+        company="Tech Corp",
+        url="https://hh.ru/vacancy/12346",
+        salary_min=100000,
+        salary_max=150000,
+        currency="RUB",
+        description="Python",
+        is_remote=False,
+        city="г. Москва"
+    )
+    assert vac_office["city"] == "Москва"
 
 
 def test_kwork_budget_parser():

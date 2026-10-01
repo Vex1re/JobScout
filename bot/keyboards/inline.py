@@ -129,7 +129,50 @@ def get_vacancy_card_keyboard(
 
         buttons.append(nav_row)
 
+    # Row 5: Dynamic feed refresh
+    buttons.append([
+        InlineKeyboardButton(text="🔄 Обновить подборку (новые вакансии)", callback_data="vac_refresh_feed")
+    ])
+
     return InlineKeyboardMarkup(inline_keyboard=buttons)
+
+
+def get_empty_feed_keyboard() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(text="🔄 Обновить подборку (новые вакансии)", callback_data="vac_refresh_feed")
+            ],
+            [
+                InlineKeyboardButton(text="🔄 Сбросить историю просмотров", callback_data="vac_reset_history")
+            ],
+            [
+                InlineKeyboardButton(text="⚙️ Настройки и фильтры", callback_data="back_to_settings")
+            ]
+        ]
+    )
+
+
+def get_city_selection_keyboard() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(text="Москва", callback_data="quick_city:Москва"),
+                InlineKeyboardButton(text="Санкт-Петербург", callback_data="quick_city:Санкт-Петербург")
+            ],
+            [
+                InlineKeyboardButton(text="Казань", callback_data="quick_city:Казань"),
+                InlineKeyboardButton(text="Екатеринбург", callback_data="quick_city:Екатеринбург")
+            ],
+            [
+                InlineKeyboardButton(text="🌐 Любой город", callback_data="quick_city:any"),
+                InlineKeyboardButton(text="✍️ Ввести вручную", callback_data="enter_city_manual")
+            ],
+            [
+                InlineKeyboardButton(text="🔙 Назад в настройки", callback_data="back_to_settings")
+            ]
+        ]
+    )
 
 
 def get_settings_keyboard(user: User) -> InlineKeyboardMarkup:
@@ -137,9 +180,16 @@ def get_settings_keyboard(user: User) -> InlineKeyboardMarkup:
     freelance_status = "Вкл ✅" if user.include_freelance else "Выкл ❌"
     notify_status = "Вкл 🔔" if user.auto_notify else "Выкл 🔕"
     salary_text = f"{user.min_salary:,} ₽".replace(",", " ") if user.min_salary > 0 else "Не задана (Любая)"
+    city_text = user.city if user.city else "Любой"
 
     return InlineKeyboardMarkup(
         inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text=f"📍 Город: {city_text}",
+                    callback_data="set_city"
+                )
+            ],
             [
                 InlineKeyboardButton(
                     text=f"💰 Мин. зарплата: {salary_text}",

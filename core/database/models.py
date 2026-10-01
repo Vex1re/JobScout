@@ -10,6 +10,7 @@ from sqlalchemy import (
     String,
     Text,
     JSON,
+    UniqueConstraint,
     func
 )
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
@@ -36,6 +37,9 @@ class User(Base):
     min_salary: Mapped[int] = mapped_column(Integer, default=0)
     remote_only: Mapped[bool] = mapped_column(Boolean, default=False)
     include_freelance: Mapped[bool] = mapped_column(Boolean, default=True)
+    city: Mapped[Optional[str]] = mapped_column(String(100), nullable=True, default=None)
+    search_page_offset: Mapped[int] = mapped_column(Integer, default=0)
+    last_query_index: Mapped[int] = mapped_column(Integer, default=0)
     
     created_at: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
     updated_at: Mapped[datetime.datetime] = mapped_column(
@@ -47,6 +51,7 @@ class User(Base):
     favorites: Mapped[List["UserFavorite"]] = relationship("UserFavorite", back_populates="user", cascade="all, delete-orphan")
     hidden_vacancies: Mapped[List["UserHidden"]] = relationship("UserHidden", back_populates="user", cascade="all, delete-orphan")
     matches: Mapped[List["UserMatch"]] = relationship("UserMatch", back_populates="user", cascade="all, delete-orphan")
+    viewed_vacancies: Mapped[List["UserViewed"]] = relationship("UserViewed", back_populates="user", cascade="all, delete-orphan")
 
 
 class Resume(Base):
@@ -91,6 +96,7 @@ class Vacancy(Base):
     
     is_remote: Mapped[bool] = mapped_column(Boolean, default=False)
     is_freelance: Mapped[bool] = mapped_column(Boolean, default=False)
+    city: Mapped[Optional[str]] = mapped_column(String(100), nullable=True, default=None)
     
     # Scam & Red flag analysis
     risk_level: Mapped[str] = mapped_column(String(50), default="safe") # safe, warning, blocked
@@ -101,6 +107,24 @@ class Vacancy(Base):
 
     favorites: Mapped[List["UserFavorite"]] = relationship("UserFavorite", back_populates="vacancy", cascade="all, delete-orphan")
     matches: Mapped[List["UserMatch"]] = relationship("UserMatch", back_populates="vacancy", cascade="all, delete-orphan")
+    views: Mapped[List["UserViewed"]] = relationship("UserViewed", back_populates="vacancy", cascade="all, delete-orphan")
+
+
+class UserViewed(Base):
+    __tablename__ = "user_viewed"
+    __table_args__ = (
+        UniqueConstraint("user_id", "vacancy_id", name="uq_user_vacancy_viewed"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.telegram_id", ondelete="CASCADE"), index=True)
+    vacancy_id: Mapped[str] = mapped_column(String(255), ForeignKey("vacancies.id", ondelete="CASCADE"), index=True)
+    view_count: Mapped[int] = mapped_column(Integer, default=1)
+    first_viewed_at: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
+    last_viewed_at: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), default=utc_now, onupdate=utc_now)
+
+    user: Mapped["User"] = relationship("User", back_populates="viewed_vacancies")
+    vacancy: Mapped["Vacancy"] = relationship("Vacancy", back_populates="views")
 
 
 class UserFavorite(Base):

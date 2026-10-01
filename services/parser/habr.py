@@ -24,12 +24,16 @@ class HabrCareerParser(BaseVacanciesParser):
         self,
         query: str,
         limit: int = 30,
-        remote_only: bool = False
+        remote_only: bool = False,
+        page: int = 0
     ) -> List[Dict[str, Any]]:
+        from services.parser.normalizer import CityNormalizer
+
         params = {
             "q": query,
             "sort": "date",
-            "type": "all"
+            "type": "all",
+            "page": page + 1
         }
         if remote_only:
             params["remote"] = "1"
@@ -69,10 +73,22 @@ class HabrCareerParser(BaseVacanciesParser):
                     skills_elems = card.select(".vacancy-card__skills a, .preserve-line")
                     skills = [s.get_text(strip=True) for s in skills_elems if s.get_text(strip=True)]
 
-                    # Meta info (remote, etc.)
+                    # Meta info (remote, city, etc.)
                     meta_elem = card.select_one(".vacancy-card__meta")
                     meta_text = meta_elem.get_text(strip=True) if meta_elem else ""
                     is_remote = "удален" in meta_text.lower() or "remote" in meta_text.lower()
+
+                    # Extract city from meta tokens
+                    city = None
+                    tokens = re.split(r"[•·,]", meta_text)
+                    for token in tokens:
+                        token_clean = token.strip()
+                        if not token_clean:
+                            continue
+                        norm = CityNormalizer.normalize(token_clean)
+                        if norm and norm != "Удаленно":
+                            city = norm
+                            break
 
                     desc = f"Навыки: {', '.join(skills)}\nУсловия: {meta_text}"
 
@@ -87,6 +103,7 @@ class HabrCareerParser(BaseVacanciesParser):
                         description=desc,
                         is_remote=is_remote,
                         is_freelance=False,
+                        city=city,
                         requirements=skills,
                         published_at=datetime.datetime.utcnow()
                     )

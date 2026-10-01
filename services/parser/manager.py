@@ -1,11 +1,12 @@
 import asyncio
+import re
 import logging
-from typing import List, Dict, Any, Tuple
+from typing import List, Dict, Any, Tuple, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.config import settings
 from core.database.models import User, Resume, Vacancy
-from core.database.repository import VacancyRepository, InteractionRepository
+from core.database.repository import VacancyRepository, InteractionRepository, UserRepository
 from services.parser.base import BaseVacanciesParser
 from services.parser.hh import HeadHunterParser
 from services.parser.habr import HabrCareerParser
@@ -20,6 +21,7 @@ class AggregatorManager:
     """
     Coordinates multi-platform parsing across HeadHunter, Habr Career, Kwork, and Rabota.ru,
     aggregates results, applies scam detection and candidate-resume matching.
+    Supports dynamic query rotation and pagination offsets.
     """
 
     def __init__(self):
@@ -30,15 +32,66 @@ class AggregatorManager:
             RabotaRuParser()
         ]
 
+    @staticmethod
+    def generate_query_pool(resume: Resume) -> List[str]:
+        """
+        Builds a prioritized, diverse pool of search queries from candidate profile:
+        - Target role title
+        - Core tech stack (top 2 skills)
+        - Skill pairings & combinations
+        - Individual primary technologies
+        """
+        queries = []
+        if resume.title:
+            queries.append(resume.title.strip())
+
+        skills = resume.skills or []
+        if len(skills) >= 2:
+            queries.append(f"{skills[0]} {skills[1]}")
+        if len(skills) >= 3:
+            queries.append(f"{skills[0]} {skills[2]}")
+        if len(skills) >= 4:
+            queries.append(f"{skills[1]} {skills[3]}")
+        if skills:
+            queries.append(skills[0])
+        if len(skills) >= 2:
+            queries.append(skills[1])
+
+        # Broader role title (e.g. without Senior/Junior/Backend)
+        if resume.title:
+            clean_role = re.sub(
+                r"\b(backend|frontend|fullstack|junior|middle|senior|lead|стажер|разработчик|developer)\b",
+                "",
+                resume.title,
+                flags=re.IGNORECASE
+            ).strip()
+            if clean_role and len(clean_role) >= 3:
+                queries.append(clean_role)
+
+        if not queries:
+            queries.append("Python Developer")
+
+        # Deduplicate while preserving order
+        seen = set()
+        unique_queries = []
+        for q in queries:
+            q_clean = q.strip()
+            if q_clean and q_clean.lower() not in seen:
+                seen.add(q_clean.lower())
+                unique_queries.append(q_clean)
+
+        return unique_queries
+
     async def fetch_all_for_query(
         self,
         query: str,
         limit_per_source: int = 25,
         remote_only: bool = False,
-        include_freelance: bool = True
+        include_freelance: bool = True,
+        page: int = 0
     ) -> List[Dict[str, Any]]:
         """
-        Concurrently queries all active aggregators.
+        Concurrently queries all active aggregators for a given page.
         """
         tasks = []
         for parser in self.parsers:
@@ -48,7 +101,8 @@ class AggregatorManager:
                 parser.fetch_vacancies(
                     query=query,
                     limit=limit_per_source,
-                    remote_only=remote_only
+                    remote_only=remote_only,
+                    page=page
                 )
             )
 
@@ -73,50 +127,65 @@ class AggregatorManager:
         session: AsyncSession,
         user: User,
         resume: Resume,
-        custom_query: str = None
+        custom_query: Optional[str] = None
     ) -> List[Tuple[Vacancy, Dict[str, Any]]]:
         """
-        Full pipeline:
-        1. Formulate search query from resume (or custom query)
-        2. Concurrently fetch vacancies from all aggregators
-        3. Save new vacancies to DB
-        4. Match each vacancy with candidate's resume
-        5. Filter out scams and low scores
-        6. Return sorted list of (Vacancy, match_dict)
+        Full dynamic pipeline:
+        1. Select query from rotated query pool (or custom query)
+        2. Fetch vacancies using user's current search page offset
+        3. Advance query index & page offset for next search cycle
+        4. Upsert vacancies into database
+        5. Fetch unhidden & unviewed vacancies (filtered by city/remote preferences)
+        6. Match vacancies with candidate profile
+        7. Return ranked list of (Vacancy, match_dict)
         """
-        # Formulate query from candidate stack
         if custom_query:
             query = custom_query
-        elif resume.skills:
-            # Take top 1-2 primary skills or target title
-            top_skills = resume.skills[:2]
-            query = " ".join(top_skills)
+            current_page = user.search_page_offset or 0
         else:
-            query = resume.title or "Python"
+            pool = self.generate_query_pool(resume)
+            query_idx = user.last_query_index or 0
+            query = pool[query_idx % len(pool)]
+            current_page = user.search_page_offset or 0
 
-        logger.info(f"Searching vacancies for user {user.telegram_id} with query '{query}'")
+        logger.info(
+            f"Searching vacancies for user {user.telegram_id}: query='{query}', "
+            f"page={current_page}, city='{user.city or 'Any'}'"
+        )
 
+        # 1. Concurrently fetch fresh vacancies from aggregators
         raw_vacancies = await self.fetch_all_for_query(
             query=query,
             limit_per_source=settings.MAX_VACANCIES_PER_SOURCE,
             remote_only=user.remote_only,
-            include_freelance=user.include_freelance
+            include_freelance=user.include_freelance,
+            page=current_page
         )
 
-        # Upsert vacancies into database
+        # 2. Advance pagination and query rotation offsets for subsequent searches
+        await UserRepository.increment_search_offsets(
+            session=session,
+            telegram_id=user.telegram_id,
+            offset_inc=1,
+            query_index_inc=1
+        )
+
+        # 3. Upsert newly fetched vacancies into database
         await VacancyRepository.upsert_vacancies(session, raw_vacancies)
 
-        # Get vacancies for evaluation (including previously stored unhidden ones)
+        # 4. Get unhidden, unviewed vacancies matching user's filters & city
         vacancies = await VacancyRepository.get_unhidden_vacancies(
             session=session,
             user_id=user.telegram_id,
             exclude_blocked=settings.RED_FLAG_STRICT_MODE,
             remote_only=user.remote_only,
             include_freelance=user.include_freelance,
-            min_salary=user.min_salary
+            min_salary=user.min_salary,
+            exclude_viewed=True,
+            user_city=user.city
         )
 
-        # Match each vacancy
+        # 5. Match candidate resume against vacancies
         matched_results: List[Tuple[Vacancy, Dict[str, Any]]] = []
 
         for vac in vacancies:
@@ -133,7 +202,6 @@ class AggregatorManager:
 
             # Check if match meets user threshold
             if match_res["score"] >= settings.MIN_MATCH_SCORE:
-                # Save match record to DB
                 await InteractionRepository.save_or_update_match(
                     session=session,
                     user_id=user.telegram_id,
@@ -150,3 +218,4 @@ class AggregatorManager:
 
 
 aggregator_manager = AggregatorManager()
+

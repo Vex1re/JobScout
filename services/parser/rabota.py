@@ -24,11 +24,15 @@ class RabotaRuParser(BaseVacanciesParser):
         self,
         query: str,
         limit: int = 30,
-        remote_only: bool = False
+        remote_only: bool = False,
+        page: int = 0
     ) -> List[Dict[str, Any]]:
+        from services.parser.normalizer import CityNormalizer
+
         params = {
             "query": query,
-            "sort": "date"
+            "sort": "date",
+            "page": page + 1
         }
         if remote_only:
             params["remote_work"] = "1"
@@ -69,7 +73,14 @@ class RabotaRuParser(BaseVacanciesParser):
                     desc_elem = card.select_one(".vacancy-preview-card__description, .vacancy-card__description")
                     desc = desc_elem.get_text(strip=True) if desc_elem else ""
 
-                    is_remote = "удален" in (title + " " + desc).lower()
+                    # City / Location
+                    city_elem = card.select_one(
+                        ".vacancy-preview-card__location, .vacancy-card__location, .vacancy-card__town, .vacancy-preview-card__city"
+                    )
+                    raw_city = city_elem.get_text(strip=True) if city_elem else None
+                    city = CityNormalizer.normalize(raw_city)
+
+                    is_remote = "удален" in (title + " " + desc + " " + (raw_city or "")).lower()
 
                     vac = self.standardize_vacancy(
                         external_id=str(v_id),
@@ -82,6 +93,7 @@ class RabotaRuParser(BaseVacanciesParser):
                         description=desc,
                         is_remote=is_remote,
                         is_freelance=False,
+                        city=city,
                         published_at=datetime.datetime.utcnow()
                     )
                     vacancies.append(vac)

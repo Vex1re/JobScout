@@ -49,9 +49,17 @@ def format_vacancy_card(vacancy: Vacancy, match_info: Dict[str, Any]) -> str:
     source_badge = format_source_badge(vacancy.source)
     salary_str = format_salary(vacancy.salary_min, vacancy.salary_max, vacancy.currency)
     
-    format_str = "🏠 Удаленка" if vacancy.is_remote else "🏢 Офис / Гибрид"
     if vacancy.is_freelance:
         format_str = "⚡ Фриланс проект"
+    elif vacancy.is_remote:
+        format_str = "🏠 Удаленка"
+        if vacancy.city and vacancy.city != "Удаленно":
+            format_str += f" (📍 {html.escape(vacancy.city)})"
+    else:
+        if vacancy.city:
+            format_str = f"🏢 Офис (📍 {html.escape(vacancy.city)})"
+        else:
+            format_str = "🏢 Офис / Гибрид"
 
     # Red flag & safety check badge
     if vacancy.risk_level == "safe":
@@ -101,6 +109,7 @@ def format_profile_view(user: User, resume: Optional[Resume]) -> str:
     skills_formatted = ", ".join(resume.skills) if resume.skills else "Не определены"
     salary_exp = f"{resume.salary_expectation:,} ₽".replace(",", " ") if resume.salary_expectation else "Не указана"
 
+    city_display = html.escape(user.city) if user.city else "Любой город"
     remote_status = "Да ✅" if user.remote_only else "Нет ❌ (Все форматы)"
     freelance_status = "Да ✅" if user.include_freelance else "Нет ❌"
     notify_status = "Включены 🔔" if user.auto_notify else "Отключены 🔕"
@@ -113,6 +122,7 @@ def format_profile_view(user: User, resume: Optional[Resume]) -> str:
         f"🛠️ <b>Распознанный стек ({len(resume.skills)}):</b>\n"
         f"<code>{html.escape(skills_formatted)}</code>\n\n"
         f"⚙️ <b>Настройки поиска:</b>\n"
+        f"• 📍 Город поиска: {city_display}\n"
         f"• Только удаленка: {remote_status}\n"
         f"• Включать фриланс заказы: {freelance_status}\n"
         f"• Автопоиск в фоне: {notify_status}\n\n"

@@ -99,6 +99,8 @@ async def process_resume_text(message: types.Message, state: FSMContext):
     await _process_parsed_text(status_msg, message.from_user.id, message.text, state)
 
 
+from services.resume_analyzer.validator import ResumeValidator
+
 async def _process_parsed_text(status_msg: types.Message, user_id: int, text: str, state: FSMContext):
     # Rule-based / deterministic extraction
     data = ResumeExtractor.parse_full_resume(text)
@@ -119,15 +121,24 @@ async def _process_parsed_text(status_msg: types.Message, user_id: int, text: st
             if ai_data.get("salary_expectation"):
                 data["salary_expectation"] = int(ai_data["salary_expectation"])
 
-    # If no skills detected, suggest default
-    if not data["skills"]:
-        data["skills"] = ["Python", "Git", "SQL"]
+    # Strict resume validation
+    tech_count = len(data.get("skills", []))
+    validation = ResumeValidator.validate(text=text, tech_skills_count=tech_count)
+    if not validation.is_valid:
+        await status_msg.edit_text(
+            f"❌ <b>Резюме не принято:</b>\n\n"
+            f"{validation.error_message}\n\n"
+            f"<i>Пожалуйста, отправьте файл или текст с вашим профессиональным резюме.</i>",
+            reply_markup=get_onboarding_keyboard()
+        )
+        await state.clear()
+        return
 
     # Save to state data
     await state.update_data(resume_data=data)
     await state.set_state(ProfileStates.confirm_skills)
 
-    skills_str = ", ".join(data["skills"])
+    skills_str = ", ".join(data["skills"]) if data["skills"] else "Не определены (можно добавить вручную)"
     salary_str = f"{data['salary_expectation']:,} ₽".replace(",", " ") if data.get("salary_expectation") else "Не указана"
 
     preview_text = (

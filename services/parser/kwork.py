@@ -25,10 +25,12 @@ class KworkParser(BaseVacanciesParser):
         self,
         query: str,
         limit: int = 30,
-        remote_only: bool = True
+        remote_only: bool = True,
+        page: int = 0
     ) -> List[Dict[str, Any]]:
         params = {
-            "keyword": query
+            "keyword": query,
+            "page": page + 1
         }
 
         vacancies: List[Dict[str, Any]] = []
@@ -73,6 +75,7 @@ class KworkParser(BaseVacanciesParser):
                         description=desc,
                         is_remote=True,
                         is_freelance=True,
+                        city="Удаленно",
                         published_at=datetime.datetime.utcnow()
                     )
                     vacancies.append(vac)

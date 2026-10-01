@@ -2,7 +2,16 @@ from typing import List, Optional, Tuple
 from sqlalchemy import select, delete, desc, and_, not_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
-from core.database.models import User, Resume, Vacancy, UserFavorite, UserHidden, UserMatch
+from core.database.models import (
+    User,
+    Resume,
+    Vacancy,
+    UserFavorite,
+    UserHidden,
+    UserMatch,
+    UserViewed,
+    utc_now
+)
 
 
 class UserRepository:
@@ -50,7 +59,10 @@ class UserRepository:
         auto_notify: Optional[bool] = None,
         min_salary: Optional[int] = None,
         remote_only: Optional[bool] = None,
-        include_freelance: Optional[bool] = None
+        include_freelance: Optional[bool] = None,
+        city: Optional[str] = None,
+        search_page_offset: Optional[int] = None,
+        last_query_index: Optional[int] = None
     ) -> Optional[User]:
         stmt = select(User).where(User.telegram_id == telegram_id)
         res = await session.execute(stmt)
@@ -66,10 +78,31 @@ class UserRepository:
             user.remote_only = remote_only
         if include_freelance is not None:
             user.include_freelance = include_freelance
+        if city is not None:
+            user.city = None if city.strip().lower() in ["", "любой", "все", "любой город", "none", "null"] else city.strip()
+        if search_page_offset is not None:
+            user.search_page_offset = search_page_offset
+        if last_query_index is not None:
+            user.last_query_index = last_query_index
             
         await session.commit()
         await session.refresh(user)
         return user
+
+    @staticmethod
+    async def increment_search_offsets(
+        session: AsyncSession,
+        telegram_id: int,
+        offset_inc: int = 1,
+        query_index_inc: int = 1
+    ) -> None:
+        stmt = select(User).where(User.telegram_id == telegram_id)
+        res = await session.execute(stmt)
+        user = res.scalar_one_or_none()
+        if user:
+            user.search_page_offset = (user.search_page_offset or 0) + offset_inc
+            user.last_query_index = (user.last_query_index or 0) + query_index_inc
+            await session.commit()
 
     @staticmethod
     async def get_active_users_with_resumes(session: AsyncSession) -> List[User]:
@@ -156,6 +189,7 @@ class VacancyRepository:
                     requirements=data.get("requirements", []),
                     is_remote=data.get("is_remote", False),
                     is_freelance=data.get("is_freelance", False),
+                    city=data.get("city"),
                     risk_level=data.get("risk_level", "safe"),
                     red_flags=data.get("red_flags", []),
                     published_at=data.get("published_at")
@@ -166,6 +200,8 @@ class VacancyRepository:
                 # Update status or details if needed
                 existing.risk_level = data.get("risk_level", existing.risk_level)
                 existing.red_flags = data.get("red_flags", existing.red_flags)
+                if data.get("city"):
+                    existing.city = data.get("city")
                 
         await session.commit()
         return added_count
@@ -183,11 +219,16 @@ class VacancyRepository:
         exclude_blocked: bool = True,
         remote_only: bool = False,
         include_freelance: bool = True,
-        min_salary: int = 0
+        min_salary: int = 0,
+        exclude_viewed: bool = True,
+        user_city: Optional[str] = None
     ) -> List[Vacancy]:
         hidden_stmt = select(UserHidden.vacancy_id).where(UserHidden.user_id == user_id)
-        
         conditions = [not_(Vacancy.id.in_(hidden_stmt))]
+
+        if exclude_viewed:
+            viewed_stmt = select(UserViewed.vacancy_id).where(UserViewed.user_id == user_id)
+            conditions.append(not_(Vacancy.id.in_(viewed_stmt)))
         
         if exclude_blocked:
             conditions.append(Vacancy.risk_level != "blocked")
@@ -205,10 +246,31 @@ class VacancyRepository:
                 (Vacancy.salary_min >= min_salary) | 
                 (Vacancy.salary_min.is_(None) & Vacancy.salary_max.is_(None))
             )
+
+        if user_city and not remote_only:
+            from services.parser.normalizer import CityNormalizer
+            if user_city.strip().lower() not in ["", "любой", "все", "любой город", "none", "null", "all", "any"]:
+                norm_user_city = CityNormalizer.normalize(user_city)
+                if norm_user_city and norm_user_city != "Удаленно":
+                    conditions.append(
+                        (Vacancy.is_remote == True) | 
+                        (Vacancy.city == norm_user_city) | 
+                        (Vacancy.city == "Удаленно") | 
+                        (Vacancy.city.is_(None))
+                    )
             
         stmt = select(Vacancy).where(and_(*conditions)).order_by(desc(Vacancy.published_at)).limit(100)
         res = await session.execute(stmt)
-        return list(res.scalars().all())
+        vacancies = list(res.scalars().all())
+
+        if user_city and not remote_only:
+            from services.parser.normalizer import CityNormalizer
+            vacancies = [
+                v for v in vacancies
+                if CityNormalizer.is_match(user_city=user_city, vacancy_city=v.city, is_remote=v.is_remote)
+            ]
+
+        return vacancies
 
 
 class InteractionRepository:
@@ -262,6 +324,36 @@ class InteractionRepository:
             hidden = UserHidden(user_id=user_id, vacancy_id=vacancy_id)
             session.add(hidden)
             await session.commit()
+
+    @staticmethod
+    async def mark_as_viewed(session: AsyncSession, user_id: int, vacancy_id: str) -> None:
+        stmt = select(UserViewed).where(
+            UserViewed.user_id == user_id,
+            UserViewed.vacancy_id == vacancy_id
+        )
+        res = await session.execute(stmt)
+        viewed = res.scalar_one_or_none()
+        now = utc_now()
+        if viewed:
+            viewed.view_count += 1
+            viewed.last_viewed_at = now
+        else:
+            viewed = UserViewed(
+                user_id=user_id,
+                vacancy_id=vacancy_id,
+                view_count=1,
+                first_viewed_at=now,
+                last_viewed_at=now
+            )
+            session.add(viewed)
+        await session.commit()
+
+    @staticmethod
+    async def reset_viewed_history(session: AsyncSession, user_id: int) -> int:
+        stmt = delete(UserViewed).where(UserViewed.user_id == user_id)
+        res = await session.execute(stmt)
+        await session.commit()
+        return res.rowcount
 
     @staticmethod
     async def save_or_update_match(
