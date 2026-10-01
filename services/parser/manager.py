@@ -21,6 +21,45 @@ from services.resume_analyzer.matcher import VacancyMatcher
 
 logger = logging.getLogger(__name__)
 
+ALL_SOURCES: List[str] = [
+    "hh",
+    "habr",
+    "trudvsem",
+    "superjob",
+    "remoteok",
+    "kwork",
+    "fl_ru",
+    "habr_freelance",
+    "rabota",
+]
+
+VACANCY_SOURCES: List[str] = [
+    "hh",
+    "habr",
+    "trudvsem",
+    "superjob",
+    "remoteok",
+    "rabota",
+]
+
+FREELANCE_SOURCES: List[str] = [
+    "kwork",
+    "fl_ru",
+    "habr_freelance",
+]
+
+SOURCE_LABELS: Dict[str, str] = {
+    "hh": "HeadHunter (hh.ru)",
+    "habr": "Хабр Карьера",
+    "trudvsem": "Работа России",
+    "superjob": "SuperJob",
+    "remoteok": "RemoteOK (Global)",
+    "kwork": "Kwork (Фриланс)",
+    "fl_ru": "FL.ru (Фриланс)",
+    "habr_freelance": "Хабр Фриланс",
+    "rabota": "Работа.ру",
+}
+
 
 class AggregatorManager:
     """
@@ -206,15 +245,20 @@ class AggregatorManager:
         remote_only: bool = False,
         include_freelance: bool = True,
         page: int = 0,
-        scan_pages: int = 2
+        scan_pages: int = 2,
+        enabled_sources: Optional[List[str]] = None
     ) -> List[Dict[str, Any]]:
         """
         Concurrently queries all active aggregators for a given query,
         scanning multiple pages (e.g. page and page + 1) for primary aggregators
         (HeadHunter, Trudvsem, SuperJob, Habr Career, Rabota.ru).
+        Filters aggregators if enabled_sources is specified.
         """
         tasks = []
         for parser in self.parsers:
+            if enabled_sources is not None and parser.name not in enabled_sources:
+                continue
+
             is_freelance = getattr(parser, "is_freelance", False) or parser.name in [
                 "kwork", "fl_ru", "habr_freelance"
             ]
@@ -270,7 +314,8 @@ class AggregatorManager:
         remote_only: bool = False,
         include_freelance: bool = True,
         page: int = 0,
-        scan_pages: int = 2
+        scan_pages: int = 2,
+        enabled_sources: Optional[List[str]] = None
     ) -> List[Dict[str, Any]]:
         """
         Concurrently queries all aggregators for multiple search queries in parallel.
@@ -283,7 +328,8 @@ class AggregatorManager:
                 remote_only=remote_only,
                 include_freelance=include_freelance,
                 page=page,
-                scan_pages=scan_pages
+                scan_pages=scan_pages,
+                enabled_sources=enabled_sources
             )
             for q in queries
         ]
@@ -320,10 +366,10 @@ class AggregatorManager:
         """
         Full dynamic high-yield pipeline:
         1. Select batch of 3-5 queries from rotated query pool (or custom query)
-        2. Fetch vacancies concurrently across all queries and pages (page & page + 1)
+        2. Fetch vacancies concurrently across all queries, pages and user's enabled sources
         3. Advance query index & page offset for next search cycle
         4. Upsert vacancies into database
-        5. Fetch up to 500 unhidden & unviewed vacancies (filtered by city/remote preferences)
+        5. Fetch up to 500 unhidden & unviewed vacancies (filtered by city/remote & allowed sources)
         6. Match vacancies with candidate profile using standard threshold, with adaptive
            fallback to soft threshold (35%) if fewer than 15 matches found
         7. Return ranked list of (Vacancy, match_dict)
@@ -346,19 +392,21 @@ class AggregatorManager:
             if not batch_queries:
                 batch_queries = ["Python Developer"]
 
+        user_sources = user.get_effective_sources()
         logger.info(
             f"Searching vacancies for user {user.telegram_id}: queries={batch_queries}, "
-            f"page={current_page}, city='{user.city or 'Any'}'"
+            f"page={current_page}, city='{user.city or 'Any'}', sources={user_sources}"
         )
 
-        # 1. Concurrently fetch fresh vacancies across batch of queries and pages
+        # 1. Concurrently fetch fresh vacancies across batch of queries, pages, and enabled sources
         raw_vacancies = await self.fetch_all_for_queries(
             queries=batch_queries,
             limit_per_source=settings.MAX_VACANCIES_PER_SOURCE,
             remote_only=user.remote_only,
             include_freelance=user.include_freelance,
             page=current_page,
-            scan_pages=2
+            scan_pages=2,
+            enabled_sources=user_sources
         )
 
         # 2. Advance pagination and query rotation offsets for subsequent searches
@@ -372,7 +420,7 @@ class AggregatorManager:
         # 3. Upsert newly fetched vacancies into database
         await VacancyRepository.upsert_vacancies(session, raw_vacancies)
 
-        # 4. Get unhidden, unviewed vacancies matching user's filters & city (up to 500 limit)
+        # 4. Get unhidden, unviewed vacancies matching user's filters, city & allowed sources (up to 500 limit)
         vacancies = await VacancyRepository.get_unhidden_vacancies(
             session=session,
             user_id=user.telegram_id,
@@ -382,6 +430,7 @@ class AggregatorManager:
             min_salary=user.min_salary,
             exclude_viewed=True,
             user_city=user.city,
+            allowed_sources=user_sources,
             limit=500
         )
 

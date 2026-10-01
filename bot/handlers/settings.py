@@ -6,9 +6,16 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.database.repository import UserRepository
 from services.parser.normalizer import CityNormalizer
+from services.parser.manager import (
+    ALL_SOURCES,
+    VACANCY_SOURCES,
+    FREELANCE_SOURCES,
+    SOURCE_LABELS,
+)
 from bot.keyboards.inline import (
     get_settings_keyboard,
-    get_city_selection_keyboard
+    get_city_selection_keyboard,
+    get_sources_settings_keyboard
 )
 from bot.keyboards.reply import get_cancel_keyboard, get_main_menu_keyboard
 from bot.states.profile import ProfileStates
@@ -26,7 +33,8 @@ async def show_settings(message: types.Message, session: AsyncSession):
         "• <b>Город поиска</b> — фильтр по локации (офис/гибрид)\n"
         "• <b>Мин. зарплата</b> — отсеивать вакансии ниже этой планки\n"
         "• <b>Удаленка</b> — показывать только предложения с удаленным форматом\n"
-        "• <b>Kwork</b> — включать ли freelance заказы с биржи\n"
+        "• <b>Фриланс</b> — включать ли freelance заказы с бирж\n"
+        "• <b>Сайты и биржи</b> — выбор активных источников для поиска (из 9 сервисов)\n"
         "• <b>Автопоиск</b> — периодический фоновый поиск с пуш-уведомлениями"
     )
     await message.answer(text, reply_markup=get_settings_keyboard(user))
@@ -41,7 +49,8 @@ async def back_to_settings_callback(callback: types.CallbackQuery, session: Asyn
         "• <b>Город поиска</b> — фильтр по локации (офис/гибрид)\n"
         "• <b>Мин. зарплата</b> — отсеивать вакансии ниже этой планки\n"
         "• <b>Удаленка</b> — показывать только предложения с удаленным форматом\n"
-        "• <b>Kwork</b> — включать ли freelance заказы с биржи\n"
+        "• <b>Фриланс</b> — включать ли freelance заказы с бирж\n"
+        "• <b>Сайты и биржи</b> — выбор активных источников для поиска (из 9 сервисов)\n"
         "• <b>Автопоиск</b> — периодический фоновый поиск с пуш-уведомлениями",
         reply_markup=get_settings_keyboard(user)
     )
@@ -178,4 +187,69 @@ async def process_min_salary(message: types.Message, state: FSMContext, session:
         reply_markup=get_main_menu_keyboard()
     )
     await message.answer("⚙️ Текущие настройки:", reply_markup=get_settings_keyboard(user))
+
+
+@router.callback_query(F.data == "settings_sources")
+async def show_sources_settings(callback: types.CallbackQuery, session: AsyncSession):
+    user = await UserRepository.get_or_create_user(session=session, telegram_id=callback.from_user.id)
+    text = (
+        "🌐 <b>Выбор сайтов и агрегаторов для поиска</b>\n\n"
+        "Нажимайте на платформы, чтобы включить (✅) или исключить (❌) их из поиска.\n\n"
+        "<i>Подсказка: бот будет парсить и выдавать вакансии только с активных сайтов.</i>"
+    )
+    await callback.message.edit_text(text, reply_markup=get_sources_settings_keyboard(user))
+    await callback.answer()
+
+
+@router.callback_query(F.data.startswith("toggle_src_"))
+async def handle_toggle_source(callback: types.CallbackQuery, session: AsyncSession):
+    source_name = callback.data.replace("toggle_src_", "")
+    success, current_sources = await UserRepository.toggle_source(
+        session=session,
+        telegram_id=callback.from_user.id,
+        source_name=source_name
+    )
+    if not success:
+        await callback.answer("⚠️ Должен оставаться активным хотя бы один источник!", show_alert=True)
+        return
+
+    user = await UserRepository.get_or_create_user(session=session, telegram_id=callback.from_user.id)
+    await callback.message.edit_reply_markup(reply_markup=get_sources_settings_keyboard(user))
+    label = SOURCE_LABELS.get(source_name, source_name)
+    state_str = "включен ✅" if source_name in current_sources else "отключен ❌"
+    await callback.answer(f"{label}: {state_str}")
+
+
+@router.callback_query(F.data == "src_preset_all")
+async def handle_preset_all(callback: types.CallbackQuery, session: AsyncSession):
+    user = await UserRepository.set_sources(
+        session=session,
+        telegram_id=callback.from_user.id,
+        sources=ALL_SOURCES
+    )
+    await callback.message.edit_reply_markup(reply_markup=get_sources_settings_keyboard(user))
+    await callback.answer("Включены все 9 источников! ⚡")
+
+
+@router.callback_query(F.data == "src_preset_vacancies")
+async def handle_preset_vacancies(callback: types.CallbackQuery, session: AsyncSession):
+    user = await UserRepository.set_sources(
+        session=session,
+        telegram_id=callback.from_user.id,
+        sources=VACANCY_SOURCES
+    )
+    await callback.message.edit_reply_markup(reply_markup=get_sources_settings_keyboard(user))
+    await callback.answer("Выбраны только сайты вакансий (6 сайтов) 💼")
+
+
+@router.callback_query(F.data == "src_preset_freelance")
+async def handle_preset_freelance(callback: types.CallbackQuery, session: AsyncSession):
+    user = await UserRepository.set_sources(
+        session=session,
+        telegram_id=callback.from_user.id,
+        sources=FREELANCE_SOURCES
+    )
+    await callback.message.edit_reply_markup(reply_markup=get_sources_settings_keyboard(user))
+    await callback.answer("Выбраны только биржи фриланса (3 биржи) 💻")
+
 

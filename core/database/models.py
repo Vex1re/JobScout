@@ -40,6 +40,13 @@ class User(Base):
     city: Mapped[Optional[str]] = mapped_column(String(100), nullable=True, default=None)
     search_page_offset: Mapped[int] = mapped_column(Integer, default=0)
     last_query_index: Mapped[int] = mapped_column(Integer, default=0)
+    enabled_sources: Mapped[Optional[List[str]]] = mapped_column(JSON, nullable=True, default=None)
+
+    def get_effective_sources(self) -> List[str]:
+        from services.parser.manager import ALL_SOURCES
+        if self.enabled_sources is not None and len(self.enabled_sources) > 0:
+            return [s for s in self.enabled_sources if s in ALL_SOURCES]
+        return list(ALL_SOURCES)
     
     created_at: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
     updated_at: Mapped[datetime.datetime] = mapped_column(

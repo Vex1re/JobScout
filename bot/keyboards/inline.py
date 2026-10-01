@@ -179,8 +179,10 @@ def get_settings_keyboard(user: User) -> InlineKeyboardMarkup:
     remote_status = "Да ✅" if user.remote_only else "Нет ❌"
     freelance_status = "Вкл ✅" if user.include_freelance else "Выкл ❌"
     notify_status = "Вкл 🔔" if user.auto_notify else "Выкл 🔕"
-    salary_text = f"{user.min_salary:,} ₽".replace(",", " ") if user.min_salary > 0 else "Не задана (Любая)"
+    salary_val = user.min_salary or 0
+    salary_text = f"{salary_val:,} ₽".replace(",", " ") if salary_val > 0 else "Не задана (Любая)"
     city_text = user.city if user.city else "Любой"
+    sources_count = len(user.get_effective_sources())
 
     return InlineKeyboardMarkup(
         inline_keyboard=[
@@ -204,8 +206,14 @@ def get_settings_keyboard(user: User) -> InlineKeyboardMarkup:
             ],
             [
                 InlineKeyboardButton(
-                    text=f"💼 Заказы Kwork: {freelance_status}",
+                    text=f"💼 Фриланс-биржи: {freelance_status}",
                     callback_data="toggle_freelance"
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    text=f"🌐 Сайты и биржи: {sources_count} из 9 ⚙️",
+                    callback_data="settings_sources"
                 )
             ],
             [
@@ -222,3 +230,37 @@ def get_settings_keyboard(user: User) -> InlineKeyboardMarkup:
             ]
         ]
     )
+
+
+def get_sources_settings_keyboard(user: User) -> InlineKeyboardMarkup:
+    from services.parser.manager import ALL_SOURCES, SOURCE_LABELS
+    effective_sources = set(user.get_effective_sources())
+
+    buttons = []
+    # Source rows
+    for src in ALL_SOURCES:
+        label = SOURCE_LABELS.get(src, src)
+        status = "✅" if src in effective_sources else "❌"
+        buttons.append([
+            InlineKeyboardButton(
+                text=f"{status} {label}",
+                callback_data=f"toggle_src_{src}"
+            )
+        ])
+
+    # Presets row
+    buttons.append([
+        InlineKeyboardButton(text="⚡ Включить все", callback_data="src_preset_all"),
+    ])
+    buttons.append([
+        InlineKeyboardButton(text="💼 Только вакансии", callback_data="src_preset_vacancies"),
+        InlineKeyboardButton(text="💻 Только фриланс", callback_data="src_preset_freelance"),
+    ])
+
+    # Back button
+    buttons.append([
+        InlineKeyboardButton(text="🔙 Назад в настройки", callback_data="back_to_settings")
+    ])
+
+    return InlineKeyboardMarkup(inline_keyboard=buttons)
+

@@ -62,7 +62,8 @@ class UserRepository:
         include_freelance: Optional[bool] = None,
         city: Optional[str] = None,
         search_page_offset: Optional[int] = None,
-        last_query_index: Optional[int] = None
+        last_query_index: Optional[int] = None,
+        enabled_sources: Optional[List[str]] = None
     ) -> Optional[User]:
         stmt = select(User).where(User.telegram_id == telegram_id)
         res = await session.execute(stmt)
@@ -84,7 +85,55 @@ class UserRepository:
             user.search_page_offset = search_page_offset
         if last_query_index is not None:
             user.last_query_index = last_query_index
+        if enabled_sources is not None:
+            user.enabled_sources = enabled_sources
             
+        await session.commit()
+        await session.refresh(user)
+        return user
+
+    @staticmethod
+    async def toggle_source(
+        session: AsyncSession,
+        telegram_id: int,
+        source_name: str
+    ) -> Tuple[bool, List[str]]:
+        from services.parser.manager import ALL_SOURCES
+        stmt = select(User).where(User.telegram_id == telegram_id)
+        res = await session.execute(stmt)
+        user = res.scalar_one_or_none()
+        if not user:
+            return False, list(ALL_SOURCES)
+
+        current = list(user.get_effective_sources())
+        if source_name in current:
+            # Cannot disable if it's the only one left
+            if len(current) <= 1:
+                return False, current
+            current.remove(source_name)
+        else:
+            if source_name in ALL_SOURCES:
+                current.append(source_name)
+
+        user.enabled_sources = current
+        await session.commit()
+        await session.refresh(user)
+        return True, user.get_effective_sources()
+
+    @staticmethod
+    async def set_sources(
+        session: AsyncSession,
+        telegram_id: int,
+        sources: List[str]
+    ) -> Optional[User]:
+        from services.parser.manager import ALL_SOURCES
+        stmt = select(User).where(User.telegram_id == telegram_id)
+        res = await session.execute(stmt)
+        user = res.scalar_one_or_none()
+        if not user:
+            return None
+        valid_sources = [s for s in sources if s in ALL_SOURCES]
+        user.enabled_sources = valid_sources if valid_sources else list(ALL_SOURCES)
         await session.commit()
         await session.refresh(user)
         return user
@@ -222,6 +271,7 @@ class VacancyRepository:
         min_salary: int = 0,
         exclude_viewed: bool = True,
         user_city: Optional[str] = None,
+        allowed_sources: Optional[List[str]] = None,
         limit: int = 500
     ) -> List[Vacancy]:
         hidden_stmt = select(UserHidden.vacancy_id).where(UserHidden.user_id == user_id)
@@ -239,6 +289,9 @@ class VacancyRepository:
             
         if not include_freelance:
             conditions.append(Vacancy.is_freelance == False)
+
+        if allowed_sources:
+            conditions.append(Vacancy.source.in_(allowed_sources))
             
         if min_salary > 0:
             # Vacancy matches if salary_max >= min_salary or salary_min >= min_salary or salary not specified

@@ -35,6 +35,8 @@ async def init_db() -> None:
                     connection.execute(text("ALTER TABLE users ADD COLUMN search_page_offset INTEGER DEFAULT 0"))
                 if "last_query_index" not in cols:
                     connection.execute(text("ALTER TABLE users ADD COLUMN last_query_index INTEGER DEFAULT 0"))
+                if "enabled_sources" not in cols:
+                    connection.execute(text("ALTER TABLE users ADD COLUMN enabled_sources JSON"))
 
             if "vacancies" in tables:
                 cols = {c["name"] for c in inspector.get_columns("vacancies")}
