@@ -21,13 +21,13 @@ class HeadHunterParser(BaseVacanciesParser):
     async def fetch_vacancies(
         self,
         query: str,
-        limit: int = 30,
+        limit: int = 50,
         remote_only: bool = False,
         page: int = 0
     ) -> List[Dict[str, Any]]:
         params = {
             "text": query,
-            "per_page": min(limit, 50),
+            "per_page": min(max(limit, 50), 100),
             "page": page,
             "order_by": "publication_time",
         }

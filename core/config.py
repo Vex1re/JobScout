@@ -34,6 +34,8 @@ class Settings(BaseSettings):
 
     # Scoring & Red flag thresholds
     MIN_MATCH_SCORE: int = Field(default=45, description="Minimum match percentage to present to user")
+    SOFT_MATCH_SCORE: int = Field(default=35, description="Soft fallback match threshold for adaptive mode")
+    MIN_DESIRED_MATCHES: int = Field(default=15, description="Minimum desired match count before activating adaptive mode")
     RED_FLAG_STRICT_MODE: bool = Field(default=True, description="Block jobs marked with high scam risk")
 
     # Scraping configuration
@@ -47,7 +49,10 @@ class Settings(BaseSettings):
 
     # Pagination & limits
     VACANCIES_PER_PAGE: int = Field(default=5, description="Number of vacancies per page in Telegram inline list")
-    MAX_VACANCIES_PER_SOURCE: int = Field(default=30, description="Max vacancies to parse per aggregator per cycle")
+    MAX_VACANCIES_PER_SOURCE: int = Field(default=50, description="Max vacancies to parse per aggregator per cycle")
+
+    # Aggregator API Keys
+    SUPERJOB_API_KEY: Optional[str] = Field(default=None, description="SuperJob API secret / App ID")
 
 
 settings = Settings()

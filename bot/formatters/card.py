@@ -23,6 +23,8 @@ def get_score_badge(score: int) -> str:
         return f"🟡 <b>{score}% Совпадение</b> [Хороший матч]"
     elif score >= 45:
         return f"🟠 <b>{score}% Совпадение</b> [Частичное]"
+    elif score >= 35:
+        return f"🌱 <b>{score}% Совпадение</b> [Зона роста / Смежная]"
     else:
         return f"⚪ <b>{score}% Совпадение</b>"
 
@@ -31,7 +33,12 @@ def format_source_badge(source: str) -> str:
     badges = {
         "hh": "💼 HeadHunter",
         "habr": "🚀 Хабр Карьера",
+        "trudvsem": "🇷🇺 Работа России",
+        "superjob": "💼 SuperJob",
+        "remoteok": "🌍 RemoteOK",
         "kwork": "⚡ Kwork (Фриланс)",
+        "fl_ru": "🛠 FL.ru",
+        "habr_freelance": "🚀 Хабр Фриланс",
         "rabota": "👔 Работа.ру"
     }
     return badges.get(source, source.capitalize())
@@ -78,6 +85,11 @@ def format_vacancy_card(vacancy: Vacancy, match_info: Dict[str, Any]) -> str:
     if missing_skills:
         skills_text += f"\n⚡ <b>В вакансии требуется еще:</b> {', '.join(missing_skills[:5])}"
 
+    # Growth / adaptive recommendation note
+    growth_info = ""
+    if match_info.get("is_adaptive") or (reason and "🌱" in reason):
+        growth_info = f"\n🌱 <b>Рекомендация:</b> <i>{html.escape(reason)}</i>\n"
+
     # Short clean description
     clean_desc = vacancy.description.strip()
     clean_desc = re.sub(r"(удаленно|удалённо)([А-ЯA-Z])", r"\1 • \2", clean_desc, flags=re.IGNORECASE)
@@ -91,7 +103,8 @@ def format_vacancy_card(vacancy: Vacancy, match_info: Dict[str, Any]) -> str:
         f"🏢 <b>Компания:</b> {html.escape(vacancy.company)}\n"
         f"🌐 <b>Источник:</b> {source_badge} | {format_str}\n"
         f"💰 <b>Зарплата / Бюджет:</b> <code>{salary_str}</code>\n"
-        f"{skills_text}\n\n"
+        f"{skills_text}"
+        f"{growth_info}\n\n"
         f"{safety_badge}\n\n"
         f"📝 <b>Краткое описание:</b>\n<i>{clean_desc}</i>"
     )

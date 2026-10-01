@@ -39,14 +39,19 @@ Test1/
 ├── services/                           # Бизнес-логика, парсеры и анализ
 │   ├── ai/                             # Интеграция с языковыми моделями (LLM)
 │   │   └── llm_helper.py               # Опциональный вызов OpenAI/LLM для генерации советов
-│   ├── parser/                         # Модуль парсинга агрегаторов вакансий
+│   ├── parser/                         # Модуль парсинга агрегаторов вакансий и бирж фриланса
 │   │   ├── __init__.py
 │   │   ├── base.py                     # Базовый абстрактный класс BaseVacanciesParser
 │   │   ├── hh.py                       # Клиент официального REST API HeadHunter
 │   │   ├── habr.py                     # Парсер вакансий Хабр Карьеры
+│   │   ├── trudvsem.py                 # Официальное открытое REST API Работа России
+│   │   ├── superjob.py                 # Парсер SuperJob (REST API и веб-поиск)
+│   │   ├── remoteok.py                 # Клиент международного API удаленки RemoteOK (USD)
 │   │   ├── kwork.py                    # Парсер freelance-проектов биржи Kwork
+│   │   ├── fl_ru.py                    # RSS-парсер заказов фриланс-биржи FL.ru (IT/сайты)
+│   │   ├── habr_freelance.py           # RSS-парсер IT-заказов Хабр Фриланс
 │   │   ├── rabota.py                   # Парсер вакансий Работа.ру
-│   │   └── manager.py                  # AggregatorManager (параллельный опрос всех парсеров)
+│   │   └── manager.py                  # AggregatorManager (параллельный опрос всех 9 парсеров)
 │   └── resume_analyzer/                # Анализ резюме, скоринг и фильтрация ред-флагов
 │       ├── __init__.py
 │       ├── extractor.py                # Извлечение текста (PDF/DOCX), стека (300+ скиллов), грейда

@@ -221,7 +221,8 @@ class VacancyRepository:
         include_freelance: bool = True,
         min_salary: int = 0,
         exclude_viewed: bool = True,
-        user_city: Optional[str] = None
+        user_city: Optional[str] = None,
+        limit: int = 500
     ) -> List[Vacancy]:
         hidden_stmt = select(UserHidden.vacancy_id).where(UserHidden.user_id == user_id)
         conditions = [not_(Vacancy.id.in_(hidden_stmt))]
@@ -259,7 +260,7 @@ class VacancyRepository:
                         (Vacancy.city.is_(None))
                     )
             
-        stmt = select(Vacancy).where(and_(*conditions)).order_by(desc(Vacancy.published_at)).limit(100)
+        stmt = select(Vacancy).where(and_(*conditions)).order_by(desc(Vacancy.published_at)).limit(limit)
         res = await session.execute(stmt)
         vacancies = list(res.scalars().all())
 
