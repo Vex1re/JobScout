@@ -43,6 +43,8 @@ class Settings(BaseSettings):
     )
     REQUEST_TIMEOUT: int = Field(default=15, description="Timeout for external requests in seconds")
 
+    LOG_LEVEL: str = Field(default="INFO", description="Logging level")
+
     # Pagination & limits
     VACANCIES_PER_PAGE: int = Field(default=5, description="Number of vacancies per page in Telegram inline list")
     MAX_VACANCIES_PER_SOURCE: int = Field(default=30, description="Max vacancies to parse per aggregator per cycle")
