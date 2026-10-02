@@ -64,6 +64,7 @@ class HeadHunterParser(BaseVacanciesParser):
 
     def __init__(self):
         super().__init__(name="hh")
+        self._api_disabled: bool = False
 
     async def fetch_vacancies(
         self,
@@ -77,6 +78,16 @@ class HeadHunterParser(BaseVacanciesParser):
         if city:
             norm_city = city.strip().lower()
             area_id = self.HH_AREA_MAP.get(norm_city)
+
+        if self._api_disabled:
+            return await self._fetch_via_web(
+                query=query,
+                limit=limit,
+                remote_only=remote_only,
+                page=page,
+                area_id=area_id,
+                city=city
+            )
 
         params: Dict[str, Any] = {
             "text": query,
@@ -95,8 +106,9 @@ class HeadHunterParser(BaseVacanciesParser):
             async with httpx.AsyncClient(timeout=self.timeout, headers=self.headers) as client:
                 response = await client.get(self.API_URL, params=params)
                 if response.status_code != 200:
-                    logger.warning(
-                        f"HH API returned status {response.status_code}, falling back to Web Scraper..."
+                    self._api_disabled = True
+                    logger.info(
+                        f"HH API returned status {response.status_code}, switching to Web Scraper..."
                     )
                     return await self._fetch_via_web(
                         query=query,
@@ -184,7 +196,8 @@ class HeadHunterParser(BaseVacanciesParser):
                     vacancies.append(vac)
 
         except Exception as e:
-            logger.warning(f"Error fetching from HH API ({e}), falling back to Web Scraper...")
+            self._api_disabled = True
+            logger.info(f"HH API unavailable ({e}), switching to Web Scraper...")
             return await self._fetch_via_web(
                 query=query,
                 limit=limit,

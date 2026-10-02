@@ -55,6 +55,7 @@ class TrudVsemParser(BaseVacanciesParser):
         self.is_freelance = False
         # TrudVsem OpenData API can occasionally be slow to respond
         self.api_timeout = max(self.timeout, 20.0)
+        self._region_endpoint_unhealthy: bool = False
 
     async def fetch_vacancies(
         self,
@@ -80,17 +81,16 @@ class TrudVsemParser(BaseVacanciesParser):
             norm_city = city.strip().lower()
             region_code = self.REGION_CODES.get(norm_city)
 
-        if region_code:
-            api_url = f"https://opendata.trudvsem.ru/api/v1/vacancies/region/{region_code}"
-            fallback_url = f"http://opendata.trudvsem.ru/api/v1/vacancies/region/{region_code}"
-        else:
-            api_url = self.API_URL
-            fallback_url = self.FALLBACK_URL
+        urls_to_try = []
+        if region_code and not self._region_endpoint_unhealthy:
+            urls_to_try.append(f"https://opendata.trudvsem.ru/api/v1/vacancies/region/{region_code}")
+            urls_to_try.append(f"http://opendata.trudvsem.ru/api/v1/vacancies/region/{region_code}")
+
+        # Always include base vacancies endpoint as primary / fallback
+        urls_to_try.append(self.API_URL)
+        urls_to_try.append(self.FALLBACK_URL)
 
         vacancies: List[Dict[str, Any]] = []
-
-        # Try HTTPS first, fallback to HTTP if SSL error occurs
-        urls_to_try = [api_url, fallback_url]
         response_data: Optional[Dict[str, Any]] = None
 
         async with httpx.AsyncClient(timeout=self.api_timeout, headers=self.headers, follow_redirects=True) as client:
@@ -100,13 +100,25 @@ class TrudVsemParser(BaseVacanciesParser):
                     if response.status_code == 200:
                         response_data = response.json()
                         break
+                    elif response.status_code >= 500:
+                        # Server temporary issue on regional endpoint (e.g. 500 Internal Server Error)
+                        if "/region/" in url:
+                            self._region_endpoint_unhealthy = True
+                            logger.info(
+                                f"TrudVsem regional endpoint returned {response.status_code} (temporary server issue), "
+                                f"falling back to general vacancies API..."
+                            )
+                        else:
+                            logger.info(f"TrudVsem endpoint {url} returned {response.status_code}")
                     else:
-                        logger.warning(f"TrudVsem returned status {response.status_code} for URL {url}")
+                        logger.info(f"TrudVsem returned status {response.status_code} for URL {url}")
                 except (httpx.ConnectError, httpx.TimeoutException) as exc:
-                    logger.warning(f"TrudVsem connection issue with {url}: {exc}")
+                    if "/region/" in url:
+                        self._region_endpoint_unhealthy = True
+                    logger.info(f"TrudVsem connection issue with {url}: {exc}")
                     continue
                 except Exception as exc:
-                    logger.warning(f"TrudVsem request failed for {url}: {exc}")
+                    logger.info(f"TrudVsem request failed for {url}: {exc}")
                     continue
 
         if not response_data:

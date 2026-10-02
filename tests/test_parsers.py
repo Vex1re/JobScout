@@ -517,3 +517,80 @@ def test_base_parser_proxy_support():
         assert client is not None
         # Check that client was initialized with proxy
         assert client._mounts is not None
+
+
+@pytest.mark.asyncio
+async def test_hh_api_caching_on_403():
+    parser = HeadHunterParser()
+    assert parser._api_disabled is False
+
+    mock_resp = MagicMock()
+    mock_resp.status_code = 403
+
+    with patch("httpx.AsyncClient.get", new_callable=AsyncMock) as mock_get, \
+         patch.object(parser, "_fetch_via_web", new_callable=AsyncMock) as mock_web:
+        mock_get.return_value = mock_resp
+        mock_web.return_value = [{"id": "hh_web_1", "title": "Scraped Python Dev"}]
+
+        # First call hits API, gets 403, falls back to web, sets _api_disabled = True
+        res1 = await parser.fetch_vacancies(query="python")
+        assert len(res1) == 1
+        assert res1[0]["id"] == "hh_web_1"
+        assert parser._api_disabled is True
+        assert mock_get.call_count == 1
+        assert mock_web.call_count == 1
+
+        # Second call should bypass API completely and call _fetch_via_web directly
+        res2 = await parser.fetch_vacancies(query="django")
+        assert len(res2) == 1
+        assert mock_get.call_count == 1  # Not called again
+        assert mock_web.call_count == 2
+
+
+@pytest.mark.asyncio
+async def test_trudvsem_500_regional_fallback():
+    parser = TrudVsemParser()
+    assert parser._region_endpoint_unhealthy is False
+
+    regional_resp = MagicMock()
+    regional_resp.status_code = 500
+
+    base_resp = MagicMock()
+    base_resp.status_code = 200
+    base_resp.json.return_value = {
+        "results": {
+            "vacancies": [
+                {
+                    "vacancy": {
+                        "id": "trud-fallback-1",
+                        "job-name": "Python Dev",
+                        "vac_url": "https://trudvsem.ru/vacancy/card/fallback-1",
+                        "company": {"name": "Portal Tech"},
+                        "salary_min": 150000,
+                        "salary_max": 0,
+                        "currency": "«руб.»",
+                        "duty": "Python backend",
+                        "schedule": "Дистанционная работа",
+                        "creation-date": "2026-10-02"
+                    }
+                }
+            ]
+        }
+    }
+
+    def side_effect(url, **kwargs):
+        if "/region/" in url:
+            return regional_resp
+        return base_resp
+
+    with patch("httpx.AsyncClient.get", new_callable=AsyncMock, side_effect=side_effect):
+        # First call: hits regional URL (gets 500), marks _region_endpoint_unhealthy, falls back to base URL
+        results = await parser.fetch_vacancies(query="python", city="Москва")
+        assert len(results) == 1
+        assert results[0]["id"] == "trudvsem_trud-fallback-1"
+        assert parser._region_endpoint_unhealthy is True
+
+        # Second call: regional URL should be skipped automatically
+        results2 = await parser.fetch_vacancies(query="fastapi", city="Москва")
+        assert len(results2) == 1
+
