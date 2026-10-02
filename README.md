@@ -14,7 +14,7 @@
    - 🌍 **RemoteOK (remoteok.com)**: открытое REST API мировой 100% удаленки с оплатой в USD ($3 000 – $10 000/мес.).
    - ⚡ **Kwork (kwork.ru)**: маркетплейс микро-услуг и разовых IT-задач (боты, парсеры, доработки).
    - 💻 **FL.ru (fl.ru)**: крупнейшая биржа фриланса Рунета (парсер RSS по веб-разработке и программированию).
-   - 🎯 **Хабр Фриланс (freelance.habr.com)**: профильные IT-заказы и проекты через RSS.
+   - 🌐 **Freelance.ru (freelance.ru)**: ведущая биржа проектных заказов (парсер актуальных IT-задач, ботов, скриптов и веб-разработки).
    - 🏢 **Работа.ру (rabota.ru)**: универсальная база вакансий экосистемы Сбера.
    - 🧩 **Модульная архитектура парсеров**: любой новый источник легко подключается через наследование от `BaseVacanciesParser`.
 
@@ -93,6 +93,7 @@
 | `BOT_TOKEN` | **ОБЯЗАТЕЛЬНО** | Токен вашего Telegram-бота | Создайте бота у официального бота [@BotFather](https://t.me/BotFather) в Telegram (команда `/newbot`) |
 | `DATABASE_URL` | *Опционально* | URL подключения к БД | По умолчанию создается быстрая локальная база SQLite (`sqlite+aiosqlite:///./job_hunter.db`). Для PostgreSQL укажите `postgresql+asyncpg://user:pass@host:5432/db` |
 | `SUPERJOB_API_KEY` | *Рекомендуется* | Ключ приложения SuperJob API | Бесплатно за 2 минуты на [api.superjob.ru](https://api.superjob.ru/) — позволяет парсить вакансии SuperJob напрямую через REST API без блокировок Cloudflare-капчей |
+| `PROXY_URL` | *Опционально* | HTTP / SOCKS5 прокси | Требуется, если бот запущен на зарубежном сервере/VDS и Работа.ру блокирует запросы по Geo-IP/WAF (например, `http://user:pass@host:port` или `socks5://host:port`) |
 | `OPENAI_API_KEY` | *Опционально* | Ключ OpenAI API | [platform.openai.com](https://platform.openai.com/) — нужен только для продвинутых AI-советов. **Если ключа нет, бот на 100% полноценно работает на встроенном движке!** |
 | `ADMIN_IDS` | *Опционально* | ID администратора Telegram | Узнать свой ID можно у бота [@userinfobot](https://t.me/userinfobot) |
 

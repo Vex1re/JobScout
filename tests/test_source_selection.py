@@ -27,6 +27,14 @@ def test_user_effective_sources_custom():
     assert user.get_effective_sources() == ["hh", "habr"]
 
 
+def test_user_effective_sources_habr_freelance_migration():
+    user = User(telegram_id=12348, enabled_sources=["hh", "habr_freelance"])
+    effective = user.get_effective_sources()
+    assert "freelance_ru" in effective
+    assert "habr_freelance" not in effective
+    assert "hh" in effective
+
+
 @pytest.mark.asyncio
 async def test_user_repository_toggle_source():
     await init_db()

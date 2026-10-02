@@ -328,8 +328,8 @@ async def test_adaptive_match_scoring_fallback():
 
 
 def test_card_formatter_source_badges_and_adaptive_notes():
-    """Verifies that all 9 aggregators have badges and adaptive recommendations render."""
-    sources = ["hh", "habr", "trudvsem", "superjob", "remoteok", "kwork", "fl_ru", "habr_freelance", "rabota"]
+    """Verifies that all aggregators have badges and adaptive recommendations render."""
+    sources = ["hh", "habr", "trudvsem", "superjob", "remoteok", "kwork", "fl_ru", "freelance_ru", "habr_freelance", "rabota"]
     for s in sources:
         badge = format_source_badge(s)
         assert badge != s.capitalize(), f"Source badge for {s} is not customized"

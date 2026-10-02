@@ -4,6 +4,7 @@ from services.parser.habr import HabrCareerParser
 from services.parser.trudvsem import TrudVsemParser
 from services.parser.fl_ru import FLRuParser
 from services.parser.habr_freelance import HabrFreelanceParser
+from services.parser.freelance_ru import FreelanceRuParser
 from services.parser.remoteok import RemoteOKParser
 from services.parser.superjob import SuperJobParser
 from services.parser.kwork import KworkParser
@@ -17,6 +18,7 @@ __all__ = [
     "TrudVsemParser",
     "FLRuParser",
     "HabrFreelanceParser",
+    "FreelanceRuParser",
     "RemoteOKParser",
     "SuperJobParser",
     "KworkParser",

@@ -43,9 +43,15 @@ class RabotaRuParser(BaseVacanciesParser):
         vacancies: List[Dict[str, Any]] = []
 
         try:
-            async with httpx.AsyncClient(timeout=self.timeout, headers=self.headers, follow_redirects=True) as client:
+            async with self.get_client() as client:
                 response = await client.get(self.SEARCH_URL, params=params)
-                if response.status_code != 200:
+                if response.status_code == 403:
+                    logger.warning(
+                        "Rabota.ru WAF blocked datacenter IP. "
+                        "Configure PROXY_URL in .env to route through Russian proxy or disable in /settings."
+                    )
+                    return []
+                elif response.status_code != 200:
                     logger.warning(f"Rabota.ru returned status {response.status_code}")
                     return []
 

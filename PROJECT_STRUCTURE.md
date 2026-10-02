@@ -49,8 +49,8 @@ Test1/
 │   │   ├── remoteok.py                 # Клиент международного API удаленки RemoteOK (USD)
 │   │   ├── kwork.py                    # Парсер freelance-проектов биржи Kwork
 │   │   ├── fl_ru.py                    # RSS-парсер заказов фриланс-биржи FL.ru (IT/сайты)
-│   │   ├── habr_freelance.py           # RSS-парсер IT-заказов Хабр Фриланс
-│   │   ├── rabota.py                   # Парсер вакансий Работа.ру
+│   │   ├── freelance_ru.py             # Парсер проектов и IT-заказов биржи Freelance.ru
+│   │   ├── rabota.py                   # Парсер вакансий Работа.ру (с поддержкой PROXY_URL)
 │   │   ├── normalizer.py               # CityNormalizer (нормализация синонимов городов и правил офиса)
 │   │   └── manager.py                  # AggregatorManager (мульти-запросный параллельный сбор)
 │   └── resume_analyzer/                # Анализ резюме, скоринг и фильтрация ред-флагов
@@ -60,7 +60,7 @@ Test1/
 │       ├── vacancy_extractor.py        # VacancyExperienceExtractor и VacancyGradeDetector
 │       ├── matcher.py                  # Взвешенный алгоритм скоринга, Hard Cutoff и штрафы стажа
 │       └── red_flags.py                # Детектор мошенников, залогов, серой ЗП и токсичных условий
-├── tests/                              # Автоматические тесты (pytest — 114 тестов, 100% pass)
+├── tests/                              # Автоматические тесты (pytest — 118 тестов, 100% pass)
 │   ├── test_extractor.py               # Тесты извлечения стека, стажа (Interval Union, 0.0 лет)
 │   ├── test_features.py                # Тесты валидации, городов, пула запросов и БД
 │   ├── test_matcher.py                 # Тесты алгоритма совместимости, грейдов и опыта

@@ -10,6 +10,7 @@ from services.parser.rabota import RabotaRuParser
 from services.parser.trudvsem import TrudVsemParser
 from services.parser.fl_ru import FLRuParser
 from services.parser.habr_freelance import HabrFreelanceParser
+from services.parser.freelance_ru import FreelanceRuParser
 from services.parser.remoteok import RemoteOKParser
 from services.parser.superjob import SuperJobParser
 from services.parser.manager import AggregatorManager
@@ -267,6 +268,63 @@ async def test_habr_freelance_410_handled():
 
 
 @pytest.mark.asyncio
+async def test_freelance_ru_parser():
+    parser = FreelanceRuParser()
+    html_content = """
+    <html>
+      <body>
+        <div class="task-feed-list">
+          <article class="task-card task-card--premium">
+            <div class="task-card__main">
+              <a class="task-card__title-link" href="/task/view/11427" title="Бот для Telegram на Python">
+                Бот для Telegram на Python
+              </a>
+              <p class="task-card__desc">
+                Нужно исправить ошибки в боте для Телеграм с webapp на языке Python.
+              </p>
+              <div class="task-card__chips">
+                <span class="task-chip task-chip--cat">Веб-разработка и IT</span>
+                <span class="task-chip">Python</span>
+              </div>
+              <div class="task-card__foot">
+                <span class="task-card__foot-item" title="28.09.2026 13:50">4 дня назад</span>
+              </div>
+            </div>
+            <div class="task-card__side">
+              <div class="task-card__budget">
+                <span class="bold">2 000 ₽</span>
+                <span class="cost-unit">/ заказ</span>
+              </div>
+            </div>
+          </article>
+        </div>
+      </body>
+    </html>
+    """
+    mock_resp = MagicMock()
+    mock_resp.status_code = 200
+    mock_resp.text = html_content
+
+    with patch("httpx.AsyncClient.get", new_callable=AsyncMock) as mock_get:
+        mock_get.return_value = mock_resp
+        results = await parser.fetch_vacancies(query="python", limit=10)
+
+        assert len(results) == 1
+        vac = results[0]
+        assert vac["id"] == "freelance_ru_11427"
+        assert "Freelance.ru: Бот для Telegram" in vac["title"]
+        assert vac["url"] == "https://freelance.ru/task/view/11427"
+        assert vac["company"] == "Заказчик на Freelance.ru"
+        assert vac["salary_min"] == 2000
+        assert vac["salary_max"] == 2000
+        assert vac["currency"] == "RUB"
+        assert vac["is_freelance"] is True
+        assert vac["is_remote"] is True
+        assert vac["city"] == "Удаленно"
+        assert "Python" in vac["requirements"]
+
+
+@pytest.mark.asyncio
 async def test_remoteok_parser():
     parser = RemoteOKParser()
     data = [
@@ -393,7 +451,7 @@ def test_aggregator_manager_registered_parsers():
         "remoteok",
         "kwork",
         "fl_ru",
-        "habr_freelance",
+        "freelance_ru",
         "rabota"
     ]
     for exp in expected:
@@ -420,7 +478,7 @@ async def test_aggregator_manager_freelance_filtering():
     sources_no_fl = [r["source"] for r in res_no_freelance]
     assert "kwork" not in sources_no_fl
     assert "fl_ru" not in sources_no_fl
-    assert "habr_freelance" not in sources_no_fl
+    assert "freelance_ru" not in sources_no_fl
     assert "hh" in sources_no_fl
     assert "trudvsem" in sources_no_fl
     assert "remoteok" in sources_no_fl
@@ -433,4 +491,29 @@ async def test_aggregator_manager_freelance_filtering():
     sources_with_fl = [r["source"] for r in res_with_freelance]
     assert "kwork" in sources_with_fl
     assert "fl_ru" in sources_with_fl
-    assert "habr_freelance" in sources_with_fl
+    assert "freelance_ru" in sources_with_fl
+
+
+@pytest.mark.asyncio
+async def test_rabota_403_waf_block_handled(caplog):
+    parser = RabotaRuParser()
+    mock_resp = MagicMock()
+    mock_resp.status_code = 403
+
+    with patch("httpx.AsyncClient.get", new_callable=AsyncMock) as mock_get:
+        mock_get.return_value = mock_resp
+        with caplog.at_level("WARNING"):
+            results = await parser.fetch_vacancies(query="python")
+            assert results == []
+            assert "Rabota.ru WAF blocked datacenter IP" in caplog.text
+
+
+def test_base_parser_proxy_support():
+    from services.parser.hh import HeadHunterParser
+    with patch("core.config.settings.PROXY_URL", "http://user:pass@ru-proxy.com:8080"):
+        parser = HeadHunterParser()
+        assert parser.proxy == "http://user:pass@ru-proxy.com:8080"
+        client = parser.get_client()
+        assert client is not None
+        # Check that client was initialized with proxy
+        assert client._mounts is not None

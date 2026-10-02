@@ -54,5 +54,11 @@ class Settings(BaseSettings):
     # Aggregator API Keys
     SUPERJOB_API_KEY: Optional[str] = Field(default=None, description="SuperJob API secret / App ID")
 
+    # Proxy settings
+    PROXY_URL: Optional[str] = Field(
+        default=None,
+        description="Optional HTTP/SOCKS5 proxy URL (e.g. socks5://user:pass@host:port or http://host:port)"
+    )
+
 
 settings = Settings()

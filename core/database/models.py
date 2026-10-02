@@ -45,7 +45,13 @@ class User(Base):
     def get_effective_sources(self) -> List[str]:
         from services.parser.manager import ALL_SOURCES
         if self.enabled_sources is not None and len(self.enabled_sources) > 0:
-            return [s for s in self.enabled_sources if s in ALL_SOURCES]
+            sources: List[str] = []
+            for s in self.enabled_sources:
+                if s == "habr_freelance":
+                    s = "freelance_ru"
+                if s in ALL_SOURCES and s not in sources:
+                    sources.append(s)
+            return sources
         return list(ALL_SOURCES)
     
     created_at: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), default=utc_now)

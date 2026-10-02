@@ -55,6 +55,7 @@ def format_source_badge(source: str) -> str:
         "remoteok": "🌍 RemoteOK",
         "kwork": "⚡ Kwork (Фриланс)",
         "fl_ru": "🛠 FL.ru",
+        "freelance_ru": "🌐 Freelance.ru",
         "habr_freelance": "🚀 Хабр Фриланс",
         "rabota": "👔 Работа.ру"
     }

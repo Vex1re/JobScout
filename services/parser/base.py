@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import List, Dict, Any, Optional
 import datetime
+import httpx
 from core.config import settings
 from services.resume_analyzer.red_flags import RedFlagScanner
 from services.resume_analyzer.extractor import ResumeExtractor
@@ -19,6 +20,24 @@ class BaseVacanciesParser(ABC):
             "Accept-Language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7"
         }
         self.timeout = settings.REQUEST_TIMEOUT
+        self.proxy = settings.PROXY_URL
+
+    def get_client(self, **kwargs) -> httpx.AsyncClient:
+        """
+        Creates an httpx.AsyncClient configured with standard headers, timeout, and proxy if configured.
+        """
+        client_kwargs: Dict[str, Any] = {
+            "timeout": kwargs.pop("timeout", self.timeout),
+            "headers": kwargs.pop("headers", self.headers),
+            "follow_redirects": kwargs.pop("follow_redirects", True),
+        }
+        proxy = kwargs.pop("proxy", getattr(settings, "PROXY_URL", None) or self.proxy)
+        if proxy:
+            client_kwargs["proxy"] = proxy
+        client_kwargs.update(kwargs)
+        return httpx.AsyncClient(**client_kwargs)
+
+    get_http_client = get_client
 
     @abstractmethod
     async def fetch_vacancies(

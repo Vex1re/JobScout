@@ -12,6 +12,7 @@ from services.parser.hh import HeadHunterParser
 from services.parser.habr import HabrCareerParser
 from services.parser.trudvsem import TrudVsemParser
 from services.parser.fl_ru import FLRuParser
+from services.parser.freelance_ru import FreelanceRuParser
 from services.parser.habr_freelance import HabrFreelanceParser
 from services.parser.remoteok import RemoteOKParser
 from services.parser.superjob import SuperJobParser
@@ -29,7 +30,7 @@ ALL_SOURCES: List[str] = [
     "remoteok",
     "kwork",
     "fl_ru",
-    "habr_freelance",
+    "freelance_ru",
     "rabota",
 ]
 
@@ -45,7 +46,7 @@ VACANCY_SOURCES: List[str] = [
 FREELANCE_SOURCES: List[str] = [
     "kwork",
     "fl_ru",
-    "habr_freelance",
+    "freelance_ru",
 ]
 
 SOURCE_LABELS: Dict[str, str] = {
@@ -56,6 +57,7 @@ SOURCE_LABELS: Dict[str, str] = {
     "remoteok": "RemoteOK (Global)",
     "kwork": "Kwork (Фриланс)",
     "fl_ru": "FL.ru (Фриланс)",
+    "freelance_ru": "Freelance.ru (Фриланс)",
     "habr_freelance": "Хабр Фриланс",
     "rabota": "Работа.ру",
 }
@@ -64,12 +66,12 @@ SOURCE_LABELS: Dict[str, str] = {
 class AggregatorManager:
     """
     Coordinates multi-platform parsing across HeadHunter, Habr Career, TrudVsem, SuperJob,
-    RemoteOK, Kwork, FL.ru, Habr Freelance, and Rabota.ru.
+    RemoteOK, Kwork, FL.ru, Freelance.ru, and Rabota.ru.
     Aggregates results, applies scam detection and candidate-resume matching.
     Supports dynamic query rotation and pagination offsets.
     """
 
-    MULTI_PAGE_PARSERS = {"hh", "trudvsem", "superjob", "habr", "rabota"}
+    MULTI_PAGE_PARSERS = {"hh", "trudvsem", "superjob", "habr", "rabota", "freelance_ru"}
 
     def __init__(self):
         self.parsers: List[BaseVacanciesParser] = [
@@ -80,7 +82,7 @@ class AggregatorManager:
             RemoteOKParser(),
             KworkParser(),
             FLRuParser(),
-            HabrFreelanceParser(),
+            FreelanceRuParser(),
             RabotaRuParser()
         ]
 
@@ -260,9 +262,7 @@ class AggregatorManager:
             if enabled_sources is not None and parser.name not in enabled_sources:
                 continue
 
-            is_freelance = getattr(parser, "is_freelance", False) or parser.name in [
-                "kwork", "fl_ru", "habr_freelance"
-            ]
+            is_freelance = getattr(parser, "is_freelance", False) or parser.name in FREELANCE_SOURCES
             if is_freelance and not include_freelance:
                 continue
 
