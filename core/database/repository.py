@@ -239,6 +239,9 @@ class VacancyRepository:
                     is_remote=data.get("is_remote", False),
                     is_freelance=data.get("is_freelance", False),
                     city=data.get("city"),
+                    min_experience=data.get("min_experience"),
+                    max_experience=data.get("max_experience"),
+                    target_grade=data.get("target_grade"),
                     risk_level=data.get("risk_level", "safe"),
                     red_flags=data.get("red_flags", []),
                     published_at=data.get("published_at")
@@ -251,6 +254,12 @@ class VacancyRepository:
                 existing.red_flags = data.get("red_flags", existing.red_flags)
                 if data.get("city"):
                     existing.city = data.get("city")
+                if data.get("min_experience") is not None:
+                    existing.min_experience = data.get("min_experience")
+                if data.get("max_experience") is not None:
+                    existing.max_experience = data.get("max_experience")
+                if data.get("target_grade"):
+                    existing.target_grade = data.get("target_grade")
                 
         await session.commit()
         return added_count

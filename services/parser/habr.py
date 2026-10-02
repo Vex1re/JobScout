@@ -17,6 +17,35 @@ class HabrCareerParser(BaseVacanciesParser):
     BASE_URL = "https://career.habr.com"
     SEARCH_URL = "https://career.habr.com/vacancies"
 
+    HABR_CITY_MAP = {
+        "москва": 678,
+        "санкт-петербург": 679,
+        "петербург": 679,
+        "спб": 679,
+        "казань": 693,
+        "новосибирск": 682,
+        "екатеринбург": 680,
+        "нижний новгород": 681,
+        "самара": 699,
+        "краснодар": 703,
+        "ростов-на-дону": 686,
+        "ростов": 686,
+        "воронеж": 687,
+        "уфа": 695,
+        "пермь": 689,
+        "красноярск": 684,
+        "челябинск": 683,
+        "омск": 685,
+        "волгоград": 688,
+        "тюмень": 698,
+        "томск": 691,
+        "иркутск": 696,
+        "ярославль": 701,
+        "владивосток": 692,
+        "сочи": 757,
+        "калининград": 702
+    }
+
     def __init__(self):
         super().__init__(name="habr")
 
@@ -25,16 +54,23 @@ class HabrCareerParser(BaseVacanciesParser):
         query: str,
         limit: int = 30,
         remote_only: bool = False,
-        page: int = 0
+        page: int = 0,
+        city: Optional[str] = None
     ) -> List[Dict[str, Any]]:
         from services.parser.normalizer import CityNormalizer
 
-        params = {
+        params: Dict[str, Any] = {
             "q": query,
             "sort": "date",
             "type": "all",
             "page": page + 1
         }
+        if city:
+            norm_city = city.strip().lower()
+            city_id = self.HABR_CITY_MAP.get(norm_city)
+            if city_id:
+                params["city_id"] = city_id
+
         if remote_only:
             params["remote"] = "1"
 

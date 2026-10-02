@@ -246,10 +246,11 @@ class AggregatorManager:
         include_freelance: bool = True,
         page: int = 0,
         scan_pages: int = 2,
-        enabled_sources: Optional[List[str]] = None
+        enabled_sources: Optional[List[str]] = None,
+        city: Optional[str] = None
     ) -> List[Dict[str, Any]]:
         """
-        Concurrently queries all active aggregators for a given query,
+        Concurrently queries all active aggregators for a given query and city,
         scanning multiple pages (e.g. page and page + 1) for primary aggregators
         (HeadHunter, Trudvsem, SuperJob, Habr Career, Rabota.ru).
         Filters aggregators if enabled_sources is specified.
@@ -272,7 +273,8 @@ class AggregatorManager:
                             query=query,
                             limit=limit_per_source,
                             remote_only=remote_only,
-                            page=page + p_offset
+                            page=page + p_offset,
+                            city=city
                         )
                     )
             else:
@@ -281,7 +283,8 @@ class AggregatorManager:
                         query=query,
                         limit=limit_per_source,
                         remote_only=remote_only,
-                        page=page
+                        page=page,
+                        city=city
                     )
                 )
 
@@ -315,7 +318,8 @@ class AggregatorManager:
         include_freelance: bool = True,
         page: int = 0,
         scan_pages: int = 2,
-        enabled_sources: Optional[List[str]] = None
+        enabled_sources: Optional[List[str]] = None,
+        city: Optional[str] = None
     ) -> List[Dict[str, Any]]:
         """
         Concurrently queries all aggregators for multiple search queries in parallel.
@@ -329,7 +333,8 @@ class AggregatorManager:
                 include_freelance=include_freelance,
                 page=page,
                 scan_pages=scan_pages,
-                enabled_sources=enabled_sources
+                enabled_sources=enabled_sources,
+                city=city
             )
             for q in queries
         ]
@@ -366,7 +371,7 @@ class AggregatorManager:
         """
         Full dynamic high-yield pipeline:
         1. Select batch of 3-5 queries from rotated query pool (or custom query)
-        2. Fetch vacancies concurrently across all queries, pages and user's enabled sources
+        2. Fetch vacancies concurrently across all queries, pages and user's enabled sources & city
         3. Advance query index & page offset for next search cycle
         4. Upsert vacancies into database
         5. Fetch up to 500 unhidden & unviewed vacancies (filtered by city/remote & allowed sources)
@@ -398,7 +403,7 @@ class AggregatorManager:
             f"page={current_page}, city='{user.city or 'Any'}', sources={user_sources}"
         )
 
-        # 1. Concurrently fetch fresh vacancies across batch of queries, pages, and enabled sources
+        # 1. Concurrently fetch fresh vacancies across batch of queries, pages, city, and enabled sources
         raw_vacancies = await self.fetch_all_for_queries(
             queries=batch_queries,
             limit_per_source=settings.MAX_VACANCIES_PER_SOURCE,
@@ -406,7 +411,8 @@ class AggregatorManager:
             include_freelance=user.include_freelance,
             page=current_page,
             scan_pages=2,
-            enabled_sources=user_sources
+            enabled_sources=user_sources,
+            city=user.city
         )
 
         # 2. Advance pagination and query rotation offsets for subsequent searches

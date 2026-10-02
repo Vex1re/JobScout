@@ -104,6 +104,9 @@ class Vacancy(Base):
     is_remote: Mapped[bool] = mapped_column(Boolean, default=False)
     is_freelance: Mapped[bool] = mapped_column(Boolean, default=False)
     city: Mapped[Optional[str]] = mapped_column(String(100), nullable=True, default=None)
+    min_experience: Mapped[Optional[float]] = mapped_column(Float, nullable=True, default=None)
+    max_experience: Mapped[Optional[float]] = mapped_column(Float, nullable=True, default=None)
+    target_grade: Mapped[Optional[str]] = mapped_column(String(50), nullable=True, default=None)
     
     # Scam & Red flag analysis
     risk_level: Mapped[str] = mapped_column(String(50), default="safe") # safe, warning, blocked

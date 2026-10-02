@@ -26,10 +26,11 @@ class BaseVacanciesParser(ABC):
         query: str,
         limit: int = 30,
         remote_only: bool = False,
-        page: int = 0
+        page: int = 0,
+        city: Optional[str] = None
     ) -> List[Dict[str, Any]]:
         """
-        Fetch vacancies for given search query and page.
+        Fetch vacancies for given search query, page and optional city.
         Returns list of standardized vacancy dicts.
         """
         pass
@@ -48,12 +49,16 @@ class BaseVacanciesParser(ABC):
         is_freelance: bool = False,
         city: Optional[str] = None,
         requirements: Optional[List[str]] = None,
-        published_at: Optional[datetime.datetime] = None
+        published_at: Optional[datetime.datetime] = None,
+        min_experience: Optional[float] = None,
+        max_experience: Optional[float] = None,
+        target_grade: Optional[str] = None
     ) -> Dict[str, Any]:
         """
         Normalizes vacancy data, extracts tech skills and scans for red flags.
         """
         from services.parser.normalizer import CityNormalizer
+        from services.resume_analyzer.vacancy_extractor import VacancyExperienceExtractor, VacancyGradeDetector
 
         # Red flag & scam detection
         scan_result = RedFlagScanner.scan(title=title, description=description, company=company)
@@ -72,6 +77,16 @@ class BaseVacanciesParser(ABC):
         if is_remote and not norm_city:
             norm_city = "Удаленно"
 
+        # Extract experience requirements and target grade if not explicitly given
+        combined_text = f"{title}\n{description}"
+        if min_experience is None and max_experience is None:
+            min_exp, max_exp = VacancyExperienceExtractor.extract_experience_years(combined_text)
+        else:
+            min_exp, max_exp = min_experience, max_experience
+
+        if not target_grade:
+            target_grade = VacancyGradeDetector.detect_grade(title, description, min_exp)
+
         return {
             "id": f"{self.name}_{external_id}",
             "source": self.name,
@@ -86,6 +101,9 @@ class BaseVacanciesParser(ABC):
             "is_remote": is_remote,
             "is_freelance": is_freelance,
             "city": norm_city,
+            "min_experience": min_exp,
+            "max_experience": max_exp,
+            "target_grade": target_grade,
             "risk_level": scan_result["risk_level"],
             "red_flags": scan_result["red_flags"],
             "published_at": published_at or datetime.datetime.now(datetime.timezone.utc)

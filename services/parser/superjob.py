@@ -23,6 +23,27 @@ class SuperJobParser(BaseVacanciesParser):
     WEB_SEARCH_URL = "https://www.superjob.ru/vacancy/search/"
     API_URL = "https://api.superjob.ru/2.0/vacancies/"
 
+    SUPERJOB_TOWN_MAP = {
+        "москва": 4,
+        "санкт-петербург": 14,
+        "петербург": 14,
+        "спб": 14,
+        "казань": 48,
+        "новосибирск": 75,
+        "екатеринбург": 33,
+        "нижний новгород": 66,
+        "самара": 86,
+        "краснодар": 53,
+        "ростов-на-дону": 83,
+        "уфа": 99,
+        "воронеж": 25,
+        "пермь": 76,
+        "волгоград": 22,
+        "красноярск": 54,
+        "челябинск": 111,
+        "омск": 73,
+    }
+
     def __init__(self):
         super().__init__(name="superjob")
         self.is_freelance = False
@@ -32,14 +53,15 @@ class SuperJobParser(BaseVacanciesParser):
         query: str,
         limit: int = 50,
         remote_only: bool = False,
-        page: int = 0
+        page: int = 0,
+        city: Optional[str] = None
     ) -> List[Dict[str, Any]]:
         api_key = getattr(settings, "SUPERJOB_API_KEY", None)
 
         if api_key:
-            return await self._fetch_via_api(query=query, limit=limit, remote_only=remote_only, page=page, api_key=api_key)
+            return await self._fetch_via_api(query=query, limit=limit, remote_only=remote_only, page=page, api_key=api_key, city=city)
         else:
-            return await self._fetch_via_web(query=query, limit=limit, remote_only=remote_only, page=page)
+            return await self._fetch_via_web(query=query, limit=limit, remote_only=remote_only, page=page, city=city)
 
     async def _fetch_via_api(
         self,
@@ -47,7 +69,8 @@ class SuperJobParser(BaseVacanciesParser):
         limit: int,
         remote_only: bool,
         page: int,
-        api_key: str
+        api_key: str,
+        city: Optional[str] = None
     ) -> List[Dict[str, Any]]:
         from services.parser.normalizer import CityNormalizer
 
@@ -55,12 +78,17 @@ class SuperJobParser(BaseVacanciesParser):
             **self.headers,
             "X-Api-App-Id": api_key
         }
-        params = {
+        params: Dict[str, Any] = {
             "keyword": query,
             "count": min(max(limit, 10), 100),
             "page": page,
             "order_by[date]": "desc"
         }
+        if city:
+            town_id = self.SUPERJOB_TOWN_MAP.get(city.strip().lower())
+            if town_id:
+                params["town"] = town_id
+
         if remote_only:
             params["type_of_work"] = 6  # SuperJob remote work type
 
@@ -137,14 +165,19 @@ class SuperJobParser(BaseVacanciesParser):
         query: str,
         limit: int,
         remote_only: bool,
-        page: int
+        page: int,
+        city: Optional[str] = None
     ) -> List[Dict[str, Any]]:
         from services.parser.normalizer import CityNormalizer
 
-        params = {
+        params: Dict[str, Any] = {
             "keywords": query,
             "page": page + 1
         }
+        if city:
+            town_id = self.SUPERJOB_TOWN_MAP.get(city.strip().lower())
+            if town_id:
+                params["town"] = town_id
         if remote_only:
             params["geo[t][0]"] = "4"  # Remote work option in SuperJob
 

@@ -29,6 +29,23 @@ def get_score_badge(score: int) -> str:
         return f"⚪ <b>{score}% Совпадение</b>"
 
 
+def format_experience(min_exp: Optional[float], max_exp: Optional[float]) -> Optional[str]:
+    """Formats required experience range into human-readable text."""
+    if min_exp is None and max_exp is None:
+        return None
+    if min_exp == 0 and (max_exp == 0 or max_exp is None):
+        return "Без опыта"
+    if min_exp is not None and max_exp is not None:
+        if min_exp == max_exp:
+            return f"{min_exp:g} г."
+        return f"{min_exp:g}–{max_exp:g} г."
+    if min_exp is not None:
+        return f"от {min_exp:g} г."
+    if max_exp is not None:
+        return f"до {max_exp:g} г."
+    return None
+
+
 def format_source_badge(source: str) -> str:
     badges = {
         "hh": "💼 HeadHunter",
@@ -78,6 +95,19 @@ def format_vacancy_card(vacancy: Vacancy, match_info: Dict[str, Any]) -> str:
     else:
         safety_badge = "🛡️ <b>Безопасность:</b> ⛔ Высокий риск мошенничества!"
 
+    # Experience and grade display
+    vac_grade = match_info.get("vacancy_grade") or getattr(vacancy, "target_grade", None)
+    min_exp = match_info.get("vacancy_min_exp") if match_info.get("vacancy_min_exp") is not None else getattr(vacancy, "min_experience", None)
+    max_exp = match_info.get("vacancy_max_exp") if match_info.get("vacancy_max_exp") is not None else getattr(vacancy, "max_experience", None)
+    exp_str = format_experience(min_exp, max_exp)
+
+    meta_parts = []
+    if vac_grade:
+        meta_parts.append(f"🎯 <b>Грейд:</b> {html.escape(str(vac_grade))}")
+    if exp_str:
+        meta_parts.append(f"⏳ <b>Опыт:</b> {html.escape(exp_str)}")
+    grade_line = f"\n{' | '.join(meta_parts)}" if meta_parts else ""
+
     # Matched skills breakdown
     skills_text = ""
     if matched_skills:
@@ -87,7 +117,11 @@ def format_vacancy_card(vacancy: Vacancy, match_info: Dict[str, Any]) -> str:
 
     # Growth / adaptive recommendation note
     growth_info = ""
-    if match_info.get("is_adaptive") or (reason and "🌱" in reason):
+    if match_info.get("is_growth_opportunity"):
+        growth_info = f"\n🌱 <b>Зона роста:</b> <i>{html.escape(reason)}</i>\n"
+    elif match_info.get("is_disqualified"):
+        growth_info = f"\n⛔ <b>Несоответствие:</b> <i>{html.escape(reason)}</i>\n"
+    elif match_info.get("is_adaptive") or (reason and "🌱" in reason):
         growth_info = f"\n🌱 <b>Рекомендация:</b> <i>{html.escape(reason)}</i>\n"
 
     # Short clean description
@@ -102,7 +136,8 @@ def format_vacancy_card(vacancy: Vacancy, match_info: Dict[str, Any]) -> str:
         f"📌 <b>{html.escape(vacancy.title)}</b>\n"
         f"🏢 <b>Компания:</b> {html.escape(vacancy.company)}\n"
         f"🌐 <b>Источник:</b> {source_badge} | {format_str}\n"
-        f"💰 <b>Зарплата / Бюджет:</b> <code>{salary_str}</code>\n"
+        f"💰 <b>Зарплата / Бюджет:</b> <code>{salary_str}</code>"
+        f"{grade_line}\n"
         f"{skills_text}"
         f"{growth_info}\n\n"
         f"{safety_badge}\n\n"

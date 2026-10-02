@@ -78,7 +78,7 @@ async def test_multi_page_scanning():
         called_pages[parser.name] = []
 
         async def make_mock_fetch(p_name):
-            async def _mock_fetch(query, limit=50, remote_only=False, page=0):
+            async def _mock_fetch(query, limit=50, remote_only=False, page=0, city=None, **kwargs):
                 called_pages[p_name].append(page)
                 return [{
                     "id": f"{p_name}_page_{page}",
@@ -120,7 +120,7 @@ async def test_multi_query_parallel_fetching_and_deduplication():
 
     # Setup parser that returns items based on query
     for parser in manager.parsers:
-        async def mock_fetch(query, limit=50, remote_only=False, page=0):
+        async def mock_fetch(query, limit=50, remote_only=False, page=0, city=None, **kwargs):
             return [
                 {
                     "id": f"unique_item_{page}",
@@ -365,3 +365,192 @@ def test_card_formatter_source_badges_and_adaptive_notes():
     card = format_vacancy_card(vac, match_info)
     assert "🌱" in card
     assert "Смежная позиция (зона роста)" in card
+
+
+@pytest.mark.asyncio
+async def test_hh_api_403_triggers_web_scraper_fallback():
+    """
+    Verifies that when HeadHunter API returns 403, the parser automatically
+    falls back to the web search scraper with the mapped area code.
+    """
+    from services.parser.hh import HeadHunterParser
+
+    parser = HeadHunterParser()
+    mock_api_resp = MagicMock()
+    mock_api_resp.status_code = 403
+    mock_api_resp.text = '{"errors":[{"type":"forbidden"}]}'
+
+    mock_web_html = """
+    <html>
+      <body>
+        <div data-qa="vacancy-serp__vacancy">
+          <a class="bloko-link" data-qa="serp-item__title" href="https://hh.ru/vacancy/11223344">Python Senior Architect</a>
+          <span data-qa="vacancy-serp__vacancy-employer">Yandex Tech</span>
+          <span data-qa="vacancy-serp__vacancy-compensation">от 300 000 до 450 000 руб.</span>
+          <span data-qa="vacancy-serp__vacancy-address">Москва, Красная площадь</span>
+          <div data-qa="vacancy-serp__vacancy_snippet_requirement">Опыт Python, FastAPI, Docker.</div>
+        </div>
+      </body>
+    </html>
+    """
+    mock_web_resp = MagicMock()
+    mock_web_resp.status_code = 200
+    mock_web_resp.text = mock_web_html
+
+    async def mock_get(url, params=None, **kwargs):
+        if "api.hh.ru" in url:
+            return mock_api_resp
+        return mock_web_resp
+
+    with patch("httpx.AsyncClient.get", new_callable=AsyncMock) as mock_client_get:
+        mock_client_get.side_effect = mock_get
+
+        results = await parser.fetch_vacancies(query="Python", limit=10, city="Москва", page=0)
+
+        assert len(results) == 1
+        vac = results[0]
+        assert vac["id"] == "hh_11223344"
+        assert vac["title"] == "Python Senior Architect"
+        assert vac["company"] == "Yandex Tech"
+        assert vac["salary_min"] == 300000
+        assert vac["salary_max"] == 450000
+        assert vac["city"] == "Москва"
+        assert "FastAPI" in vac["requirements"]
+
+
+@pytest.mark.asyncio
+async def test_trudvsem_city_region_code():
+    """Verifies that TrudVsem routes to /region/77 for Moscow and /region/78 for St. Petersburg."""
+    from services.parser.trudvsem import TrudVsemParser
+
+    parser = TrudVsemParser()
+    mock_resp = MagicMock()
+    mock_resp.status_code = 200
+    mock_resp.json.return_value = {
+        "results": {
+            "vacancies": [
+                {
+                    "vacancy": {
+                        "id": "moscow-101",
+                        "job-name": "Ведущий разработчик Python",
+                        "company": {"name": "МосИнформ"},
+                        "vac_url": "https://trudvsem.ru/vacancy/card/101",
+                        "salary_min": 250000,
+                        "salary_max": 300000,
+                        "currency": "«руб.»",
+                        "duty": "Разработка Python сервисов",
+                        "region": {"name": "Город Москва"},
+                        "addresses": {"address": [{"location": "г. Москва"}]}
+                    }
+                }
+            ]
+        }
+    }
+
+    with patch("httpx.AsyncClient.get", new_callable=AsyncMock) as mock_get:
+        mock_get.return_value = mock_resp
+        results = await parser.fetch_vacancies(query="Python", city="Москва")
+
+        assert len(results) == 1
+        assert results[0]["id"] == "trudvsem_moscow-101"
+        assert results[0]["city"] == "Москва"
+
+        # Check requested URL
+        call_url = mock_get.call_args[0][0]
+        assert "/region/77" in call_url
+
+
+@pytest.mark.asyncio
+async def test_habr_career_city_id():
+    """Verifies that Habr Career passes city_id=678 for Moscow."""
+    from services.parser.habr import HabrCareerParser
+
+    parser = HabrCareerParser()
+    mock_resp = MagicMock()
+    mock_resp.status_code = 200
+    mock_resp.text = """
+    <div class="vacancy-card">
+      <div class="vacancy-card__title"><a href="/vacancies/9988">Python Engineer</a></div>
+      <div class="vacancy-card__company-title"><a href="/companies/1">Tech Habr</a></div>
+      <div class="vacancy-card__salary">от 200 000 ₽</div>
+      <div class="vacancy-card__meta">Москва</div>
+    </div>
+    """
+
+    with patch("httpx.AsyncClient.get", new_callable=AsyncMock) as mock_get:
+        mock_get.return_value = mock_resp
+        results = await parser.fetch_vacancies(query="Python", city="Москва")
+
+        assert len(results) == 1
+        assert results[0]["id"] == "habr_9988"
+
+        # Verify city_id was in params
+        call_kwargs = mock_get.call_args[1]
+        assert call_kwargs["params"]["city_id"] == 678
+
+
+@pytest.mark.asyncio
+async def test_kwork_ajax_post_json_parsing():
+    """Verifies that KworkParser sends POST with XMLHttpRequest header and parses JSON data.wants."""
+    from services.parser.kwork import KworkParser
+
+    parser = KworkParser()
+    mock_resp = MagicMock()
+    mock_resp.status_code = 200
+    mock_resp.json.return_value = {
+        "success": True,
+        "data": {
+            "wants": [
+                {
+                    "id": 98765,
+                    "name": "Написать парсер данных на Python",
+                    "description": "Требуется асинхронный скрейпер на Python с записью в PostgreSQL.",
+                    "priceLimit": "15000.00",
+                    "possiblePriceLimit": 25000,
+                    "user": {"username": "client_pro"},
+                    "date_create": "2026-10-02 12:00:00"
+                }
+            ]
+        }
+    }
+
+    with patch("httpx.AsyncClient.post", new_callable=AsyncMock) as mock_post:
+        mock_post.return_value = mock_resp
+        results = await parser.fetch_vacancies(query="Python")
+
+        assert len(results) == 1
+        vac = results[0]
+        assert vac["id"] == "kwork_98765"
+        assert "Написать парсер" in vac["title"]
+        assert vac["company"] == "client_pro"
+        assert vac["salary_min"] == 15000
+        assert vac["salary_max"] == 25000
+        assert vac["is_freelance"] is True
+
+        # Check post headers
+        headers = mock_post.call_args[1]["headers"]
+        assert headers.get("X-Requested-With") == "XMLHttpRequest"
+
+
+@pytest.mark.asyncio
+async def test_habr_freelance_410_retired_cache():
+    """Verifies that HabrFreelanceParser handles 410 gracefully and caches retirement flag."""
+    from services.parser.habr_freelance import HabrFreelanceParser
+
+    parser = HabrFreelanceParser()
+    parser._service_retired = False
+    mock_resp = MagicMock()
+    mock_resp.status_code = 410
+
+    with patch("httpx.AsyncClient.get", new_callable=AsyncMock) as mock_get:
+        mock_get.return_value = mock_resp
+        results1 = await parser.fetch_vacancies(query="Python")
+        assert results1 == []
+        assert parser._service_retired is True
+
+        # Subsequent call should return empty without making network requests
+        mock_get.reset_mock()
+        results2 = await parser.fetch_vacancies(query="Python")
+        assert results2 == []
+        mock_get.assert_not_called()
+

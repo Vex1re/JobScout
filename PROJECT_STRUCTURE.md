@@ -57,16 +57,17 @@ Test1/
 │       ├── __init__.py
 │       ├── validator.py                # ResumeValidator (защита от рецептов, договоров и мусора)
 │       ├── extractor.py                # Извлечение стека (300+ скиллов), стажа (Interval Union)
-│       ├── matcher.py                  # Взвешенный алгоритм скоринга резюме vs вакансия
+│       ├── vacancy_extractor.py        # VacancyExperienceExtractor и VacancyGradeDetector
+│       ├── matcher.py                  # Взвешенный алгоритм скоринга, Hard Cutoff и штрафы стажа
 │       └── red_flags.py                # Детектор мошенников, залогов, серой ЗП и токсичных условий
-├── tests/                              # Автоматические тесты (pytest — 102 теста, 100% pass)
+├── tests/                              # Автоматические тесты (pytest — 114 тестов, 100% pass)
 │   ├── test_extractor.py               # Тесты извлечения стека, стажа (Interval Union, 0.0 лет)
 │   ├── test_features.py                # Тесты валидации, городов, пула запросов и БД
-│   ├── test_matcher.py                 # Тесты алгоритма совместимости
+│   ├── test_matcher.py                 # Тесты алгоритма совместимости, грейдов и опыта
 │   ├── test_parsers.py                 # Тесты унификации вакансий и парсинга 9 агрегаторов
 │   ├── test_qa_suite.py                # Независимый комплексный QA-сьют на все граничные кейсы
 │   ├── test_red_flags.py               # Тесты блокировки скама и выявления предупреждений
-│   ├── test_search_optimization.py     # Тесты мульти-запросов, снятия лимитов и адаптивного скоринга
+│   ├── test_search_optimization.py     # Тесты мульти-запросов, Web Fallback HH, городов и лимитов
 │   └── test_source_selection.py        # Тесты выбора и переключения агрегаторов в настройках
 ├── .env.example                        # Пример файла конфигурации с описанием параметров
 ├── .gitignore                          # Исключения для Git

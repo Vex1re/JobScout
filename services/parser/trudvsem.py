@@ -19,6 +19,37 @@ class TrudVsemParser(BaseVacanciesParser):
     API_URL = "https://opendata.trudvsem.ru/api/v1/vacancies"
     FALLBACK_URL = "http://opendata.trudvsem.ru/api/v1/vacancies"
 
+    REGION_CODES = {
+        "москва": "77",
+        "санкт-петербург": "78",
+        "петербург": "78",
+        "спб": "78",
+        "казань": "16",
+        "татарстан": "16",
+        "екатеринбург": "66",
+        "свердловская": "66",
+        "новосибирск": "54",
+        "самара": "63",
+        "нижний новгород": "52",
+        "краснодар": "23",
+        "ростов-на-дону": "61",
+        "ростов": "61",
+        "уфа": "02",
+        "башкортостан": "02",
+        "челябинск": "74",
+        "красноярск": "24",
+        "воронеж": "36",
+        "пермь": "59",
+        "волгоград": "34",
+        "омск": "55",
+        "тюмень": "72",
+        "иркутск": "38",
+        "томск": "70",
+        "калининград": "39",
+        "ярославль": "76",
+        "владивосток": "25"
+    }
+
     def __init__(self):
         super().__init__(name="trudvsem")
         self.is_freelance = False
@@ -30,7 +61,8 @@ class TrudVsemParser(BaseVacanciesParser):
         query: str,
         limit: int = 50,
         remote_only: bool = False,
-        page: int = 0
+        page: int = 0,
+        city: Optional[str] = None
     ) -> List[Dict[str, Any]]:
         from services.parser.normalizer import CityNormalizer
 
@@ -43,10 +75,22 @@ class TrudVsemParser(BaseVacanciesParser):
             "offset": offset,
         }
 
+        region_code = None
+        if city:
+            norm_city = city.strip().lower()
+            region_code = self.REGION_CODES.get(norm_city)
+
+        if region_code:
+            api_url = f"https://opendata.trudvsem.ru/api/v1/vacancies/region/{region_code}"
+            fallback_url = f"http://opendata.trudvsem.ru/api/v1/vacancies/region/{region_code}"
+        else:
+            api_url = self.API_URL
+            fallback_url = self.FALLBACK_URL
+
         vacancies: List[Dict[str, Any]] = []
 
         # Try HTTPS first, fallback to HTTP if SSL error occurs
-        urls_to_try = [self.API_URL, self.FALLBACK_URL]
+        urls_to_try = [api_url, fallback_url]
         response_data: Optional[Dict[str, Any]] = None
 
         async with httpx.AsyncClient(timeout=self.api_timeout, headers=self.headers, follow_redirects=True) as client:

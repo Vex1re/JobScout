@@ -25,7 +25,8 @@ class RabotaRuParser(BaseVacanciesParser):
         query: str,
         limit: int = 30,
         remote_only: bool = False,
-        page: int = 0
+        page: int = 0,
+        city: Optional[str] = None
     ) -> List[Dict[str, Any]]:
         from services.parser.normalizer import CityNormalizer
 
@@ -34,6 +35,8 @@ class RabotaRuParser(BaseVacanciesParser):
             "sort": "date",
             "page": page + 1
         }
+        if city:
+            params["city"] = city
         if remote_only:
             params["remote_work"] = "1"
 

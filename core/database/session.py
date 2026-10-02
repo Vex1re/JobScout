@@ -42,6 +42,12 @@ async def init_db() -> None:
                 cols = {c["name"] for c in inspector.get_columns("vacancies")}
                 if "city" not in cols:
                     connection.execute(text("ALTER TABLE vacancies ADD COLUMN city VARCHAR(100)"))
+                if "min_experience" not in cols:
+                    connection.execute(text("ALTER TABLE vacancies ADD COLUMN min_experience FLOAT"))
+                if "max_experience" not in cols:
+                    connection.execute(text("ALTER TABLE vacancies ADD COLUMN max_experience FLOAT"))
+                if "target_grade" not in cols:
+                    connection.execute(text("ALTER TABLE vacancies ADD COLUMN target_grade VARCHAR(50)"))
 
         await conn.run_sync(_migrate)
 

@@ -1,12 +1,13 @@
 import re
-from typing import List, Dict, Any, Set, Tuple
+from typing import List, Dict, Any, Set, Tuple, Optional
 from services.resume_analyzer.extractor import ResumeExtractor
+from services.resume_analyzer.vacancy_extractor import VacancyExperienceExtractor, VacancyGradeDetector
 
 
 class VacancyMatcher:
     """
     Intelligent matching engine between a candidate's resume and job postings / freelance orders.
-    Calculates weighted compatibility scores and skill gap analysis.
+    Calculates weighted compatibility scores, grade & experience mismatch penalties, and skill gap analysis.
     """
 
     GRADE_RANKS = {
@@ -40,7 +41,10 @@ class VacancyMatcher:
         vacancy_title: str,
         vacancy_description: str,
         vacancy_requirements: List[str],
-        risk_level: str = "safe"
+        risk_level: str = "safe",
+        vacancy_min_exp: Optional[float] = None,
+        vacancy_max_exp: Optional[float] = None,
+        vacancy_grade: Optional[str] = None
     ) -> Dict[str, Any]:
         """
         Calculates compatibility between candidate profile and vacancy.
@@ -50,8 +54,16 @@ class VacancyMatcher:
                 - score: int (0 to 100)
                 - matched_skills: List[str]
                 - missing_skills: List[str]
-                - grade_compatibility: str ('exact' | 'higher' | 'lower' | 'unspecified')
-                - reason: str (short explanation)
+                - grade_compatibility: str ('exact' | 'growth_opportunity' | 'comfortable' | 'significantly_higher' | 'overqualified' | 'disqualified' | 'blocked')
+                - vacancy_grade: str
+                - vacancy_min_exp: Optional[float]
+                - vacancy_max_exp: Optional[float]
+                - candidate_grade: str
+                - candidate_experience: float
+                - exp_diff: Optional[float]
+                - is_disqualified: bool
+                - is_growth_opportunity: bool
+                - reason: str
         """
         # If vacancy is completely blocked for scam, return score 0
         if risk_level == "blocked":
@@ -60,13 +72,21 @@ class VacancyMatcher:
                 "matched_skills": [],
                 "missing_skills": [],
                 "grade_compatibility": "blocked",
+                "vacancy_grade": vacancy_grade or "Middle",
+                "vacancy_min_exp": vacancy_min_exp,
+                "vacancy_max_exp": vacancy_max_exp,
+                "candidate_grade": candidate_grade,
+                "candidate_experience": candidate_experience,
+                "exp_diff": None,
+                "is_disqualified": True,
+                "is_growth_opportunity": False,
                 "reason": "⛔ Вакансия заблокирована алгоритмом защиты от мошенничества"
             }
 
         cand_skills_set = set(candidate_skills)
+        vac_text = f"{vacancy_title}\n{vacancy_description}"
 
         # 1. Determine vacancy required skills
-        vac_text = f"{vacancy_title}\n{vacancy_description}"
         vac_skills = set(vacancy_requirements)
         if not vac_skills:
             # Extract skills directly from vacancy text
@@ -88,11 +108,58 @@ class VacancyMatcher:
         # 2. Role / Title compatibility
         role_score = cls._calculate_role_score(candidate_role, vacancy_title)
 
-        # 3. Grade / Seniority compatibility
-        vac_grade = ResumeExtractor.detect_grade(vacancy_title + " " + vacancy_description, 2.0)
-        grade_score, grade_comp = cls._calculate_grade_score(candidate_grade, vac_grade, candidate_experience)
+        # 3. Extract vacancy required experience and grade if not supplied
+        if vacancy_min_exp is None and vacancy_max_exp is None:
+            vac_min_exp, vac_max_exp = VacancyExperienceExtractor.extract_required_experience(vac_text)
+        else:
+            vac_min_exp, vac_max_exp = vacancy_min_exp, vacancy_max_exp
 
-        # 4. Weighted total score calculation
+        if vacancy_grade is None:
+            vac_grade = VacancyGradeDetector.detect_vacancy_grade(
+                title=vacancy_title,
+                description=vacancy_description,
+                min_experience=vac_min_exp
+            )
+        else:
+            vac_grade = vacancy_grade
+
+        c_rank = cls.GRADE_RANKS.get(candidate_grade, 1 if candidate_grade == "Junior" else 2)
+        v_rank = cls.GRADE_RANKS.get(vac_grade, 2)
+        grade_diff = v_rank - c_rank
+
+        exp_diff = (candidate_experience - vac_min_exp) if vac_min_exp is not None else None
+
+        # 4. HARD CUTOFF RULE (Disqualification)
+        # If candidate is Junior, and vacancy is Senior/Lead (grade_diff >= 2),
+        # OR experience deficit exp_diff <= -2.0 when vacancy requires 3.5+ years:
+        is_disqualified = False
+        if candidate_grade == "Junior" and (grade_diff >= 2 or v_rank >= 3):
+            is_disqualified = True
+        elif vac_min_exp is not None and vac_min_exp >= 3.5 and exp_diff is not None and exp_diff <= -2.0:
+            is_disqualified = True
+
+        # 5. GROWTH OPPORTUNITY & EXPERIENCE GAP PENALTY
+        is_growth_opportunity = False
+        penalty = 0.0
+
+        if not is_disqualified:
+            if candidate_grade == "Junior" and vac_grade == "Middle":
+                if vac_min_exp is None or vac_min_exp <= 2.5:
+                    is_growth_opportunity = True
+                    if exp_diff is not None and exp_diff < 0:
+                        penalty = 5.0 * abs(exp_diff)
+
+            if not is_growth_opportunity and exp_diff is not None and exp_diff < 0:
+                deficit = abs(exp_diff)
+                if deficit < 1.5:
+                    penalty = 15.0 * deficit
+                else:
+                    penalty = 35.0 + 20.0 * (deficit - 1.5)
+
+        # 6. Weighted total score calculation
+        grade_score, base_grade_comp = cls._calculate_grade_score(candidate_grade, vac_grade, candidate_experience)
+        grade_comp = "growth_opportunity" if is_growth_opportunity else base_grade_comp
+
         # Weights: 50% hard skills, 30% role title match, 20% grade match
         total_score = (skill_score * 0.50) + (role_score * 0.30) + (grade_score * 0.20)
 
@@ -100,11 +167,27 @@ class VacancyMatcher:
         if risk_level == "warning":
             total_score = max(10.0, total_score - 15.0)
 
-        final_score = int(round(total_score))
-        final_score = min(100, max(0, final_score))
+        # 7. Apply disqualification or penalty
+        if is_disqualified:
+            final_score = min(int(round(total_score * 0.15)), 18)
+            grade_comp = "disqualified"
+        else:
+            penalized_score = max(0.0, total_score - penalty)
+            final_score = int(round(penalized_score))
+            final_score = min(100, max(0, final_score))
 
         # Formulate human-friendly reason summary
-        reason = cls._generate_reason(final_score, matched_skills, missing_skills, grade_comp, vac_grade)
+        reason = cls._generate_reason(
+            score=final_score,
+            matched=matched_skills,
+            missing=missing_skills,
+            grade_comp=grade_comp,
+            vac_grade=vac_grade,
+            vac_min_exp=vac_min_exp,
+            exp_diff=exp_diff,
+            is_disqualified=is_disqualified,
+            is_growth_opportunity=is_growth_opportunity
+        )
 
         return {
             "score": final_score,
@@ -112,6 +195,13 @@ class VacancyMatcher:
             "missing_skills": missing_skills,
             "grade_compatibility": grade_comp,
             "vacancy_grade": vac_grade,
+            "vacancy_min_exp": vac_min_exp,
+            "vacancy_max_exp": vac_max_exp,
+            "candidate_grade": candidate_grade,
+            "candidate_experience": candidate_experience,
+            "exp_diff": round(exp_diff, 1) if exp_diff is not None else None,
+            "is_disqualified": is_disqualified,
+            "is_growth_opportunity": is_growth_opportunity,
             "reason": reason
         }
 
@@ -180,16 +270,28 @@ class VacancyMatcher:
         matched: List[str],
         missing: List[str],
         grade_comp: str,
-        vac_grade: str
+        vac_grade: str,
+        vac_min_exp: Optional[float] = None,
+        exp_diff: Optional[float] = None,
+        is_disqualified: bool = False,
+        is_growth_opportunity: bool = False
     ) -> str:
         parts = []
+        if is_disqualified:
+            exp_str = f" (требуется от {vac_min_exp:.1f} л.)" if vac_min_exp is not None else ""
+            parts.append(f"⛔ Недостаточно опыта/грейда для позиции {vac_grade.upper()}{exp_str}")
+        elif is_growth_opportunity:
+            parts.append(f"🌱 Отличная зона роста ({vac_grade})")
+        elif grade_comp == "significantly_higher":
+            parts.append(f"⚠️ Требуется более высокий грейд ({vac_grade})")
+        elif grade_comp == "overqualified":
+            parts.append(f"ℹ️ Оверквалифицирован для позиции ({vac_grade})")
+        elif exp_diff is not None and exp_diff < -0.5:
+            parts.append(f"⚠️ Нехватка опыта: {abs(exp_diff):.1f} г.")
+
         if matched:
             parts.append(f"✅ Совпало: {', '.join(matched[:4])}")
         if missing:
             parts.append(f"⚡ Требуется подтянуть: {', '.join(missing[:3])}")
-        if grade_comp == "growth_opportunity":
-            parts.append(f"📈 Позиция {vac_grade} — отличная зона роста")
-        elif grade_comp == "significantly_higher":
-            parts.append(f"⚠️ Требуется более высокий грейд ({vac_grade})")
 
         return " | ".join(parts) if parts else "Соответствие по ключевым навыкам"

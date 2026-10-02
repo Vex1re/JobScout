@@ -32,7 +32,8 @@ class RemoteOKParser(BaseVacanciesParser):
         query: str,
         limit: int = 50,
         remote_only: bool = True,
-        page: int = 0
+        page: int = 0,
+        city: Optional[str] = None
     ) -> List[Dict[str, Any]]:
         vacancies: List[Dict[str, Any]] = []
 

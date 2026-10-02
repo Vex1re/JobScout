@@ -20,6 +20,7 @@ class HabrFreelanceParser(BaseVacanciesParser):
     """
 
     RSS_URL = "https://freelance.habr.com/tasks.rss"
+    _service_retired = False
 
     def __init__(self):
         super().__init__(name="habr_freelance")
@@ -30,8 +31,12 @@ class HabrFreelanceParser(BaseVacanciesParser):
         query: str,
         limit: int = 50,
         remote_only: bool = True,
-        page: int = 0
+        page: int = 0,
+        city: Optional[str] = None
     ) -> List[Dict[str, Any]]:
+        if self._service_retired:
+            return []
+
         vacancies: List[Dict[str, Any]] = []
 
         params = {}
@@ -43,7 +48,8 @@ class HabrFreelanceParser(BaseVacanciesParser):
                 response = await client.get(self.RSS_URL, params=params)
 
                 if response.status_code == 410:
-                    logger.warning("Habr Freelance RSS returned status 410 (service retired/archived)")
+                    logger.info("Habr Freelance RSS returned status 410 (service retired/closed permanently)")
+                    self._service_retired = True
                     return []
                 elif response.status_code != 200:
                     logger.warning(f"Habr Freelance RSS returned status {response.status_code}")
