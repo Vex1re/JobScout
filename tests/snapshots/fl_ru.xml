@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>FL.ru Freelance Projects</title>
+    <link>https://www.fl.ru</link>
+    <item>
+      <title>Разработка Telegram-бота на Aiogram</title>
+      <link>https://www.fl.ru/projects/54321/telegram-bot.html</link>
+      <description>Требуется разработать Telegram-бота на Python (Aiogram 3) с интеграцией базы данных SQLite/PostgreSQL. Бюджет 25000 руб.</description>
+      <pubDate>Mon, 15 Sep 2026 10:00:00 +0300</pubDate>
+      <guid>https://www.fl.ru/projects/54321</guid>
+    </item>
+  </channel>
+</rss>

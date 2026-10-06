@@ -1,0 +1,30 @@
+{
+  "status": "200",
+  "results": {
+    "vacancies": [
+      {
+        "vacancy": {
+          "id": "trud_123456",
+          "job-name": "Ведущий программист Python",
+          "vac_url": "https://trudvsem.ru/vacancy/card/123456",
+          "company": {
+            "name": "ФГУП НИИ Программных Систем"
+          },
+          "salary_min": 120000,
+          "salary_max": 180000,
+          "currency": "RUB",
+          "requirement": {
+            "qualification": "Высшее образование, знание Python, SQL, Linux",
+            "experience": 3
+          },
+          "duty": "Разработка и сопровождение программных комплексов.",
+          "region": {
+            "name": "г. Москва"
+          },
+          "schedule": "Удаленная работа",
+          "creation-date": "2026-09-10"
+        }
+      }
+    ]
+  }
+}

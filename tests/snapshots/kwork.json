@@ -1,0 +1,17 @@
+{
+  "success": true,
+  "data": {
+    "wants": [
+      {
+        "id": 554433,
+        "name": "Написать парсер данных на Python",
+        "title": "Написать парсер данных на Python",
+        "description": "Нужно собрать контакты с открытого каталога, сохранить в Excel.",
+        "priceLimit": 15000,
+        "possiblePriceLimit": 20000,
+        "date_create": "2026-09-15 14:00:00",
+        "user": {"username": "client_kwork"}
+      }
+    ]
+  }
+}

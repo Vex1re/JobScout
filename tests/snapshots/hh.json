@@ -1,0 +1,19 @@
+{
+  "items": [
+    {
+      "id": "98765432",
+      "name": "Python Backend Developer",
+      "alternate_url": "https://hh.ru/vacancy/98765432",
+      "employer": {"name": "Tech Corp", "alternate_url": "https://hh.ru/employer/123"},
+      "salary": {"from": 180000, "to": 250000, "currency": "RUR"},
+      "snippet": {
+        "requirement": "Опыт работы с Python и FastAPI от 3 лет.",
+        "responsibility": "Разработка микросервисов, проектирование API."
+      },
+      "schedule": {"id": "remote", "name": "Удаленная работа"},
+      "area": {"name": "Москва"},
+      "published_at": "2026-09-01T12:00:00+0300",
+      "experience": {"id": "between3And6", "name": "От 3 до 6 лет"}
+    }
+  ]
+}

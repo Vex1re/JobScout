@@ -22,6 +22,8 @@ from services.parser.freelancehunt import FreelancehuntParser
 from services.resume_analyzer.matcher import VacancyMatcher
 from services.deduplication import deduplicate_vacancies
 from core.redis import redis_client
+from core.sentry import capture_exception
+from core.metrics import record_vacancy_ingested, record_parser_error, record_search_latency
 import json
 import time
 
@@ -392,16 +394,22 @@ class AggregatorManager:
             cached = await self.cache.get(p.name, query, city, p_num)
             if cached is not None:
                 return cached
-            res = await p.fetch_vacancies(
-                query=query,
-                limit=limit_per_source,
-                remote_only=remote_only,
-                page=p_num,
-                city=city
-            )
-            if res and isinstance(res, list):
-                await self.cache.set(p.name, query, city, p_num, res)
-            return res
+            try:
+                res = await p.fetch_vacancies(
+                    query=query,
+                    limit=limit_per_source,
+                    remote_only=remote_only,
+                    page=p_num,
+                    city=city
+                )
+                if res and isinstance(res, list):
+                    record_vacancy_ingested(p.name, len(res))
+                    await self.cache.set(p.name, query, city, p_num, res)
+                return res
+            except Exception as exc:
+                record_parser_error(p.name, type(exc).__name__)
+                capture_exception(exc, source=p.name)
+                raise exc
 
         tasks = []
         for parser in self.parsers:
@@ -508,6 +516,7 @@ class AggregatorManager:
            fallback to soft threshold (35%) if fewer than 15 matches found.
         6. Returns ranked list of (Vacancy, match_dict).
         """
+        t_start = time.perf_counter()
         if custom_query:
             batch_queries = [custom_query]
             current_page = (user.search_page_offset or 0) % 5
@@ -671,6 +680,7 @@ class AggregatorManager:
 
         # Sort by match score descending
         matched_results.sort(key=lambda x: x[1]["score"], reverse=True)
+        record_search_latency(time.perf_counter() - t_start)
         return matched_results
 
 

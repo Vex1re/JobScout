@@ -1,0 +1,18 @@
+[
+  {
+    "legal": "Remote OK is a trademark"
+  },
+  {
+    "id": "rem_998877",
+    "epoch": 1726000000,
+    "date": "2026-09-01T00:00:00Z",
+    "company": "Cloud Distributed",
+    "position": "Senior Backend Python Engineer",
+    "tags": ["python", "docker", "aws"],
+    "description": "We are looking for a Senior Python developer.",
+    "location": "Worldwide",
+    "salary_min": 90000,
+    "salary_max": 130000,
+    "url": "https://remoteok.com/remote-jobs/998877"
+  }
+]

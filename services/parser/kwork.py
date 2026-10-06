@@ -59,7 +59,7 @@ class KworkParser(BaseVacanciesParser):
 
                         for item in wants[:limit]:
                             v_id = str(item.get("id", ""))
-                            title = item.get("name", "")
+                            title = item.get("name") or item.get("title", "")
                             if not v_id or not title:
                                 continue
 

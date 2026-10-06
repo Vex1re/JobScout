@@ -9,6 +9,8 @@ from aiogram.fsm.storage.memory import MemoryStorage
 from core.config import settings
 from core.database.session import init_db
 from core.scheduler import setup_scheduler
+from core.sentry import setup_sentry
+from core.metrics import metrics_handler, healthz_handler, start_monitoring_server
 from bot.handlers import register_handlers
 
 # Ensure UTF-8 output on Windows consoles
@@ -32,6 +34,9 @@ logger = logging.getLogger("JobScoutBot")
 
 async def main():
     logger.info("Initializing JobScout Bot...")
+
+    # 0. Initialize Sentry if configured
+    setup_sentry()
 
     if not settings.BOT_TOKEN or settings.BOT_TOKEN == "YOUR_TELEGRAM_BOT_TOKEN_HERE":
         logger.error(
@@ -75,6 +80,7 @@ async def main():
     elif settings.ENV == "prod":
         logger.info("Running in production mode. Scheduler is managed by dedicated scheduler service.")
 
+    monitoring_runner = None
     try:
         if settings.BOT_MODE == "webhook":
             if not settings.WEBHOOK_URL:
@@ -92,11 +98,8 @@ async def main():
             logger.info(f"Configured Telegram webhook at {webhook_url}")
 
             app = web.Application()
-
-            async def healthz(request):
-                return web.Response(text="OK", status=200)
-
-            app.router.add_get("/healthz", healthz)
+            app.router.add_get("/healthz", healthz_handler)
+            app.router.add_get("/metrics", metrics_handler)
 
             webhook_requests_handler = SimpleRequestHandler(
                 dispatcher=dp,
@@ -110,7 +113,7 @@ async def main():
             await runner.setup()
             site = web.TCPSite(runner, host=settings.WEBHOOK_HOST, port=settings.WEBHOOK_PORT)
             await site.start()
-            logger.info(f"Webhook server running on {settings.WEBHOOK_HOST}:{settings.WEBHOOK_PORT}")
+            logger.info(f"Webhook & metrics server running on {settings.WEBHOOK_HOST}:{settings.WEBHOOK_PORT}")
 
             # Keep server running until signal
             while True:
@@ -118,6 +121,12 @@ async def main():
 
         else:
             # Polling mode (dev / default)
+            # Start standalone metrics / healthz server on METRICS_PORT
+            try:
+                monitoring_runner = await start_monitoring_server(port=settings.METRICS_PORT)
+            except Exception as mon_err:
+                logger.warning(f"Could not start monitoring server on port {settings.METRICS_PORT}: {mon_err}")
+
             await bot.delete_webhook(drop_pending_updates=True)
             logger.info("Bot is polling for updates...")
             await dp.start_polling(bot)
@@ -125,6 +134,8 @@ async def main():
     except Exception as e:
         logger.error(f"Fatal error in bot execution: {e}", exc_info=True)
     finally:
+        if monitoring_runner:
+            await monitoring_runner.cleanup()
         if scheduler and scheduler.running:
             scheduler.shutdown()
         await bot.session.close()

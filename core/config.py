@@ -108,5 +108,11 @@ class Settings(BaseSettings):
     SCORE_WEIGHT_GRADE: float = Field(default=0.25, description="Weight of grade compatibility in total score (0.0 to 1.0)")
     SCORE_WEIGHT_EXPERIENCE: float = Field(default=0.30, description="Weight of experience duration in total score (0.0 to 1.0)")
 
+    # Observability & Monitoring
+    SENTRY_DSN: Optional[str] = Field(default=None, description="Sentry DSN for error tracking (disabled if None)")
+    SENTRY_ENVIRONMENT: str = Field(default="production", description="Sentry environment name")
+    SENTRY_TRACES_SAMPLE_RATE: float = Field(default=0.1, description="Sentry performance tracing sample rate")
+    METRICS_PORT: int = Field(default=9090, description="Port for standalone Prometheus /metrics HTTP server")
+
 
 settings = Settings()

@@ -38,6 +38,7 @@ async_session_factory = async_sessionmaker(
     expire_on_commit=False,
     autoflush=False
 )
+async_session = async_session_factory
 
 
 async def init_db() -> None:

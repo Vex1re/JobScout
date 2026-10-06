@@ -103,7 +103,7 @@ class RabotaRuParser(BaseVacanciesParser):
                         is_remote=is_remote,
                         is_freelance=False,
                         city=city,
-                        published_at=datetime.datetime.utcnow()
+                        published_at=datetime.datetime.now(datetime.timezone.utc)
                     )
                     vacancies.append(vac)
 
