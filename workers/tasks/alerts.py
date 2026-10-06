@@ -54,8 +54,65 @@ async def process_user_alert(ctx: Dict[str, Any], telegram_id: int) -> int:
                 if info.get("score", 0) >= 70
             ]
 
-            for vac, info in fresh_high_matches[:2]:
-                try:
+            if not fresh_high_matches:
+                return 0
+
+            from core.telegram_limiter import send_telegram_message_safe
+            from workers.tasks.notifier import format_digest_message, get_digest_keyboard
+
+            # Case 1: Digest mode for multiple matches (> 1)
+            if len(fresh_high_matches) > 1:
+                digest_text = format_digest_message(fresh_high_matches)
+                digest_kb = get_digest_keyboard(fresh_high_matches)
+
+                success = await send_telegram_message_safe(
+                    bot=bot,
+                    chat_id=user.telegram_id,
+                    text=digest_text,
+                    reply_markup=digest_kb,
+                    disable_web_page_preview=True
+                )
+                if success:
+                    sent_count = 1
+                    for vac, info in fresh_high_matches[:5]:
+                        await InteractionRepository.save_or_update_match(
+                            session=session,
+                            user_id=user.telegram_id,
+                            vacancy_id=vac.id,
+                            score=info["score"],
+                            matched_skills=info["matched_skills"],
+                            missing_skills=info["missing_skills"],
+                            is_sent=True
+                        )
+                else:
+                    logger.warning(f"Failed to deliver digest to user {user.telegram_id}.")
+
+            # Case 2: Single card mode for exactly 1 match
+            elif len(fresh_high_matches) == 1:
+                vac, info = fresh_high_matches[0]
+                text = (
+                    "🔔 <b>Новая вакансия по вашему профилю!</b>\n\n"
+                    + format_vacancy_card(vac, match_info=info, index=1, total=1)
+                )
+                kb = get_vacancy_card_keyboard(
+                    vacancy_id=vac.id,
+                    url=vac.url,
+                    current_index=0,
+                    total_count=1,
+                    is_favorite=False,
+                    is_hidden=False,
+                    has_ai_advice=False
+                )
+
+                success = await send_telegram_message_safe(
+                    bot=bot,
+                    chat_id=user.telegram_id,
+                    text=text,
+                    reply_markup=kb,
+                    disable_web_page_preview=True
+                )
+                if success:
+                    sent_count = 1
                     await InteractionRepository.save_or_update_match(
                         session=session,
                         user_id=user.telegram_id,
@@ -65,42 +122,6 @@ async def process_user_alert(ctx: Dict[str, Any], telegram_id: int) -> int:
                         missing_skills=info["missing_skills"],
                         is_sent=True
                     )
-
-                    text = (
-                        "🔔 <b>Новая вакансия по вашему профилю!</b>\n\n"
-                        + format_vacancy_card(vac, match_info=info, index=1, total=1)
-                    )
-                    kb = get_vacancy_card_keyboard(
-                        vacancy_id=vac.id,
-                        url=vac.url,
-                        current_index=0,
-                        total_count=1,
-                        is_favorite=False,
-                        is_hidden=False,
-                        has_ai_advice=False
-                    )
-
-                    await bot.send_message(
-                        chat_id=user.telegram_id,
-                        text=text,
-                        reply_markup=kb,
-                        disable_web_page_preview=True
-                    )
-                    sent_count += 1
-                except (TelegramForbiddenError, TelegramBadRequest) as e:
-                    logger.warning(
-                        f"User {user.telegram_id} cannot receive messages ({e}). Deactivating notifications."
-                    )
-                    await UserRepository.update_settings(
-                        session=session,
-                        telegram_id=user.telegram_id,
-                        auto_notify=False
-                    )
-                    user.is_active = False
-                    await session.commit()
-                    break
-                except Exception as e:
-                    logger.error(f"Error delivering vacancy {vac.id} to {user.telegram_id}: {e}")
 
     finally:
         if close_bot and bot is not None:
