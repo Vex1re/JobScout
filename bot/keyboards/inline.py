@@ -106,11 +106,12 @@ def get_vacancy_card_keyboard(
         InlineKeyboardButton(text="🚫 Скрыть", callback_data=f"vac_hide:{vacancy_id}:{current_index}")
     ])
 
-    # Row 3: AI Advice button
-    if has_ai_tip:
-        buttons.append([
-            InlineKeyboardButton(text="💡 Совет для отклика", callback_data=f"ai_tip:{vacancy_id}")
-        ])
+    # Row 3: Tracker & AI Tools
+    buttons.append([
+        InlineKeyboardButton(text="📌 В трекер", callback_data=f"track_vac:{vacancy_id}"),
+        InlineKeyboardButton(text="✍️ AI письмо", callback_data=f"ai_letter:{vacancy_id}"),
+        InlineKeyboardButton(text="🔍 Gap", callback_data=f"ai_gap:{vacancy_id}")
+    ])
 
     # Row 4: Navigation (if multiple items)
     if total_count > 1:

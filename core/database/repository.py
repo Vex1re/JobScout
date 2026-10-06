@@ -11,6 +11,9 @@ from core.database.models import (
     UserMatch,
     UserViewed,
     UserInteraction,
+    Subscription,
+    Entitlement,
+    JobApplicationTracker,
     utc_now
 )
 
@@ -542,3 +545,253 @@ class InteractionRepository:
         )
         res = await session.execute(stmt)
         return list(res.scalars().all())
+
+
+class SubscriptionRepository:
+    PLAN_ENTITLEMENTS = {
+        "free": set(),
+        "pro": {
+            "unlimited_sources",
+            "instant_notifications",
+            "ai_cover_letter",
+            "ai_gap_analysis",
+            "kanban_tracker",
+        },
+        "team": {
+            "unlimited_sources",
+            "instant_notifications",
+            "ai_cover_letter",
+            "ai_gap_analysis",
+            "kanban_tracker",
+            "team_analytics",
+        }
+    }
+
+    @staticmethod
+    async def get_subscription(session: AsyncSession, user_id: int) -> Optional[Subscription]:
+        stmt = select(Subscription).where(Subscription.user_id == user_id)
+        res = await session.execute(stmt)
+        return res.scalar_one_or_none()
+
+    @staticmethod
+    async def has_active_subscription(session: AsyncSession, user_id: int) -> bool:
+        import datetime
+        sub = await SubscriptionRepository.get_subscription(session, user_id)
+        if not sub or not sub.is_active or sub.plan == "free":
+            return False
+        if sub.expires_at:
+            exp_tz = sub.expires_at.replace(tzinfo=datetime.timezone.utc) if sub.expires_at.tzinfo is None else sub.expires_at
+            if exp_tz < utc_now():
+                return False
+        return True
+
+    @staticmethod
+    async def create_or_update_subscription(
+        session: AsyncSession,
+        user_id: int,
+        plan: str,
+        duration_days: int = 30
+    ) -> Subscription:
+        import datetime
+        sub = await SubscriptionRepository.get_subscription(session, user_id)
+        now = utc_now()
+        new_expires = now + datetime.timedelta(days=duration_days)
+
+        if sub:
+            if sub.expires_at:
+                exp_tz = sub.expires_at.replace(tzinfo=datetime.timezone.utc) if sub.expires_at.tzinfo is None else sub.expires_at
+                if exp_tz > now:
+                    new_expires = exp_tz + datetime.timedelta(days=duration_days)
+            sub.plan = plan
+            sub.expires_at = new_expires
+            sub.is_active = True
+            sub.updated_at = now
+        else:
+            sub = Subscription(
+                user_id=user_id,
+                plan=plan,
+                expires_at=new_expires,
+                is_active=True,
+                created_at=now,
+                updated_at=now
+            )
+            session.add(sub)
+
+        await session.commit()
+        await session.refresh(sub)
+        return sub
+
+    @staticmethod
+    async def grant_entitlement(
+        session: AsyncSession,
+        user_id: int,
+        feature: str,
+        duration_days: Optional[int] = 30
+    ) -> Entitlement:
+        import datetime
+        now = utc_now()
+        expires_at = now + datetime.timedelta(days=duration_days) if duration_days else None
+
+        stmt = select(Entitlement).where(
+            Entitlement.user_id == user_id,
+            Entitlement.feature == feature
+        )
+        res = await session.execute(stmt)
+        existing = res.scalar_one_or_none()
+
+        if existing:
+            existing.expires_at = expires_at
+            ent = existing
+        else:
+            ent = Entitlement(
+                user_id=user_id,
+                feature=feature,
+                expires_at=expires_at,
+                created_at=now
+            )
+            session.add(ent)
+
+        await session.commit()
+        return ent
+
+    @staticmethod
+    async def get_user_entitlements(session: AsyncSession, user_id: int) -> Set[str]:
+        import datetime
+        active_features = set()
+
+        # If user has active subscription, add plan entitlements
+        sub = await SubscriptionRepository.get_subscription(session, user_id)
+        if sub and sub.is_active and sub.plan in SubscriptionRepository.PLAN_ENTITLEMENTS:
+            is_valid = True
+            if sub.expires_at:
+                exp_tz = sub.expires_at.replace(tzinfo=datetime.timezone.utc) if sub.expires_at.tzinfo is None else sub.expires_at
+                if exp_tz <= utc_now():
+                    is_valid = False
+            if is_valid:
+                active_features.update(SubscriptionRepository.PLAN_ENTITLEMENTS[sub.plan])
+
+        # Query explicit standalone entitlements
+        stmt = select(Entitlement).where(Entitlement.user_id == user_id)
+        res = await session.execute(stmt)
+        now = utc_now()
+        for ent in res.scalars().all():
+            if ent.expires_at is None:
+                active_features.add(ent.feature)
+            else:
+                exp_tz = ent.expires_at.replace(tzinfo=datetime.timezone.utc) if ent.expires_at.tzinfo is None else ent.expires_at
+                if exp_tz > now:
+                    active_features.add(ent.feature)
+
+        return active_features
+
+    @staticmethod
+    async def has_entitlement(session: AsyncSession, user_id: int, feature: str) -> bool:
+        ents = await SubscriptionRepository.get_user_entitlements(session, user_id)
+        return feature in ents
+
+
+class TrackerRepository:
+    @staticmethod
+    async def create_or_update_application(
+        session: AsyncSession,
+        user_id: int,
+        title: str,
+        company: str,
+        url: Optional[str] = None,
+        vacancy_id: Optional[str] = None,
+        vacancy_canonical_id: Optional[str] = None,
+        status: str = "applied",
+        notes: Optional[str] = None,
+        salary_offered: Optional[int] = None
+    ) -> JobApplicationTracker:
+        stmt = select(JobApplicationTracker).where(
+            JobApplicationTracker.user_id == user_id
+        )
+        if vacancy_canonical_id:
+            stmt = stmt.where(JobApplicationTracker.vacancy_canonical_id == vacancy_canonical_id)
+        elif vacancy_id:
+            stmt = stmt.where(JobApplicationTracker.vacancy_id == vacancy_id)
+        else:
+            stmt = stmt.where(
+                JobApplicationTracker.title == title,
+                JobApplicationTracker.company == company
+            )
+
+        res = await session.execute(stmt)
+        app = res.scalar_one_or_none()
+        now = utc_now()
+
+        if app:
+            app.status = status
+            if notes is not None:
+                app.notes = notes
+            if salary_offered is not None:
+                app.salary_offered = salary_offered
+            app.updated_at = now
+        else:
+            app = JobApplicationTracker(
+                user_id=user_id,
+                vacancy_id=vacancy_id,
+                vacancy_canonical_id=vacancy_canonical_id,
+                title=title,
+                company=company,
+                url=url,
+                status=status,
+                notes=notes,
+                salary_offered=salary_offered,
+                created_at=now,
+                updated_at=now
+            )
+            session.add(app)
+
+        await session.commit()
+        await session.refresh(app)
+        return app
+
+    @staticmethod
+    async def get_user_applications(
+        session: AsyncSession,
+        user_id: int,
+        status: Optional[str] = None
+    ) -> List[JobApplicationTracker]:
+        stmt = select(JobApplicationTracker).where(JobApplicationTracker.user_id == user_id)
+        if status:
+            stmt = stmt.where(JobApplicationTracker.status == status)
+        stmt = stmt.order_by(desc(JobApplicationTracker.updated_at))
+        res = await session.execute(stmt)
+        return list(res.scalars().all())
+
+    @staticmethod
+    async def update_status(
+        session: AsyncSession,
+        application_id: int,
+        user_id: int,
+        new_status: str
+    ) -> Optional[JobApplicationTracker]:
+        stmt = select(JobApplicationTracker).where(
+            JobApplicationTracker.id == application_id,
+            JobApplicationTracker.user_id == user_id
+        )
+        res = await session.execute(stmt)
+        app = res.scalar_one_or_none()
+        if not app:
+            return None
+        app.status = new_status
+        app.updated_at = utc_now()
+        await session.commit()
+        await session.refresh(app)
+        return app
+
+    @staticmethod
+    async def delete_application(
+        session: AsyncSession,
+        application_id: int,
+        user_id: int
+    ) -> bool:
+        stmt = delete(JobApplicationTracker).where(
+            JobApplicationTracker.id == application_id,
+            JobApplicationTracker.user_id == user_id
+        )
+        res = await session.execute(stmt)
+        await session.commit()
+        return res.rowcount > 0

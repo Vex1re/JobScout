@@ -114,5 +114,14 @@ class Settings(BaseSettings):
     SENTRY_TRACES_SAMPLE_RATE: float = Field(default=0.1, description="Sentry performance tracing sample rate")
     METRICS_PORT: int = Field(default=9090, description="Port for standalone Prometheus /metrics HTTP server")
 
+    # Monetization & Payment Providers
+    STARS_PRICE_PRO: int = Field(default=150, description="Telegram Stars price for Pro plan (30 days)")
+    STARS_PRICE_TEAM: int = Field(default=400, description="Telegram Stars price for Team plan (30 days)")
+    ENABLE_YOOKASSA: bool = Field(default=False, description="Feature flag for YooKassa provider")
+    YOOKASSA_SHOP_ID: Optional[str] = Field(default=None, description="YooKassa Shop ID")
+    YOOKASSA_SECRET_KEY: Optional[str] = Field(default=None, description="YooKassa Secret Key")
+    ENABLE_CRYPTOBOT: bool = Field(default=False, description="Feature flag for CryptoBot provider")
+    CRYPTOBOT_API_TOKEN: Optional[str] = Field(default=None, description="CryptoBot API Token")
+
 
 settings = Settings()

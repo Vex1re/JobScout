@@ -116,6 +116,12 @@ async def init_db() -> None:
 
                 if "user_interactions" not in inspector.get_table_names():
                     Base.metadata.tables["user_interactions"].create(connection)
+                if "subscriptions" not in inspector.get_table_names():
+                    Base.metadata.tables["subscriptions"].create(connection)
+                if "entitlements" not in inspector.get_table_names():
+                    Base.metadata.tables["entitlements"].create(connection)
+                if "job_application_tracker" not in inspector.get_table_names():
+                    Base.metadata.tables["job_application_tracker"].create(connection)
 
             await conn.run_sync(_migrate)
 

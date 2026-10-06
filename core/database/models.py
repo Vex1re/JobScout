@@ -68,6 +68,9 @@ class User(Base):
     matches: Mapped[List["UserMatch"]] = relationship("UserMatch", back_populates="user", cascade="all, delete-orphan")
     viewed_vacancies: Mapped[List["UserViewed"]] = relationship("UserViewed", back_populates="user", cascade="all, delete-orphan")
     interactions: Mapped[List["UserInteraction"]] = relationship("UserInteraction", back_populates="user", cascade="all, delete-orphan")
+    subscription: Mapped[Optional["Subscription"]] = relationship("Subscription", back_populates="user", uselist=False, cascade="all, delete-orphan")
+    entitlements: Mapped[List["Entitlement"]] = relationship("Entitlement", back_populates="user", cascade="all, delete-orphan")
+    applications: Mapped[List["JobApplicationTracker"]] = relationship("JobApplicationTracker", back_populates="user", cascade="all, delete-orphan")
 
 
 class Resume(Base):
@@ -261,3 +264,48 @@ class UserInteraction(Base):
     created_at: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
 
     user: Mapped["User"] = relationship("User", back_populates="interactions")
+
+
+class Subscription(Base):
+    __tablename__ = "subscriptions"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.telegram_id", ondelete="CASCADE"), unique=True, index=True)
+    plan: Mapped[str] = mapped_column(String(50), default="free")  # free, pro, team
+    expires_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    created_at: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
+    updated_at: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), default=utc_now, onupdate=utc_now)
+
+    user: Mapped["User"] = relationship("User", back_populates="subscription")
+
+
+class Entitlement(Base):
+    __tablename__ = "entitlements"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.telegram_id", ondelete="CASCADE"), index=True)
+    feature: Mapped[str] = mapped_column(String(100), index=True)  # unlimited_sources, instant_notifications, ai_cover_letter, ai_gap_analysis, kanban_tracker
+    expires_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
+
+    user: Mapped["User"] = relationship("User", back_populates="entitlements")
+
+
+class JobApplicationTracker(Base):
+    __tablename__ = "job_application_tracker"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.telegram_id", ondelete="CASCADE"), index=True)
+    vacancy_id: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    vacancy_canonical_id: Mapped[Optional[str]] = mapped_column(String(255), nullable=True, index=True)
+    title: Mapped[str] = mapped_column(String(255))
+    company: Mapped[str] = mapped_column(String(255))
+    url: Mapped[Optional[str]] = mapped_column(String(1024), nullable=True)
+    status: Mapped[str] = mapped_column(String(50), default="applied")  # applied, screening, interview, offer, rejected
+    notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    salary_offered: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    created_at: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
+    updated_at: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), default=utc_now, onupdate=utc_now)
+
+    user: Mapped["User"] = relationship("User", back_populates="applications")
