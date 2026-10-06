@@ -42,6 +42,7 @@ class User(Base):
     search_page_offset: Mapped[int] = mapped_column(Integer, default=0)
     last_query_index: Mapped[int] = mapped_column(Integer, default=0)
     enabled_sources: Mapped[Optional[List[str]]] = mapped_column(JSON, nullable=True, default=None)
+    llm_consent: Mapped[bool] = mapped_column(Boolean, default=False)
 
     def get_effective_sources(self) -> List[str]:
         from services.parser.manager import ALL_SOURCES

@@ -103,12 +103,15 @@ async def process_resume_text(message: types.Message, state: FSMContext):
 from services.resume_analyzer.validator import ResumeValidator
 
 async def _process_parsed_text(status_msg: types.Message, user_id: int, text: str, state: FSMContext):
-    # Rule-based / deterministic extraction
+    # 1. Deterministic extraction (always first)
     data = ResumeExtractor.parse_full_resume(text)
+    tech_count = len(data.get("skills", []))
+    validation = ResumeValidator.validate(text=text, tech_skills_count=tech_count)
 
-    # Optional AI deep enhancement if configured
-    if llm_helper.is_available:
-        ai_data = await llm_helper.analyze_resume_deep(text)
+    # 2. LLM fallback ONLY if confidence is low/medium or key fields are empty
+    needs_fallback = (validation.confidence in ("medium", "low") or not data.get("skills") or not data.get("title"))
+    if needs_fallback and llm_helper.is_available:
+        ai_data = await llm_helper.analyze_resume_deep(text, user_consent=True)
         if ai_data:
             if ai_data.get("title"):
                 data["title"] = ai_data["title"]
@@ -117,15 +120,14 @@ async def _process_parsed_text(status_msg: types.Message, user_id: int, text: st
             if ai_data.get("years_of_experience"):
                 data["years_of_experience"] = float(ai_data["years_of_experience"])
             if ai_data.get("skills"):
-                # Combine & deduplicate
                 data["skills"] = sorted(list(set(data["skills"] + ai_data["skills"])))
             if ai_data.get("salary_expectation"):
                 data["salary_expectation"] = int(ai_data["salary_expectation"])
+            # Re-validate with LLM extracted data
+            validation = ResumeValidator.validate(text=text, tech_skills_count=len(data.get("skills", [])))
 
-    # Strict resume validation
-    tech_count = len(data.get("skills", []))
-    validation = ResumeValidator.validate(text=text, tech_skills_count=tech_count)
-    if not validation.is_valid:
+    # 3. Reject non-resume junk texts (recipes, legal agreements, literature, gibberish)
+    if validation.detected_type in ("recipe", "contract", "fiction", "gibberish"):
         await status_msg.edit_text(
             f"❌ <b>Резюме не принято:</b>\n\n"
             f"{validation.error_message}\n\n"
@@ -135,19 +137,29 @@ async def _process_parsed_text(status_msg: types.Message, user_id: int, text: st
         await state.clear()
         return
 
-    # Save to state data
+    # 4. If insufficient or low confidence, do NOT reject silently:
+    # Offer confirmation screen showing what was parsed, allowing the user to edit or proceed.
+    is_low_conf = not validation.is_valid or validation.confidence == "low"
     await state.update_data(resume_data=data)
     await state.set_state(ProfileStates.confirm_skills)
 
-    skills_str = ", ".join(data["skills"]) if data["skills"] else "Не определены (можно добавить вручную)"
+    skills_str = ", ".join(data.get("skills", [])) if data.get("skills") else "Не определены (можно добавить вручную)"
     salary_str = f"{data['salary_expectation']:,} ₽".replace(",", " ") if data.get("salary_expectation") else "Не указана"
 
+    if is_low_conf:
+        header = (
+            "⚠️ <b>Внимание: резюме распознано частично</b> (низкая уверенность или мало деталей).\n"
+            "Вы можете отредактировать навыки и грейд вручную или сохранить то, что удалось извлечь:\n\n"
+        )
+    else:
+        header = "🎯 <b>Результат анализа вашего резюме:</b>\n\n"
+
     preview_text = (
-        f"🎯 <b>Результат анализа вашего резюме:</b>\n\n"
-        f"📌 <b>Позиция:</b> {html.escape(data['title'])}\n"
-        f"💼 <b>Грейд:</b> {data['grade']} (~{data['years_of_experience']} г. опыта)\n"
+        f"{header}"
+        f"📌 <b>Позиция:</b> {html.escape(data.get('title', 'Специалист'))}\n"
+        f"💼 <b>Грейд:</b> {data.get('grade', 'Middle')} (~{data.get('years_of_experience', 0.0)} г. опыта)\n"
         f"💰 <b>Желаемая ЗП:</b> {salary_str}\n\n"
-        f"🛠️ <b>Распознанные ключевые навыки ({len(data['skills'])}):</b>\n"
+        f"🛠️ <b>Распознанные ключевые навыки ({len(data.get('skills', []))}):</b>\n"
         f"<code>{html.escape(skills_str)}</code>\n\n"
         f"<i>Все верно или хотите скорректировать перед сохранением?</i>"
     )

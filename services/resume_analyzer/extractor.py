@@ -371,176 +371,251 @@ class ResumeExtractor:
             return "Junior"
         return "Junior"
 
-    @classmethod
-    def extract_experience_years(cls, text: str) -> float:
-        """
-        Extract years of experience from resume text:
-        - Accurately identifies zero experience (0.0 years) for interns and beginners
-        - Parses compound periods (e.g. '3 года 8 месяцев' -> 3.7)
-        - Extracts date intervals and applies Interval Union algorithm for overlapping periods
-        - Fallback default is 0.0
-        """
-        lowered = text.lower()
+    IRRELEVANT_ROLES = [
+        "\u0431\u0430\u0440\u0438\u0441\u0442\u0430",
+        "\u043e\u0444\u0438\u0446\u0438\u0430\u043d\u0442",
+        "\u043e\u0444\u0438\u0446\u0438\u0430\u043d\u0442\u043a\u0430",
+        "\u043a\u0443\u0440\u044c\u0435\u0440",
+        "\u0432\u043e\u0434\u0438\u0442\u0435\u043b\u044c",
+        "\u0433\u0440\u0443\u0437\u0447\u0438\u043a",
+        "\u043c\u043e\u0439\u0449\u0438\u043a",
+        "\u0443\u0431\u043e\u0440\u0449\u0438\u043a",
+        "\u0443\u0431\u043e\u0440\u0449\u0438\u0446\u0430",
+        "\u0441\u0442\u043e\u0440\u043e\u0436",
+        "\u043e\u0445\u0440\u0430\u043d\u043d\u0438\u043a",
+        "\u043f\u0440\u043e\u043c\u043e\u0443\u0442\u0435\u0440",
+        "\u0440\u0430\u0437\u043d\u043e\u0440\u0430\u0431\u043e\u0447\u0438\u0439",
+        "\u0431\u0430\u0440\u043c\u0435\u043d",
+        "\u043a\u0430\u0441\u0441\u0438\u0440",
+        "\u0444\u0430\u0441\u043e\u0432\u0449\u0438\u043a",
+        "\u043c\u0435\u0440\u0447\u0435\u043d\u0434\u0430\u0439\u0437\u0435\u0440",
+        "\u0433\u0430\u0440\u0434\u0435\u0440\u043e\u0431\u0449\u0438\u043a",
+    ]
 
-        # 1. Zero experience detection for interns / beginners
-        zero_patterns = [
-            r"\bбез\s+опыта\b",
-            r"\bнет\s+опыта\b",
-            r"\bопыт(?:а)?(?:\s+работы)?[:\s\-]+0(?:\.0)?\s*(?:лет|год|года|г\.|мес)",
-            r"\b0\s*(?:лет|года|месяцев)\s+(?:опыта|коммерческого)",
-            r"\bищу\s+стажировку\b",
-            r"\b(стажер|intern|trainee)\b",
-            r"\bначинающий\s+(?:разработчик|специалист|программист)\b",
-            r"\bjunior\s+без\s+опыта\b"
-        ]
-        has_zero_experience = any(re.search(p, lowered) for p in zero_patterns)
-
-        # 2. Compound periods like "3 года 8 месяцев", "1 год и 2 месяца"
-        compound_patterns = [
-            r"(\d+)\s*(?:лет|год|года|г\.|years|year|yrs)\s*(?:и\s*)?(\d+)\s*(?:месяцев|месяца|мес\.|months|month)",
-            r"(\d+)\s*(?:месяцев|месяца|мес\.|months|month)\s*(?:и\s*)?(\d+)\s*(?:лет|год|года|г\.|years|year|yrs)"
-        ]
-        for p in compound_patterns:
-            c_match = re.search(p, lowered)
-            if c_match:
-                if "мес" in p.split("(")[1] or "month" in p.split("(")[1]:
-                    months, years = int(c_match.group(1)), int(c_match.group(2))
-                else:
-                    years, months = int(c_match.group(1)), int(c_match.group(2))
-                return round(years + (months / 12.0), 1)
-
-        # 3. Explicit patterns: "опыт работы: 4 года", "более 5 лет", "4 года опыта"
-        explicit_patterns = [
-            r"опыт(?:а)?(?:\s+работы)?[:\s\-]+(\d+(?:[.,]\d+)?)\s*(?:лет|год|года|г\.|years|year|yrs)",
-            r"(\d+(?:[.,]\d+)?)\s*\+?\s*(?:лет|год|года|г\.|years|year|yrs)\s+(?:опыта|коммерческого опыта)",
-            r"(?:более|от)\s+(\d+(?:[.,]\d+)?)\s*(?:лет|года)",
-            r"(\d+(?:[.,]\d+)?)\s*(?:\+)?\s*(?:лет|года)\s+в\s+(?:разработке|it)"
-        ]
-        for p in explicit_patterns:
-            match = re.search(p, lowered)
-            if match:
-                val = match.group(1).replace(",", ".")
-                try:
-                    return float(val)
-                except ValueError:
-                    pass
-
-        # Explicit months: "18 месяцев коммерческого опыта"
-        month_match = re.search(r"(\d+)\s*(?:месяцев|месяца|мес\.|months)", lowered)
-        if month_match:
-            try:
-                months = int(month_match.group(1))
-                return round(months / 12.0, 1)
-            except ValueError:
-                pass
-
-        # 4. Date intervals with Interval Union (e.g. '2021 — 2024', 'январь 2024 — по настоящее время')
-        intervals = cls._extract_date_intervals(lowered)
-        if intervals:
-            # Sort intervals by start timestamp
-            intervals.sort(key=lambda x: x[0])
-            merged = []
-            for start, end in intervals:
-                if start > end:
-                    start, end = end, start
-                if not merged:
-                    merged.append([start, end])
-                else:
-                    prev = merged[-1]
-                    if start <= prev[1]:
-                        prev[1] = max(prev[1], end)
-                    else:
-                        merged.append([start, end])
-
-            total_months = sum(end - start for start, end in merged)
-            if total_months > 0:
-                return round(total_months / 12.0, 1)
-
-        # If zero experience pattern was found and no positive intervals
-        if has_zero_experience:
+    @staticmethod
+    def _merge_intervals(intervals: List[Tuple[int, int]]) -> float:
+        """Merges overlapping/nested intervals and returns total years."""
+        if not intervals:
             return 0.0
-
-        # Fallback default is 0.0 (NOT 1.0)
-        return 0.0
+        sorted_intervals = sorted(intervals, key=lambda x: x[0])
+        merged = []
+        for start, end in sorted_intervals:
+            if start > end:
+                start, end = end, start
+            if not merged:
+                merged.append([start, end])
+            else:
+                prev = merged[-1]
+                if start <= prev[1]:
+                    prev[1] = max(prev[1], end)
+                else:
+                    merged.append([start, end])
+        total_months = sum(end - start for start, end in merged)
+        return round(total_months / 12.0, 1)
 
     @classmethod
-    def _extract_date_intervals(cls, text: str) -> List[Tuple[int, int]]:
-        """
-        Extracts start and end month coordinate pairs (start_coord, end_coord)
-        from date intervals in the text.
-        Coord = year * 12 + month.
-        """
+    def _extract_date_intervals_with_context(cls, text: str) -> List[Tuple[int, int, str]]:
         today = datetime.date.today()
         current_year = today.year
         current_month = today.month
         current_coord = current_year * 12 + current_month
 
         months_map = {
-            "янв": 1, "январь": 1, "января": 1, "jan": 1, "january": 1,
-            "фев": 2, "февраль": 2, "февраля": 2, "feb": 2, "february": 2,
-            "мар": 3, "март": 3, "марта": 3, "mar": 3, "march": 3,
-            "апр": 4, "апрель": 4, "апреля": 4, "apr": 4, "april": 4,
-            "май": 5, "мая": 5, "may": 5,
-            "июн": 6, "июнь": 6, "июня": 6, "jun": 6, "june": 6,
-            "июл": 7, "июль": 7, "июля": 7, "jul": 7, "july": 7,
-            "авг": 8, "август": 8, "августа": 8, "aug": 8, "august": 8,
-            "сен": 9, "сент": 9, "сентябрь": 9, "сентября": 9, "sep": 9, "sept": 9, "september": 9,
-            "окт": 10, "октябрь": 10, "октября": 10, "oct": 10, "october": 10,
-            "ноя": 11, "ноябрь": 11, "ноября": 11, "nov": 11, "november": 11,
-            "дек": 12, "декабрь": 12, "декабря": 12, "dec": 12, "december": 12,
+            "\u044f\u043d\u0432": 1, "\u044f\u043d\u0432\u0430\u0440\u044c": 1, "\u044f\u043d\u0432\u0430\u0440\u044f": 1, "jan": 1, "january": 1,
+            "\u0444\u0435\u0432": 2, "\u0444\u0435\u0432\u0440\u0430\u043b\u044c": 2, "\u0444\u0435\u0432\u0440\u0430\u043b\u044f": 2, "feb": 2, "february": 2,
+            "\u043c\u0430\u0440": 3, "\u043c\u0430\u0440\u0442": 3, "\u043c\u0430\u0440\u0442\u0430": 3, "mar": 3, "march": 3,
+            "\u0430\u043f\u0440": 4, "\u0430\u043f\u0440\u0435\u043b\u044c": 4, "\u0430\u043f\u0440\u0435\u043b\u044f": 4, "apr": 4, "april": 4,
+            "\u043c\u0430\u0439": 5, "\u043c\u0430\u044f": 5, "may": 5,
+            "\u0438\u044e\u043d": 6, "\u0438\u044e\u043d\u044c": 6, "\u0438\u044e\u043d\u044f": 6, "jun": 6, "june": 6,
+            "\u0438\u044e\u043b": 7, "\u0438\u044e\u043b\u044c": 7, "\u0438\u044e\u043b\u044f": 7, "jul": 7, "july": 7,
+            "\u0430\u0432\u0433": 8, "\u0430\u0432\u0433\u0443\u0441\u0442": 8, "\u0430\u0432\u0433\u0443\u0441\u0442\u0430": 8, "aug": 8, "august": 8,
+            "\u0441\u0435\u043d": 9, "\u0441\u0435\u043d\u0442": 9, "\u0441\u0435\u043d\u0442\u044f\u0431\u0440\u044c": 9, "\u0441\u0435\u043d\u0442\u044f\u0431\u0440\u044f": 9, "sep": 9, "sept": 9, "september": 9,
+            "\u043e\u043a\u0442": 10, "\u043e\u043a\u0442\u044f\u0431\u0440\u044c": 10, "\u043e\u043a\u0442\u044f\u0431\u0440\u044f": 10, "oct": 10, "october": 10,
+            "\u043d\u043e\u044f": 11, "\u043d\u043e\u044f\u0431\u0440\u044c": 11, "\u043d\u043e\u044f\u0431\u0440\u044f": 11, "nov": 11, "november": 11,
+            "\u0434\u0435\u043a": 12, "\u0434\u0435\u043a\u0430\u0431\u0440\u044c": 12, "\u0434\u0435\u043a\u0430\u0431\u0440\u044f": 12, "dec": 12, "december": 12,
         }
         month_names_re = "|".join(re.escape(k) for k in sorted(months_map.keys(), key=len, reverse=True))
+        present_re = r"(?:\u043f\u043e\s+)?(?:\u043d\u0430\u0441\u0442\u043e\u044f\u0449\u0435\u0435\s+\u0432\u0440\u0435\u043c\u044f|\u043d\u0430\u0441\u0442\.?\s*\u0432\u0440\u0435\u043c\u044f|\u043d\.?\s*\u0432\.?|\u043f\u043e\s+\u0441\u0435\u0439\s+\u0434\u0435\u043d\u044c|\u0441\u0435\u0433\u043e\u0434\u043d\u044f|\u0441\u0435\u0439\s+\u0434\u0435\u043d\u044c|present|current|now)"
+        sep_re = r"(?:\u2014|\u2013|-|\u043f\u043e|to|\u0434\u043e)"
 
-        present_re = r"(?:по\s+)?(?:настоящее\s+время|наст\.?\s*время|н\.?\s*в\.?|сегодня|present|current|now)"
-        intervals: List[Tuple[int, int]] = []
+        raw_matches: List[Tuple[int, int, int, int]] = []
 
         # 1. Month YYYY — Month YYYY
-        p1 = rf"({month_names_re})\s+(\d{{4}})\s*(?:—|–|-|по|to)\s*({month_names_re})\s+(\d{{4}})"
+        p1 = rf"({month_names_re})\s+(\d{{4}})\s*{sep_re}\s*({month_names_re})\s+(\d{{4}})"
         for m in re.finditer(p1, text):
-            m1_name, y1_str, m2_name, y2_str = m.group(1), m.group(2), m.group(3), m.group(4)
-            c1 = int(y1_str) * 12 + months_map[m1_name]
-            c2 = int(y2_str) * 12 + months_map[m2_name] + 1
-            intervals.append((c1, c2))
+            c1 = int(m.group(2)) * 12 + months_map[m.group(1)]
+            c2 = int(m.group(4)) * 12 + months_map[m.group(3)] + 1
+            raw_matches.append((m.start(), m.end(), c1, c2))
 
-        # 2. Month YYYY — Present
-        p2 = rf"({month_names_re})\s+(\d{{4}})\s*(?:—|–|-|по|to)\s*{present_re}"
+        # 2. Month YYYY — YYYY
+        p2 = rf"({month_names_re})\s+(\d{{4}})\s*{sep_re}\s*(19\d\d|20\d\d)(?!\d|\.[0-9]|/[0-9])"
         for m in re.finditer(p2, text):
-            m1_name, y1_str = m.group(1), m.group(2)
-            c1 = int(y1_str) * 12 + months_map[m1_name]
-            intervals.append((c1, current_coord + 1))
+            c1 = int(m.group(2)) * 12 + months_map[m.group(1)]
+            c2 = int(m.group(3)) * 12 + 12
+            raw_matches.append((m.start(), m.end(), c1, c2))
 
-        # 3. MM.YYYY — MM.YYYY
-        p3 = r"\b(0?[1-9]|1[0-2])[./](\d{4})\s*(?:—|–|-|по|to)\s*(0?[1-9]|1[0-2])[./](\d{4})\b"
+        # 3. YYYY — Month YYYY
+        p3 = rf"\b(19\d\d|20\d\d)\s*{sep_re}\s*({month_names_re})\s+(\d{{4}})"
         for m in re.finditer(p3, text):
-            m1, y1, m2, y2 = int(m.group(1)), int(m.group(2)), int(m.group(3)), int(m.group(4))
-            intervals.append((y1 * 12 + m1, y2 * 12 + m2 + 1))
+            c1 = int(m.group(1)) * 12 + 1
+            c2 = int(m.group(3)) * 12 + months_map[m.group(2)] + 1
+            raw_matches.append((m.start(), m.end(), c1, c2))
 
-        # 4. MM.YYYY — Present
-        p4 = rf"\b(0?[1-9]|1[0-2])[./](\d{{4}})\s*(?:—|–|-|по|to)\s*{present_re}\b"
+        # 4. Month YYYY — Present
+        p4 = rf"({month_names_re})\s+(\d{{4}})\s*{sep_re}\s*{present_re}(?!\w)"
         for m in re.finditer(p4, text):
-            m1, y1 = int(m.group(1)), int(m.group(2))
-            intervals.append((y1 * 12 + m1, current_coord + 1))
+            c1 = int(m.group(2)) * 12 + months_map[m.group(1)]
+            c2 = current_coord + 1
+            raw_matches.append((m.start(), m.end(), c1, c2))
 
-        # 5. YYYY — YYYY (Year only, e.g. "2021 — 2024")
-        p5 = r"\b(19\d\d|20\d\d)\s*(?:—|–|-|по|to)\s*(19\d\d|20\d\d)\b"
+        # 5. MM.YYYY — MM.YYYY
+        p5 = rf"\b(0?[1-9]|1[0-2])[./](\d{{4}})\s*{sep_re}\s*(0?[1-9]|1[0-2])[./](\d{{4}})\b"
         for m in re.finditer(p5, text):
-            y1, y2 = int(m.group(1)), int(m.group(2))
-            # avoid duplicate matches if already captured as part of MM.YYYY
-            start_pos = m.start()
-            if start_pos > 0 and text[start_pos - 1] in "./":
-                continue
-            intervals.append((y1 * 12, y2 * 12))
+            c1 = int(m.group(2)) * 12 + int(m.group(1))
+            c2 = int(m.group(4)) * 12 + int(m.group(3)) + 1
+            raw_matches.append((m.start(), m.end(), c1, c2))
 
-        # 6. YYYY — Present
-        p6 = rf"\b(19\d\d|20\d\d)\s*(?:—|–|-|по|to)\s*{present_re}\b"
+        # 6. MM.YYYY — YYYY
+        p6 = rf"\b(0?[1-9]|1[0-2])[./](\d{{4}})\s*{sep_re}\s*(19\d\d|20\d\d)(?!\d|\.[0-9]|/[0-9])"
         for m in re.finditer(p6, text):
-            y1 = int(m.group(1))
-            start_pos = m.start()
-            if start_pos > 0 and text[start_pos - 1] in "./":
-                continue
-            intervals.append((y1 * 12, current_coord))
+            c1 = int(m.group(2)) * 12 + int(m.group(1))
+            c2 = int(m.group(3)) * 12 + 12
+            raw_matches.append((m.start(), m.end(), c1, c2))
 
-        return intervals
+        # 7. YYYY — MM.YYYY
+        p7 = rf"\b(19\d\d|20\d\d)\s*{sep_re}\s*(0?[1-9]|1[0-2])[./](\d{{4}})\b"
+        for m in re.finditer(p7, text):
+            c1 = int(m.group(1)) * 12 + 1
+            c2 = int(m.group(3)) * 12 + int(m.group(2)) + 1
+            raw_matches.append((m.start(), m.end(), c1, c2))
+
+        # 8. MM.YYYY — Present
+        p8 = rf"\b(0?[1-9]|1[0-2])[./](\d{{4}})\s*{sep_re}\s*{present_re}(?!\w)"
+        for m in re.finditer(p8, text):
+            c1 = int(m.group(2)) * 12 + int(m.group(1))
+            c2 = current_coord + 1
+            raw_matches.append((m.start(), m.end(), c1, c2))
+
+        # 9. YYYY — YYYY
+        p9 = rf"\b(19\d\d|20\d\d)\s*{sep_re}\s*(19\d\d|20\d\d)\b"
+        for m in re.finditer(p9, text):
+            c1 = int(m.group(1)) * 12
+            c2 = int(m.group(2)) * 12
+            raw_matches.append((m.start(), m.end(), c1, c2))
+
+        # 10. YYYY — Present
+        p10 = rf"\b(19\d\d|20\d\d)\s*{sep_re}\s*{present_re}(?!\w)"
+        for m in re.finditer(p10, text):
+            c1 = int(m.group(1)) * 12
+            c2 = current_coord
+            raw_matches.append((m.start(), m.end(), c1, c2))
+
+        accepted_spans: List[Tuple[int, int]] = []
+        results: List[Tuple[int, int, str]] = []
+
+        for s_start, s_end, c1, c2 in raw_matches:
+            if any(s_start < end and s_end > start for start, end in accepted_spans):
+                continue
+            accepted_spans.append((s_start, s_end))
+            line_start = text.rfind("\n", 0, s_start)
+            line_start = 0 if line_start == -1 else line_start + 1
+            line_end = text.find("\n", s_end)
+            line_end = len(text) if line_end == -1 else line_end
+            context = text[line_start:line_end]
+            results.append((c1, c2, context))
+
+        return results
+
+    @classmethod
+    def _extract_date_intervals(cls, text: str) -> List[Tuple[int, int]]:
+        return [(c1, c2) for c1, c2, _ in cls._extract_date_intervals_with_context(text)]
+
+    @classmethod
+    def extract_total_and_relevant_experience(cls, text: str) -> Tuple[float, float]:
+        lowered = text.lower()
+
+        # 1. Zero experience detection
+        zero_patterns = [
+            r"\b\u0431\u0435\u0437\s+\u043e\u043f\u044b\u0442\u0430\b",
+            r"\b\u043d\u0435\u0442\s+\u043e\u043f\u044b\u0442\u0430\b",
+            r"\b\u043e\u043f\u044b\u0442(?:\u0430)?(?:\s+\u0440\u0430\u0431\u043e\u0442\u044b)?[:\s\-]+0(?:\.0)?\s*(?:\u043b\u0435\u0442|\u0433\u043e\u0434|\u0433\u043e\u0434\u0430|\u0433\.|\u043c\u0435\u0441)",
+            r"\b0\s*(?:\u043b\u0435\u0442|\u0433\u043e\u0434\u0430|\u043c\u0435\u0441\u044f\u0446\u0435\u0432)\s+(?:\u043e\u043f\u044b\u0442\u0430|\u043a\u043e\u043c\u043c\u0435\u0440\u0447\u0435\u0441\u043a\u043e\u0433\u043e)",
+            r"\b\u0438\u0449\u0443\s+\u0441\u0442\u0430\u0436\u0438\u0440\u043e\u0432\u043a\u0443\b",
+            r"\b(\u0441\u0442\u0430\u0436\u0435\u0440|intern|trainee)\b",
+            r"\b\u043d\u0430\u0447\u0438\u043d\u0430\u044e\u0449\u0438\u0439\s+(?:\u0440\u0430\u0437\u0440\u0430\u0431\u043e\u0442\u0447\u0438\u043a|\u0441\u043f\u0435\u0446\u0438\u0430\u043b\u0438\u0441\u0442|\u043f\u0440\u043e\u0433\u0440\u0430\u043c\u043c\u0438\u0441\u0442)\b",
+            r"\bjunior\s+\u0431\u0435\u0437\s+\u043e\u043f\u044b\u0442\u0430\b"
+        ]
+        if any(re.search(p, lowered) for p in zero_patterns):
+            return (0.0, 0.0)
+
+        # 2. Date intervals with context
+        intervals_with_ctx = cls._extract_date_intervals_with_context(lowered)
+        if intervals_with_ctx:
+            total_intervals = [(c1, c2) for c1, c2, _ in intervals_with_ctx]
+            total_exp = cls._merge_intervals(total_intervals)
+
+            detected_skills = cls.extract_skills(text)
+            target_role = cls.extract_target_role(text, detected_skills).lower()
+            is_service_target = any(r in target_role for r in cls.IRRELEVANT_ROLES)
+
+            if is_service_target:
+                return (total_exp, total_exp)
+
+            relevant_intervals = []
+            for c1, c2, ctx in intervals_with_ctx:
+                is_irrelevant_job = any(
+                    re.search(rf"\b{re.escape(r)}\b", ctx)
+                    for r in cls.IRRELEVANT_ROLES
+                )
+                if not is_irrelevant_job:
+                    relevant_intervals.append((c1, c2))
+
+            relevant_exp = cls._merge_intervals(relevant_intervals)
+            return (total_exp, relevant_exp)
+
+        # 3. Compound periods
+        compound_patterns = [
+            r"(\d+)\s*(?:\u043b\u0435\u0442|\u0433\u043e\u0434|\u0433\u043e\u0434\u0430|\u0433\.|years|year|yrs)\s*(?:\u0438\s*)?(\d+)\s*(?:\u043c\u0435\u0441\u044f\u0446\u0435\u0432|\u043c\u0435\u0441\u044f\u0446\u0430|\u043c\u0435\u0441\.|months|month)",
+            r"(\d+)\s*(?:\u043c\u0435\u0441\u044f\u0446\u0435\u0432|\u043c\u0435\u0441\u044f\u0446\u0430|\u043c\u0435\u0441\.|months|month)\s*(?:\u0438\s*)?(\d+)\s*(?:\u043b\u0435\u0442|\u0433\u043e\u0434|\u0433\u043e\u0434\u0430|\u0433\.|years|year|yrs)"
+        ]
+        for p in compound_patterns:
+            c_match = re.search(p, lowered)
+            if c_match:
+                if "\u043c\u0435\u0441" in p.split("(")[1] or "month" in p.split("(")[1]:
+                    months, years = int(c_match.group(1)), int(c_match.group(2))
+                else:
+                    years, months = int(c_match.group(1)), int(c_match.group(2))
+                val = round(years + (months / 12.0), 1)
+                return (val, val)
+
+        # 4. Explicit patterns
+        explicit_patterns = [
+            r"\u043e\u043f\u044b\u0442(?:\u0430)?(?:\s+\u0440\u0430\u0431\u043e\u0442\u044b)?[:\s\-]+(\d+(?:[.,]\d+)?)\s*(?:\u043b\u0435\u0442|\u0433\u043e\u0434|\u0433\u043e\u0434\u0430|\u0433\.|years|year|yrs)",
+            r"(\d+(?:[.,]\d+)?)\s*\+?\s*(?:\u043b\u0435\u0442|\u0433\u043e\u0434|\u0433\u043e\u0434\u0430|\u0433\.|years|year|yrs)\s+(?:\u043e\u043f\u044b\u0442\u0430|\u043a\u043e\u043c\u043c\u0435\u0440\u0447\u0435\u0441\u043a\u043e\u0433\u043e \u043e\u043f\u044b\u0442\u0430)",
+            r"(?:\u0431\u043e\u043b\u0435\u0435|\u043e\u0442)\s+(\d+(?:[.,]\d+)?)\s*(?:\u043b\u0435\u0442|\u0433\u043e\u0434\u0430)",
+            r"(\d+(?:[.,]\d+)?)\s*(?:\+)?\s*(?:\u043b\u0435\u0442|\u0433\u043e\u0434\u0430)\s+\u0432\s+(?:\u0440\u0430\u0437\u0440\u0430\u0431\u043e\u0442\u043a\u0435|it)"
+        ]
+        for p in explicit_patterns:
+            match = re.search(p, lowered)
+            if match:
+                val = float(match.group(1).replace(",", "."))
+                return (val, val)
+
+        month_match = re.search(r"(\d+)\s*(?:\u043c\u0435\u0441\u044f\u0446\u0435\u0432|\u043c\u0435\u0441\u044f\u0446\u0430|\u043c\u0435\u0441\.|months)", lowered)
+        if month_match:
+            try:
+                months = int(month_match.group(1))
+                val = round(months / 12.0, 1)
+                return (val, val)
+            except ValueError:
+                pass
+
+        return (0.0, 0.0)
+
+    @classmethod
+    def extract_experience_years(cls, text: str) -> float:
+        total_exp, relevant_exp = cls.extract_total_and_relevant_experience(text)
+        return relevant_exp
 
     @classmethod
     def extract_target_role(cls, text: str, detected_skills: List[str]) -> str:
@@ -678,7 +753,7 @@ class ResumeExtractor:
     def parse_full_resume(cls, text: str) -> Dict[str, Any]:
         """Analyze full resume text and return structured profile dictionary."""
         skills = cls.extract_skills(text)
-        exp_years = cls.extract_experience_years(text)
+        total_exp, exp_years = cls.extract_total_and_relevant_experience(text)
         grade = cls.detect_grade(text, exp_years)
         title = cls.extract_target_role(text, skills)
         salary = cls.extract_salary_expectation(text)
@@ -687,6 +762,7 @@ class ResumeExtractor:
             "title": title,
             "grade": grade,
             "years_of_experience": exp_years,
+            "total_years_of_experience": total_exp,
             "skills": skills,
             "salary_expectation": salary,
             "raw_text": text

@@ -24,9 +24,13 @@ class Settings(BaseSettings):
     ADMIN_IDS: List[int] = Field(default_factory=list, description="List of Telegram admin IDs")
 
     # Optional AI/LLM for advanced matching & smart summarization
+    LLM_PROVIDER: str = Field(default="none", description="LLM provider: 'openai', 'yandex', 'gigachat', or 'none'")
     OPENAI_API_KEY: Optional[str] = Field(default=None, description="OpenAI API key or compatible provider")
     OPENAI_BASE_URL: str = Field(default="https://api.openai.com/v1", description="OpenAI API base URL")
     OPENAI_MODEL: str = Field(default="gpt-4o-mini", description="LLM model name")
+    YANDEX_API_KEY: Optional[str] = Field(default=None, description="YandexGPT API Key")
+    YANDEX_FOLDER_ID: Optional[str] = Field(default=None, description="Yandex Cloud Folder ID")
+    GIGACHAT_CREDENTIALS: Optional[str] = Field(default=None, description="Sber GigaChat Auth Credentials")
 
     # Background polling & alerts
     ENABLE_AUTO_NOTIFICATIONS: bool = Field(default=True, description="Enable background automated search")

@@ -10,6 +10,7 @@ class ValidationResult:
     score: int = 0
     missing_sections: List[str] = field(default_factory=list)
     detected_type: str = "resume"
+    confidence: str = "high"  # "high", "medium", "low"
 
     def __bool__(self) -> bool:
         return self.is_valid
@@ -132,7 +133,8 @@ class ResumeValidator:
                 is_valid=False,
                 error_message=err_msg,
                 score=0,
-                detected_type=det_type
+                detected_type=det_type,
+                confidence="low"
             )
 
         lowered = text.lower()
@@ -187,7 +189,8 @@ class ResumeValidator:
                 ),
                 score=score,
                 missing_sections=missing_sections,
-                detected_type="insufficient"
+                detected_type="insufficient",
+                confidence="low"
             )
 
         if len(present_sections) < 2 and tech_skills_count < 2:
@@ -200,13 +203,16 @@ class ResumeValidator:
                 ),
                 score=score,
                 missing_sections=missing_sections,
-                detected_type="insufficient"
+                detected_type="insufficient",
+                confidence="low"
             )
 
+        conf = "high" if score >= 75 else "medium"
         return ValidationResult(
             is_valid=True,
             error_message=None,
             score=score,
             missing_sections=missing_sections,
-            detected_type="resume"
+            detected_type="resume",
+            confidence=conf
         )

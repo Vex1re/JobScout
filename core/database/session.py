@@ -63,6 +63,8 @@ async def init_db() -> None:
                         connection.execute(text("ALTER TABLE users ADD COLUMN last_query_index INTEGER DEFAULT 0"))
                     if "enabled_sources" not in cols:
                         connection.execute(text("ALTER TABLE users ADD COLUMN enabled_sources JSON"))
+                    if "llm_consent" not in cols:
+                        connection.execute(text("ALTER TABLE users ADD COLUMN llm_consent BOOLEAN DEFAULT 0"))
                     # Sanitize search_page_offset for existing users to keep pagination within [0, 4]
                     connection.execute(text("UPDATE users SET search_page_offset = search_page_offset % 5 WHERE search_page_offset IS NOT NULL AND search_page_offset >= 5"))
 
