@@ -1,0 +1,662 @@
+[
+  {
+    "name": "Москва",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Санкт-Петербург",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Новосибирск",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Екатеринбург",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Казань",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Нижний Новгород",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Челябинск",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Красноярск",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Самара",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Уфа",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Ростов-на-Дону",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Омск",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Краснодар",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Воронеж",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Пермь",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Волгоград",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Саратов",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Тюмень",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Тольятти",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Барнаул",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Ижевск",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Махачкала",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Хабаровск",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Ульяновск",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Иркутск",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Владивосток",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Ярославль",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Севастополь",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Томск",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Ставрополь",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Кемерово",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Набережные Челны",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Оренбург",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Новокузнецк",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Балашиха",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Рязань",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Чебоксары",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Пенза",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Липецк",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Калининград",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Астрахань",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Тула",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Сочи",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Киров",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Улан-Удэ",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Сургут",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Тверь",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Магнитогорск",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Иваново",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Брянск",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Белгород",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Нижний Тагил",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Владимир",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Чита",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Архангельск",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Симферополь",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Калуга",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Смоленск",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Волжский",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Саранск",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Череповец",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Курган",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Вологда",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Орёл",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Владикавказ",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Подольск",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Грозный",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Мурманск",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Тамбов",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Стерлитамак",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Петрозаводск",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Кострома",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Нижневартовск",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Новороссийск",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Йошкар-Ола",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Химки",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Таганрог",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Комсомольск-на-Амуре",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Сыктывкар",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Нальчик",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Нижнекамск",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Шахты",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Дзержинск",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Братск",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Орск",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Ангарск",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Энгельс",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Благовещенск",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Старый Оскол",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Великий Новгород",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Королёв",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Псков",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Мытищи",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Бийск",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Люберцы",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Прокопьевск",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Южно-Сахалинск",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Армавир",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Рыбинск",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Балаково",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Абакан",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Северодвинск",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Петропавловск-Камчатский",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Норильск",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Уссурийск",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Волгодонск",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Сызрань",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Каменск-Уральский",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Новочеркасск",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Златоуст",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Красногорск",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Альметьевск",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Электросталь",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Миасс",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Салават",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Хасавюрт",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Пятигорск",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Находка",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Копейск",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Майкоп",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Рубцовск",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Березники",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Коломна",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Одинцово",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Домодедово",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Ковров",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Нефтекамск",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Каспийск",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Нефтеюганск",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Кисловодск",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Новочебоксарск",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Батайск",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Щёлково",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Дербент",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Серпухов",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Назрань",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Раменское",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Черкесск",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Новомосковск",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Кызыл",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Первоуральск",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Новый Уренгой",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Орехово-Зуево",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Долгопрудный",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Обнинск",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Невинномысск",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Ессентуки",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Октябрьский",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Димитровград",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Пушкино",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Камышин",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Ноябрьск",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Евпатория",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Реутов",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Жуковский",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Северск",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Муром",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Новошахтинск",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Артём",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Ачинск",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Бердск",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Элиста",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Арзамас",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Ханты-Мансийск",
+    "population_tier": "100k+"
+  },
+  {
+    "name": "Ногинск",
+    "population_tier": "100k+"
+  }
+]

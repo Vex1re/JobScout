@@ -1,0 +1,3882 @@
+[
+  {
+    "case_id": "case_01_python_middle",
+    "role": "Python Backend Developer",
+    "candidate": {
+      "role": "Python Backend Developer",
+      "skills": [
+        "python",
+        "fastapi",
+        "postgresql",
+        "docker",
+        "redis"
+      ],
+      "experience_years": 3.0,
+      "grade": "Middle",
+      "city": "Москва",
+      "is_remote": true
+    },
+    "vacancies": [
+      {
+        "id": "c1_v1",
+        "title": "Python Developer (FastAPI)",
+        "company": "Fintech Lab",
+        "skills": [
+          "python",
+          "fastapi",
+          "postgresql",
+          "docker"
+        ],
+        "experience_years": 3.0,
+        "grade": "Middle",
+        "grade_confidence": 0.9,
+        "city": "Москва",
+        "is_remote": true,
+        "published_days_ago": 2,
+        "is_relevant": true
+      },
+      {
+        "id": "c1_v2",
+        "title": "Middle Backend Developer (Python)",
+        "company": "Cloud Service",
+        "skills": [
+          "python",
+          "redis",
+          "postgresql",
+          "asyncio"
+        ],
+        "experience_years": 3.0,
+        "grade": "Middle",
+        "grade_confidence": 0.85,
+        "city": "Санкт-Петербург",
+        "is_remote": true,
+        "published_days_ago": 5,
+        "is_relevant": true
+      },
+      {
+        "id": "c1_v3",
+        "title": "Python Инженер",
+        "company": "E-Commerce Group",
+        "skills": [
+          "python",
+          "docker",
+          "fastapi",
+          "sql"
+        ],
+        "experience_years": 2.5,
+        "grade": "Middle",
+        "grade_confidence": 0.8,
+        "city": "Москва",
+        "is_remote": false,
+        "published_days_ago": 3,
+        "is_relevant": true
+      },
+      {
+        "id": "c1_v4",
+        "title": "Python/Django Разработчик",
+        "company": "Digital Agency",
+        "skills": [
+          "python",
+          "django",
+          "postgresql",
+          "redis"
+        ],
+        "experience_years": 3.0,
+        "grade": "Middle",
+        "grade_confidence": 0.8,
+        "city": "Москва",
+        "is_remote": true,
+        "published_days_ago": 1,
+        "is_relevant": true
+      },
+      {
+        "id": "c1_v5",
+        "title": "Backend Инженер Python",
+        "company": "Telecom Plus",
+        "skills": [
+          "python",
+          "fastapi",
+          "docker",
+          "linux"
+        ],
+        "experience_years": 2.0,
+        "grade": "Middle",
+        "grade_confidence": 0.75,
+        "city": "Москва",
+        "is_remote": true,
+        "published_days_ago": 6,
+        "is_relevant": true
+      },
+      {
+        "id": "c1_v6",
+        "title": "Водитель-курьер",
+        "company": "Быстрая Доставка",
+        "skills": [
+          "водительские права",
+          "пунктуальность"
+        ],
+        "experience_years": 1.0,
+        "grade": "Junior",
+        "grade_confidence": 0.9,
+        "city": "Москва",
+        "is_remote": false,
+        "published_days_ago": 1,
+        "is_relevant": false
+      },
+      {
+        "id": "c1_v7",
+        "title": "Senior Frontend Developer (React)",
+        "company": "Global Tech",
+        "skills": [
+          "react",
+          "typescript",
+          "redux",
+          "nextjs"
+        ],
+        "experience_years": 6.0,
+        "grade": "Senior",
+        "grade_confidence": 0.95,
+        "city": "Москва",
+        "is_remote": true,
+        "published_days_ago": 2,
+        "is_relevant": false
+      },
+      {
+        "id": "c1_v8",
+        "title": "Бухгалтер на первичку",
+        "company": "Консалт Аудит",
+        "skills": [
+          "1c",
+          "первичная документация",
+          "ндс"
+        ],
+        "experience_years": 2.0,
+        "grade": "Junior",
+        "grade_confidence": 0.8,
+        "city": "Москва",
+        "is_remote": false,
+        "published_days_ago": 4,
+        "is_relevant": false
+      },
+      {
+        "id": "c1_v9",
+        "title": "Главный Архитектор Решений",
+        "company": "Enterprise Bank",
+        "skills": [
+          "enterprise architecture",
+          "togaf",
+          "banking"
+        ],
+        "experience_years": 10.0,
+        "grade": "Lead",
+        "grade_confidence": 0.95,
+        "city": "Москва",
+        "is_remote": true,
+        "published_days_ago": 3,
+        "is_relevant": false
+      },
+      {
+        "id": "c1_v10",
+        "title": "Менеджер по холодным звонкам",
+        "company": "Телеком Продажи",
+        "skills": [
+          "холодные звонки",
+          "продажи",
+          "crm"
+        ],
+        "experience_years": 1.0,
+        "grade": "Junior",
+        "grade_confidence": 0.8,
+        "city": "Москва",
+        "is_remote": false,
+        "published_days_ago": 5,
+        "is_relevant": false
+      }
+    ]
+  },
+  {
+    "case_id": "case_02_react_junior",
+    "role": "Junior Frontend Developer",
+    "candidate": {
+      "role": "Frontend Developer",
+      "skills": [
+        "javascript",
+        "react",
+        "html",
+        "css",
+        "git"
+      ],
+      "experience_years": 1.0,
+      "grade": "Junior",
+      "city": "Санкт-Петербург",
+      "is_remote": true
+    },
+    "vacancies": [
+      {
+        "id": "c2_v1",
+        "title": "Junior React Developer",
+        "company": "Web Studio",
+        "skills": [
+          "react",
+          "javascript",
+          "html",
+          "css"
+        ],
+        "experience_years": 1.0,
+        "grade": "Junior",
+        "grade_confidence": 0.9,
+        "city": "Санкт-Петербург",
+        "is_remote": true,
+        "published_days_ago": 1,
+        "is_relevant": true
+      },
+      {
+        "id": "c2_v2",
+        "title": "Младший Frontend разработчик",
+        "company": "Startup Hub",
+        "skills": [
+          "javascript",
+          "react",
+          "git",
+          "css"
+        ],
+        "experience_years": 0.5,
+        "grade": "Junior",
+        "grade_confidence": 0.85,
+        "city": "Санкт-Петербург",
+        "is_remote": false,
+        "published_days_ago": 2,
+        "is_relevant": true
+      },
+      {
+        "id": "c2_v3",
+        "title": "Junior Web Developer (React)",
+        "company": "Digital Prod",
+        "skills": [
+          "html",
+          "css",
+          "javascript",
+          "react"
+        ],
+        "experience_years": 1.0,
+        "grade": "Junior",
+        "grade_confidence": 0.9,
+        "city": "Москва",
+        "is_remote": true,
+        "published_days_ago": 3,
+        "is_relevant": true
+      },
+      {
+        "id": "c2_v4",
+        "title": "Стажер / Junior Frontend",
+        "company": "Fintech Corp",
+        "skills": [
+          "react",
+          "javascript",
+          "redux",
+          "git"
+        ],
+        "experience_years": 0.5,
+        "grade": "Junior",
+        "grade_confidence": 0.8,
+        "city": "Санкт-Петербург",
+        "is_remote": true,
+        "published_days_ago": 4,
+        "is_relevant": true
+      },
+      {
+        "id": "c2_v5",
+        "title": "Junior Фронтенд-разработчик",
+        "company": "Media Port",
+        "skills": [
+          "react",
+          "typescript",
+          "html",
+          "git"
+        ],
+        "experience_years": 1.0,
+        "grade": "Junior",
+        "grade_confidence": 0.75,
+        "city": "Санкт-Петербург",
+        "is_remote": true,
+        "published_days_ago": 5,
+        "is_relevant": true
+      },
+      {
+        "id": "c2_v6",
+        "title": "Senior Rust Core Developer",
+        "company": "Blockchain Labs",
+        "skills": [
+          "rust",
+          "solana",
+          "cryptography"
+        ],
+        "experience_years": 7.0,
+        "grade": "Senior",
+        "grade_confidence": 0.95,
+        "city": "Санкт-Петербург",
+        "is_remote": true,
+        "published_days_ago": 1,
+        "is_relevant": false
+      },
+      {
+        "id": "c2_v7",
+        "title": "Юрист по претензионной работе",
+        "company": "ЮрПраво",
+        "skills": [
+          "арбитраж",
+          "договоры",
+          "гк рф"
+        ],
+        "experience_years": 4.0,
+        "grade": "Middle",
+        "grade_confidence": 0.9,
+        "city": "Санкт-Петербург",
+        "is_remote": false,
+        "published_days_ago": 2,
+        "is_relevant": false
+      },
+      {
+        "id": "c2_v8",
+        "title": "Оператор колл-центра",
+        "company": "Служба Заботы",
+        "skills": [
+          "грамотная речь",
+          "crm",
+          "стрессоустойчивость"
+        ],
+        "experience_years": 0.0,
+        "grade": "Junior",
+        "grade_confidence": 0.7,
+        "city": "Санкт-Петербург",
+        "is_remote": false,
+        "published_days_ago": 3,
+        "is_relevant": false
+      },
+      {
+        "id": "c2_v9",
+        "title": "DevOps Team Lead",
+        "company": "Big Cloud",
+        "skills": [
+          "kubernetes",
+          "terraform",
+          "ansible",
+          "ci/cd"
+        ],
+        "experience_years": 8.0,
+        "grade": "Lead",
+        "grade_confidence": 0.95,
+        "city": "Санкт-Петербург",
+        "is_remote": true,
+        "published_days_ago": 2,
+        "is_relevant": false
+      },
+      {
+        "id": "c2_v10",
+        "title": "Официант-бариста",
+        "company": "Кофе Бин",
+        "skills": [
+          "приготовление кофе",
+          "касса",
+          "сервис"
+        ],
+        "experience_years": 0.5,
+        "grade": "Junior",
+        "grade_confidence": 0.8,
+        "city": "Санкт-Петербург",
+        "is_remote": false,
+        "published_days_ago": 4,
+        "is_relevant": false
+      }
+    ]
+  },
+  {
+    "case_id": "case_03_devops_senior",
+    "role": "Senior DevOps Engineer",
+    "candidate": {
+      "role": "DevOps Engineer",
+      "skills": [
+        "kubernetes",
+        "terraform",
+        "ansible",
+        "docker",
+        "ci/cd",
+        "linux",
+        "aws"
+      ],
+      "experience_years": 6.0,
+      "grade": "Senior",
+      "city": "Москва",
+      "is_remote": true
+    },
+    "vacancies": [
+      {
+        "id": "c3_v1",
+        "title": "Senior DevOps Engineer",
+        "company": "CloudNative",
+        "skills": [
+          "kubernetes",
+          "terraform",
+          "docker",
+          "ci/cd"
+        ],
+        "experience_years": 5.0,
+        "grade": "Senior",
+        "grade_confidence": 0.9,
+        "city": "Москва",
+        "is_remote": true,
+        "published_days_ago": 1,
+        "is_relevant": true
+      },
+      {
+        "id": "c3_v2",
+        "title": "Старший DevOps / SRE",
+        "company": "Payment Gateway",
+        "skills": [
+          "linux",
+          "kubernetes",
+          "ansible",
+          "prometheus"
+        ],
+        "experience_years": 6.0,
+        "grade": "Senior",
+        "grade_confidence": 0.85,
+        "city": "Москва",
+        "is_remote": true,
+        "published_days_ago": 3,
+        "is_relevant": true
+      },
+      {
+        "id": "c3_v3",
+        "title": "DevOps Architect / Senior",
+        "company": "Enterprise Bank",
+        "skills": [
+          "terraform",
+          "kubernetes",
+          "aws",
+          "ci/cd"
+        ],
+        "experience_years": 6.0,
+        "grade": "Senior",
+        "grade_confidence": 0.95,
+        "city": "Москва",
+        "is_remote": true,
+        "published_days_ago": 4,
+        "is_relevant": true
+      },
+      {
+        "id": "c3_v4",
+        "title": "Senior Infrastructure Engineer",
+        "company": "HighLoad AI",
+        "skills": [
+          "docker",
+          "kubernetes",
+          "linux",
+          "ansible"
+        ],
+        "experience_years": 5.0,
+        "grade": "Senior",
+        "grade_confidence": 0.8,
+        "city": "Москва",
+        "is_remote": false,
+        "published_days_ago": 2,
+        "is_relevant": true
+      },
+      {
+        "id": "c3_v5",
+        "title": "Lead / Senior DevOps",
+        "company": "Crypto Trading",
+        "skills": [
+          "kubernetes",
+          "terraform",
+          "ci/cd",
+          "linux"
+        ],
+        "experience_years": 6.0,
+        "grade": "Senior",
+        "grade_confidence": 0.85,
+        "city": "Москва",
+        "is_remote": true,
+        "published_days_ago": 5,
+        "is_relevant": true
+      },
+      {
+        "id": "c3_v6",
+        "title": "Junior QA Manual Tester",
+        "company": "Game Dev Indie",
+        "skills": [
+          "тест-кейсы",
+          "bug tracking",
+          "jira"
+        ],
+        "experience_years": 0.5,
+        "grade": "Junior",
+        "grade_confidence": 0.9,
+        "city": "Москва",
+        "is_remote": true,
+        "published_days_ago": 1,
+        "is_relevant": false
+      },
+      {
+        "id": "c3_v7",
+        "title": "SMM Менеджер",
+        "company": "Fashion Brand",
+        "skills": [
+          "smm",
+          "копирайтинг",
+          "reels",
+          "stories"
+        ],
+        "experience_years": 2.0,
+        "grade": "Middle",
+        "grade_confidence": 0.85,
+        "city": "Москва",
+        "is_remote": true,
+        "published_days_ago": 2,
+        "is_relevant": false
+      },
+      {
+        "id": "c3_v8",
+        "title": "Менеджер по логистике (ВЭД)",
+        "company": "ТрансВЭД",
+        "skills": [
+          "таможня",
+          "вэд",
+          "логистика",
+          "инкотермс"
+        ],
+        "experience_years": 4.0,
+        "grade": "Middle",
+        "grade_confidence": 0.9,
+        "city": "Москва",
+        "is_remote": false,
+        "published_days_ago": 3,
+        "is_relevant": false
+      },
+      {
+        "id": "c3_v9",
+        "title": "Фармацевт-провизор",
+        "company": "Аптека 36.6",
+        "skills": [
+          "фармакология",
+          "касса",
+          "отпуск лекарств"
+        ],
+        "experience_years": 3.0,
+        "grade": "Middle",
+        "grade_confidence": 0.9,
+        "city": "Москва",
+        "is_remote": false,
+        "published_days_ago": 4,
+        "is_relevant": false
+      },
+      {
+        "id": "c3_v10",
+        "title": "Стажер в отдел продаж",
+        "company": "Холодные Звонки",
+        "skills": [
+          "коммуникабельность",
+          "crm"
+        ],
+        "experience_years": 0.0,
+        "grade": "Junior",
+        "grade_confidence": 0.7,
+        "city": "Москва",
+        "is_remote": false,
+        "published_days_ago": 5,
+        "is_relevant": false
+      }
+    ]
+  },
+  {
+    "case_id": "case_04_marketing_middle",
+    "role": "Digital Marketing Specialist",
+    "candidate": {
+      "role": "Маркетолог",
+      "skills": [
+        "seo",
+        "контекстная реклама",
+        "таргетинг",
+        "яндекс директ",
+        "google analytics"
+      ],
+      "experience_years": 3.5,
+      "grade": "Middle",
+      "city": "Казань",
+      "is_remote": true
+    },
+    "vacancies": [
+      {
+        "id": "c4_v1",
+        "title": "Интернет-маркетолог",
+        "company": "Growth Agency",
+        "skills": [
+          "контекстная реклама",
+          "яндекс директ",
+          "таргетинг",
+          "google analytics"
+        ],
+        "experience_years": 3.0,
+        "grade": "Middle",
+        "grade_confidence": 0.9,
+        "city": "Казань",
+        "is_remote": true,
+        "published_days_ago": 1,
+        "is_relevant": true
+      },
+      {
+        "id": "c4_v2",
+        "title": "Специалист по контекстной рекламе",
+        "company": "AdTech Pro",
+        "skills": [
+          "яндекс директ",
+          "google analytics",
+          "seo",
+          "контекстная реклама"
+        ],
+        "experience_years": 3.0,
+        "grade": "Middle",
+        "grade_confidence": 0.85,
+        "city": "Казань",
+        "is_remote": true,
+        "published_days_ago": 2,
+        "is_relevant": true
+      },
+      {
+        "id": "c4_v3",
+        "title": "Middle Digital Marketer",
+        "company": "Retail Online",
+        "skills": [
+          "таргетинг",
+          "яндекс директ",
+          "аналитика",
+          "seo"
+        ],
+        "experience_years": 3.5,
+        "grade": "Middle",
+        "grade_confidence": 0.8,
+        "city": "Казань",
+        "is_remote": false,
+        "published_days_ago": 4,
+        "is_relevant": true
+      },
+      {
+        "id": "c4_v4",
+        "title": "Трафик-менеджер",
+        "company": "LeadGen Club",
+        "skills": [
+          "таргетинг",
+          "яндекс директ",
+          "контекстная реклама"
+        ],
+        "experience_years": 2.5,
+        "grade": "Middle",
+        "grade_confidence": 0.8,
+        "city": "Казань",
+        "is_remote": true,
+        "published_days_ago": 3,
+        "is_relevant": true
+      },
+      {
+        "id": "c4_v5",
+        "title": "Маркетолог-аналитик",
+        "company": "Smart Services",
+        "skills": [
+          "seo",
+          "google analytics",
+          "яндекс директ",
+          "маркетинг"
+        ],
+        "experience_years": 3.0,
+        "grade": "Middle",
+        "grade_confidence": 0.75,
+        "city": "Казань",
+        "is_remote": true,
+        "published_days_ago": 5,
+        "is_relevant": true
+      },
+      {
+        "id": "c4_v6",
+        "title": "Разработчик C++ Highload",
+        "company": "Trading Systems",
+        "skills": [
+          "c++",
+          "multithreading",
+          "low latency"
+        ],
+        "experience_years": 5.0,
+        "grade": "Senior",
+        "grade_confidence": 0.95,
+        "city": "Казань",
+        "is_remote": true,
+        "published_days_ago": 1,
+        "is_relevant": false
+      },
+      {
+        "id": "c4_v7",
+        "title": "Слесарь МСР 4 разряда",
+        "company": "Завод Прибор",
+        "skills": [
+          "слесарные работы",
+          "чтение чертежей",
+          "станок"
+        ],
+        "experience_years": 4.0,
+        "grade": "Middle",
+        "grade_confidence": 0.9,
+        "city": "Казань",
+        "is_remote": false,
+        "published_days_ago": 2,
+        "is_relevant": false
+      },
+      {
+        "id": "c4_v8",
+        "title": "Главный бухгалтер",
+        "company": "ТоргСбыт",
+        "skills": [
+          "1c",
+          "налогообложение",
+          "бухгалтерская отчетность"
+        ],
+        "experience_years": 8.0,
+        "grade": "Senior",
+        "grade_confidence": 0.9,
+        "city": "Казань",
+        "is_remote": false,
+        "published_days_ago": 3,
+        "is_relevant": false
+      },
+      {
+        "id": "c4_v9",
+        "title": "Системный администратор Linux",
+        "company": "ДатаЦентр",
+        "skills": [
+          "linux",
+          "bash",
+          "virtualization",
+          "networks"
+        ],
+        "experience_years": 3.0,
+        "grade": "Middle",
+        "grade_confidence": 0.85,
+        "city": "Казань",
+        "is_remote": false,
+        "published_days_ago": 4,
+        "is_relevant": false
+      },
+      {
+        "id": "c4_v10",
+        "title": "Повар холодного цеха",
+        "company": "Ресторан Вкус",
+        "skills": [
+          "санпин",
+          "техкарты",
+          "европейская кухня"
+        ],
+        "experience_years": 2.0,
+        "grade": "Junior",
+        "grade_confidence": 0.8,
+        "city": "Казань",
+        "is_remote": false,
+        "published_days_ago": 5,
+        "is_relevant": false
+      }
+    ]
+  },
+  {
+    "case_id": "case_05_sales_middle",
+    "role": "B2B Sales Manager",
+    "candidate": {
+      "role": "Менеджер по продажам",
+      "skills": [
+        "b2b продажи",
+        "холодные звонки",
+        "переговоры",
+        "amocrm",
+        "сопровождение сделок"
+      ],
+      "experience_years": 3.0,
+      "grade": "Middle",
+      "city": "Екатеринбург",
+      "is_remote": false
+    },
+    "vacancies": [
+      {
+        "id": "c5_v1",
+        "title": "Менеджер по B2B продажам",
+        "company": "ПромСнаб",
+        "skills": [
+          "b2b продажи",
+          "переговоры",
+          "amocrm",
+          "сопровождение сделок"
+        ],
+        "experience_years": 3.0,
+        "grade": "Middle",
+        "grade_confidence": 0.9,
+        "city": "Екатеринбург",
+        "is_remote": false,
+        "published_days_ago": 1,
+        "is_relevant": true
+      },
+      {
+        "id": "c5_v2",
+        "title": "Ведущий менеджер по продажам",
+        "company": "Бизнес Решения",
+        "skills": [
+          "переговоры",
+          "b2b продажи",
+          "amocrm",
+          "холодные звонки"
+        ],
+        "experience_years": 3.0,
+        "grade": "Middle",
+        "grade_confidence": 0.85,
+        "city": "Екатеринбург",
+        "is_remote": false,
+        "published_days_ago": 2,
+        "is_relevant": true
+      },
+      {
+        "id": "c5_v3",
+        "title": "Менеджер корпоративных продаж",
+        "company": "ИТ Сервис",
+        "skills": [
+          "b2b продажи",
+          "сопровождение сделок",
+          "переговоры"
+        ],
+        "experience_years": 2.5,
+        "grade": "Middle",
+        "grade_confidence": 0.8,
+        "city": "Екатеринбург",
+        "is_remote": true,
+        "published_days_ago": 3,
+        "is_relevant": true
+      },
+      {
+        "id": "c5_v4",
+        "title": "Специалист отдела продаж (B2B)",
+        "company": "ТехСнабжение",
+        "skills": [
+          "amocrm",
+          "переговоры",
+          "холодные звонки",
+          "b2b продажи"
+        ],
+        "experience_years": 3.0,
+        "grade": "Middle",
+        "grade_confidence": 0.85,
+        "city": "Екатеринбург",
+        "is_remote": false,
+        "published_days_ago": 4,
+        "is_relevant": true
+      },
+      {
+        "id": "c5_v5",
+        "title": "Менеджер по работе с клиентами B2B",
+        "company": "УралОпт",
+        "skills": [
+          "сопровождение сделок",
+          "b2b продажи",
+          "amocrm"
+        ],
+        "experience_years": 2.0,
+        "grade": "Middle",
+        "grade_confidence": 0.75,
+        "city": "Екатеринбург",
+        "is_remote": false,
+        "published_days_ago": 5,
+        "is_relevant": true
+      },
+      {
+        "id": "c5_v6",
+        "title": "Инженер по тестированию (QA)",
+        "company": "Урал Софт",
+        "skills": [
+          "тестирование",
+          "postman",
+          "sql",
+          "jira"
+        ],
+        "experience_years": 2.0,
+        "grade": "Middle",
+        "grade_confidence": 0.9,
+        "city": "Екатеринбург",
+        "is_remote": true,
+        "published_days_ago": 1,
+        "is_relevant": false
+      },
+      {
+        "id": "c5_v7",
+        "title": "Backend Go Developer",
+        "company": "ФинансГрупп",
+        "skills": [
+          "golang",
+          "postgresql",
+          "grpc",
+          "docker"
+        ],
+        "experience_years": 4.0,
+        "grade": "Middle",
+        "grade_confidence": 0.95,
+        "city": "Екатеринбург",
+        "is_remote": true,
+        "published_days_ago": 2,
+        "is_relevant": false
+      },
+      {
+        "id": "c5_v8",
+        "title": "Кассир торгового зала",
+        "company": "Супермаркет Пятерочка",
+        "skills": [
+          "кассовая дисциплина",
+          "выкладка товара"
+        ],
+        "experience_years": 0.5,
+        "grade": "Junior",
+        "grade_confidence": 0.8,
+        "city": "Екатеринбург",
+        "is_remote": false,
+        "published_days_ago": 3,
+        "is_relevant": false
+      },
+      {
+        "id": "c5_v9",
+        "title": "Дизайнер интерьеров",
+        "company": "Студия Уют",
+        "skills": [
+          "3ds max",
+          "autocad",
+          "дизайн проект"
+        ],
+        "experience_years": 3.0,
+        "grade": "Middle",
+        "grade_confidence": 0.9,
+        "city": "Екатеринбург",
+        "is_remote": false,
+        "published_days_ago": 4,
+        "is_relevant": false
+      },
+      {
+        "id": "c5_v10",
+        "title": "Системный администратор",
+        "company": "Металлург Холдинг",
+        "skills": [
+          "active directory",
+          "windows server",
+          "lan"
+        ],
+        "experience_years": 3.0,
+        "grade": "Middle",
+        "grade_confidence": 0.85,
+        "city": "Екатеринбург",
+        "is_remote": false,
+        "published_days_ago": 5,
+        "is_relevant": false
+      }
+    ]
+  },
+  {
+    "case_id": "case_06_accountant_senior",
+    "role": "Chief Accountant",
+    "candidate": {
+      "role": "Главный бухгалтер",
+      "skills": [
+        "1c:предприятие",
+        "налоговый учет",
+        "бухгалтерская отчетность",
+        "ндс",
+        "усн",
+        "аудит"
+      ],
+      "experience_years": 8.0,
+      "grade": "Senior",
+      "city": "Новосибирск",
+      "is_remote": false
+    },
+    "vacancies": [
+      {
+        "id": "c6_v1",
+        "title": "Главный бухгалтер в единственном числе",
+        "company": "СибСтрой",
+        "skills": [
+          "1c:предприятие",
+          "налоговый учет",
+          "бухгалтерская отчетность",
+          "ндс"
+        ],
+        "experience_years": 7.0,
+        "grade": "Senior",
+        "grade_confidence": 0.9,
+        "city": "Новосибирск",
+        "is_remote": false,
+        "published_days_ago": 1,
+        "is_relevant": true
+      },
+      {
+        "id": "c6_v2",
+        "title": "Ведущий бухгалтер / Зам главбуха",
+        "company": "Торговый Дом Сибирь",
+        "skills": [
+          "1c:предприятие",
+          "налоговый учет",
+          "ндс",
+          "усн"
+        ],
+        "experience_years": 6.0,
+        "grade": "Senior",
+        "grade_confidence": 0.85,
+        "city": "Новосибирск",
+        "is_remote": false,
+        "published_days_ago": 3,
+        "is_relevant": true
+      },
+      {
+        "id": "c6_v3",
+        "title": "Главный бухгалтер холдинга",
+        "company": "АгроПром Групп",
+        "skills": [
+          "бухгалтерская отчетность",
+          "налоговый учет",
+          "аудит",
+          "1c:предприятие"
+        ],
+        "experience_years": 8.0,
+        "grade": "Senior",
+        "grade_confidence": 0.95,
+        "city": "Новосибирск",
+        "is_remote": false,
+        "published_days_ago": 2,
+        "is_relevant": true
+      },
+      {
+        "id": "c6_v4",
+        "title": "Главный бухгалтер (производство)",
+        "company": "Завод СибМеталл",
+        "skills": [
+          "1c:предприятие",
+          "налоговый учет",
+          "бухгалтерская отчетность"
+        ],
+        "experience_years": 7.0,
+        "grade": "Senior",
+        "grade_confidence": 0.85,
+        "city": "Новосибирск",
+        "is_remote": false,
+        "published_days_ago": 4,
+        "is_relevant": true
+      },
+      {
+        "id": "c6_v5",
+        "title": "Руководитель бухгалтерии",
+        "company": "Регион Консалт",
+        "skills": [
+          "налоговый учет",
+          "ндс",
+          "усн",
+          "бухгалтерская отчетность"
+        ],
+        "experience_years": 8.0,
+        "grade": "Senior",
+        "grade_confidence": 0.9,
+        "city": "Новосибирск",
+        "is_remote": true,
+        "published_days_ago": 5,
+        "is_relevant": true
+      },
+      {
+        "id": "c6_v6",
+        "title": "Junior Python Разработчик",
+        "company": "СибИТ",
+        "skills": [
+          "python",
+          "django",
+          "sql"
+        ],
+        "experience_years": 1.0,
+        "grade": "Junior",
+        "grade_confidence": 0.9,
+        "city": "Новосибирск",
+        "is_remote": true,
+        "published_days_ago": 1,
+        "is_relevant": false
+      },
+      {
+        "id": "c6_v7",
+        "title": "Водитель погрузчика",
+        "company": "Логистик Парк",
+        "skills": [
+          "удостоверение тракториста",
+          "склад"
+        ],
+        "experience_years": 2.0,
+        "grade": "Middle",
+        "grade_confidence": 0.85,
+        "city": "Новосибирск",
+        "is_remote": false,
+        "published_days_ago": 2,
+        "is_relevant": false
+      },
+      {
+        "id": "c6_v8",
+        "title": "Графический дизайнер",
+        "company": "Креатив Лаб",
+        "skills": [
+          "photoshop",
+          "illustrator",
+          "figma"
+        ],
+        "experience_years": 3.0,
+        "grade": "Middle",
+        "grade_confidence": 0.85,
+        "city": "Новосибирск",
+        "is_remote": true,
+        "published_days_ago": 3,
+        "is_relevant": false
+      },
+      {
+        "id": "c6_v9",
+        "title": "Инженер ПТО",
+        "company": "СтройТрест",
+        "skills": [
+          "автокад",
+          "сметы",
+          "кс-2",
+          "кс-3"
+        ],
+        "experience_years": 4.0,
+        "grade": "Middle",
+        "grade_confidence": 0.9,
+        "city": "Новосибирск",
+        "is_remote": false,
+        "published_days_ago": 4,
+        "is_relevant": false
+      },
+      {
+        "id": "c6_v10",
+        "title": "SEO-специалист",
+        "company": "Топ Поиск",
+        "skills": [
+          "seo",
+          "семантическое ядро",
+          "линкбилдинг"
+        ],
+        "experience_years": 2.0,
+        "grade": "Middle",
+        "grade_confidence": 0.8,
+        "city": "Новосибирск",
+        "is_remote": true,
+        "published_days_ago": 5,
+        "is_relevant": false
+      }
+    ]
+  },
+  {
+    "case_id": "case_07_designer_middle",
+    "role": "UI/UX Designer",
+    "candidate": {
+      "role": "UI/UX Дизайнер",
+      "skills": [
+        "figma",
+        "ux research",
+        "прототипирование",
+        "дизайн-системы",
+        "wireframing"
+      ],
+      "experience_years": 3.0,
+      "grade": "Middle",
+      "city": "Нижний Новгород",
+      "is_remote": true
+    },
+    "vacancies": [
+      {
+        "id": "c7_v1",
+        "title": "UI/UX Designer",
+        "company": "Product Studio",
+        "skills": [
+          "figma",
+          "прототипирование",
+          "ux research",
+          "дизайн-системы"
+        ],
+        "experience_years": 3.0,
+        "grade": "Middle",
+        "grade_confidence": 0.9,
+        "city": "Нижний Новгород",
+        "is_remote": true,
+        "published_days_ago": 1,
+        "is_relevant": true
+      },
+      {
+        "id": "c7_v2",
+        "title": "Продуктовый дизайнер (Middle)",
+        "company": "Fintech App",
+        "skills": [
+          "figma",
+          "дизайн-системы",
+          "wireframing",
+          "ux research"
+        ],
+        "experience_years": 3.0,
+        "grade": "Middle",
+        "grade_confidence": 0.85,
+        "city": "Москва",
+        "is_remote": true,
+        "published_days_ago": 2,
+        "is_relevant": true
+      },
+      {
+        "id": "c7_v3",
+        "title": "Веб-дизайнер UI/UX",
+        "company": "Digital Media",
+        "skills": [
+          "figma",
+          "прототипирование",
+          "wireframing"
+        ],
+        "experience_years": 2.5,
+        "grade": "Middle",
+        "grade_confidence": 0.8,
+        "city": "Нижний Новгород",
+        "is_remote": true,
+        "published_days_ago": 3,
+        "is_relevant": true
+      },
+      {
+        "id": "c7_v4",
+        "title": "UX/UI Дизайнер мобильных приложений",
+        "company": "Mobile Forge",
+        "skills": [
+          "figma",
+          "прототипирование",
+          "дизайн-системы"
+        ],
+        "experience_years": 3.0,
+        "grade": "Middle",
+        "grade_confidence": 0.85,
+        "city": "Нижний Новгород",
+        "is_remote": true,
+        "published_days_ago": 4,
+        "is_relevant": true
+      },
+      {
+        "id": "c7_v5",
+        "title": "Интерфейсный дизайнер",
+        "company": "SaaS Platform",
+        "skills": [
+          "figma",
+          "ux research",
+          "прототипирование"
+        ],
+        "experience_years": 2.0,
+        "grade": "Middle",
+        "grade_confidence": 0.75,
+        "city": "Нижний Новгород",
+        "is_remote": true,
+        "published_days_ago": 6,
+        "is_relevant": true
+      },
+      {
+        "id": "c7_v6",
+        "title": "Инженер-электрик",
+        "company": "ЭнергоСбыт",
+        "skills": [
+          "пуэ",
+          "электробезопасность",
+          "чтение схем"
+        ],
+        "experience_years": 4.0,
+        "grade": "Middle",
+        "grade_confidence": 0.9,
+        "city": "Нижний Новгород",
+        "is_remote": false,
+        "published_days_ago": 1,
+        "is_relevant": false
+      },
+      {
+        "id": "c7_v7",
+        "title": "DevOps Engineer (Kubernetes)",
+        "company": "Cloud Tech",
+        "skills": [
+          "kubernetes",
+          "helm",
+          "terraform",
+          "ci/cd"
+        ],
+        "experience_years": 4.0,
+        "grade": "Middle",
+        "grade_confidence": 0.9,
+        "city": "Нижний Новгород",
+        "is_remote": true,
+        "published_days_ago": 2,
+        "is_relevant": false
+      },
+      {
+        "id": "c7_v8",
+        "title": "Менеджер склада",
+        "company": "Логистика Про",
+        "skills": [
+          "1c склад",
+          "инвентаризация",
+          "приемка"
+        ],
+        "experience_years": 2.0,
+        "grade": "Junior",
+        "grade_confidence": 0.8,
+        "city": "Нижний Новгород",
+        "is_remote": false,
+        "published_days_ago": 3,
+        "is_relevant": false
+      },
+      {
+        "id": "c7_v9",
+        "title": "Специалист по закупкам",
+        "company": "ПромТорг",
+        "skills": [
+          "тендеры",
+          "44-фз",
+          "договоры поставки"
+        ],
+        "experience_years": 3.0,
+        "grade": "Middle",
+        "grade_confidence": 0.85,
+        "city": "Нижний Новгород",
+        "is_remote": false,
+        "published_days_ago": 4,
+        "is_relevant": false
+      },
+      {
+        "id": "c7_v10",
+        "title": "Junior QA Manual",
+        "company": "Game Lab",
+        "skills": [
+          "ручное тестирование",
+          "jira",
+          "баг-репорты"
+        ],
+        "experience_years": 0.5,
+        "grade": "Junior",
+        "grade_confidence": 0.8,
+        "city": "Нижний Новгород",
+        "is_remote": true,
+        "published_days_ago": 5,
+        "is_relevant": false
+      }
+    ]
+  },
+  {
+    "case_id": "case_08_hr_middle",
+    "role": "HR Generalist / Recruiter",
+    "candidate": {
+      "role": "HR менеджер",
+      "skills": [
+        "подбор персонала",
+        "собеседования",
+        "онбординг",
+        "huntflow",
+        "адаптация персонала"
+      ],
+      "experience_years": 3.0,
+      "grade": "Middle",
+      "city": "Самара",
+      "is_remote": true
+    },
+    "vacancies": [
+      {
+        "id": "c8_v1",
+        "title": "HR Generalist / Менеджер по персоналу",
+        "company": "Retail Group",
+        "skills": [
+          "подбор персонала",
+          "онбординг",
+          "адаптация персонала",
+          "собеседования"
+        ],
+        "experience_years": 3.0,
+        "grade": "Middle",
+        "grade_confidence": 0.9,
+        "city": "Самара",
+        "is_remote": true,
+        "published_days_ago": 1,
+        "is_relevant": true
+      },
+      {
+        "id": "c8_v2",
+        "title": "IT Recruiter / Рекрутер",
+        "company": "Tech Staffing",
+        "skills": [
+          "huntflow",
+          "подбор персонала",
+          "собеседования"
+        ],
+        "experience_years": 2.5,
+        "grade": "Middle",
+        "grade_confidence": 0.85,
+        "city": "Самара",
+        "is_remote": true,
+        "published_days_ago": 2,
+        "is_relevant": true
+      },
+      {
+        "id": "c8_v3",
+        "title": "Менеджер по подбору и адаптации",
+        "company": "ВолгаЛогистик",
+        "skills": [
+          "подбор персонала",
+          "адаптация персонала",
+          "онбординг"
+        ],
+        "experience_years": 3.0,
+        "grade": "Middle",
+        "grade_confidence": 0.8,
+        "city": "Самара",
+        "is_remote": false,
+        "published_days_ago": 4,
+        "is_relevant": true
+      },
+      {
+        "id": "c8_v4",
+        "title": "HR Manager (Middle)",
+        "company": "Software Hub",
+        "skills": [
+          "онбординг",
+          "подбор персонала",
+          "huntflow",
+          "собеседования"
+        ],
+        "experience_years": 3.0,
+        "grade": "Middle",
+        "grade_confidence": 0.85,
+        "city": "Самара",
+        "is_remote": true,
+        "published_days_ago": 3,
+        "is_relevant": true
+      },
+      {
+        "id": "c8_v5",
+        "title": "Специалист по развитию персонала",
+        "company": "Банк Самара",
+        "skills": [
+          "адаптация персонала",
+          "онбординг",
+          "собеседования"
+        ],
+        "experience_years": 2.0,
+        "grade": "Middle",
+        "grade_confidence": 0.75,
+        "city": "Самара",
+        "is_remote": true,
+        "published_days_ago": 5,
+        "is_relevant": true
+      },
+      {
+        "id": "c8_v6",
+        "title": "Python Data Scientist",
+        "company": "AI Research",
+        "skills": [
+          "python",
+          "pytorch",
+          "transformers",
+          "numpy"
+        ],
+        "experience_years": 3.0,
+        "grade": "Middle",
+        "grade_confidence": 0.9,
+        "city": "Самара",
+        "is_remote": true,
+        "published_days_ago": 1,
+        "is_relevant": false
+      },
+      {
+        "id": "c8_v7",
+        "title": "Мастер СМР (Строительство)",
+        "company": "СтройКомплект",
+        "skills": [
+          "смр",
+          "строительный контроль",
+          "снип"
+        ],
+        "experience_years": 5.0,
+        "grade": "Middle",
+        "grade_confidence": 0.9,
+        "city": "Самара",
+        "is_remote": false,
+        "published_days_ago": 2,
+        "is_relevant": false
+      },
+      {
+        "id": "c8_v8",
+        "title": "Охранник объекта",
+        "company": "ЧОП Щит",
+        "skills": [
+          "лицензия чоо",
+          "видеонаблюдение"
+        ],
+        "experience_years": 1.0,
+        "grade": "Junior",
+        "grade_confidence": 0.8,
+        "city": "Самара",
+        "is_remote": false,
+        "published_days_ago": 3,
+        "is_relevant": false
+      },
+      {
+        "id": "c8_v9",
+        "title": "Frontend Vue.js Developer",
+        "company": "WebDev Studio",
+        "skills": [
+          "vue.js",
+          "vuex",
+          "javascript",
+          "css"
+        ],
+        "experience_years": 2.0,
+        "grade": "Middle",
+        "grade_confidence": 0.85,
+        "city": "Самара",
+        "is_remote": true,
+        "published_days_ago": 4,
+        "is_relevant": false
+      },
+      {
+        "id": "c8_v10",
+        "title": "Автомеханик-слесарь",
+        "company": "СТО АвтоМастер",
+        "skills": [
+          "ремонт двс",
+          "ходовая часть",
+          "диагностика"
+        ],
+        "experience_years": 4.0,
+        "grade": "Middle",
+        "grade_confidence": 0.9,
+        "city": "Самара",
+        "is_remote": false,
+        "published_days_ago": 5,
+        "is_relevant": false
+      }
+    ]
+  },
+  {
+    "case_id": "case_09_java_senior",
+    "role": "Senior Java Developer",
+    "candidate": {
+      "role": "Java Developer",
+      "skills": [
+        "java",
+        "spring boot",
+        "kafka",
+        "postgresql",
+        "microservices",
+        "docker"
+      ],
+      "experience_years": 6.5,
+      "grade": "Senior",
+      "city": "Москва",
+      "is_remote": true
+    },
+    "vacancies": [
+      {
+        "id": "c9_v1",
+        "title": "Senior Java Developer",
+        "company": "Fintech Alpha",
+        "skills": [
+          "java",
+          "spring boot",
+          "microservices",
+          "kafka"
+        ],
+        "experience_years": 6.0,
+        "grade": "Senior",
+        "grade_confidence": 0.95,
+        "city": "Москва",
+        "is_remote": true,
+        "published_days_ago": 1,
+        "is_relevant": true
+      },
+      {
+        "id": "c9_v2",
+        "title": "Старший разработчик Java",
+        "company": "Big Cloud Telecom",
+        "skills": [
+          "java",
+          "spring boot",
+          "postgresql",
+          "docker"
+        ],
+        "experience_years": 6.0,
+        "grade": "Senior",
+        "grade_confidence": 0.9,
+        "city": "Москва",
+        "is_remote": true,
+        "published_days_ago": 2,
+        "is_relevant": true
+      },
+      {
+        "id": "c9_v3",
+        "title": "Lead / Senior Java Engineer",
+        "company": "E-Commerce Giant",
+        "skills": [
+          "java",
+          "kafka",
+          "microservices",
+          "postgresql"
+        ],
+        "experience_years": 7.0,
+        "grade": "Senior",
+        "grade_confidence": 0.95,
+        "city": "Москва",
+        "is_remote": true,
+        "published_days_ago": 3,
+        "is_relevant": true
+      },
+      {
+        "id": "c9_v4",
+        "title": "Backend Java Разработчик (Senior)",
+        "company": "Trading Platform",
+        "skills": [
+          "java",
+          "spring boot",
+          "kafka",
+          "docker"
+        ],
+        "experience_years": 5.5,
+        "grade": "Senior",
+        "grade_confidence": 0.85,
+        "city": "Москва",
+        "is_remote": false,
+        "published_days_ago": 4,
+        "is_relevant": true
+      },
+      {
+        "id": "c9_v5",
+        "title": "Java Architect / Senior Dev",
+        "company": "Digital Solutions",
+        "skills": [
+          "java",
+          "spring boot",
+          "microservices",
+          "postgresql"
+        ],
+        "experience_years": 6.0,
+        "grade": "Senior",
+        "grade_confidence": 0.9,
+        "city": "Москва",
+        "is_remote": true,
+        "published_days_ago": 5,
+        "is_relevant": true
+      },
+      {
+        "id": "c9_v6",
+        "title": "Менеджер по туризму",
+        "company": "Глобус Тур",
+        "skills": [
+          "бронирование туров",
+          "визы",
+          "клиентский сервис"
+        ],
+        "experience_years": 2.0,
+        "grade": "Junior",
+        "grade_confidence": 0.8,
+        "city": "Москва",
+        "is_remote": false,
+        "published_days_ago": 1,
+        "is_relevant": false
+      },
+      {
+        "id": "c9_v7",
+        "title": "Учитель начальных классов",
+        "company": "Школа 123",
+        "skills": [
+          "педагогика",
+          "фгос",
+          "обучение детей"
+        ],
+        "experience_years": 5.0,
+        "grade": "Middle",
+        "grade_confidence": 0.9,
+        "city": "Москва",
+        "is_remote": false,
+        "published_days_ago": 2,
+        "is_relevant": false
+      },
+      {
+        "id": "c9_v8",
+        "title": "Копирайтер-редактор",
+        "company": "Контент Медиа",
+        "skills": [
+          "редактура",
+          "статьи",
+          "интервью"
+        ],
+        "experience_years": 3.0,
+        "grade": "Middle",
+        "grade_confidence": 0.85,
+        "city": "Москва",
+        "is_remote": true,
+        "published_days_ago": 3,
+        "is_relevant": false
+      },
+      {
+        "id": "c9_v9",
+        "title": "Мерчендайзер",
+        "company": "ТоргЛидер",
+        "skills": [
+          "выкладка",
+          "планограмма",
+          "ротация"
+        ],
+        "experience_years": 0.5,
+        "grade": "Junior",
+        "grade_confidence": 0.8,
+        "city": "Москва",
+        "is_remote": false,
+        "published_days_ago": 4,
+        "is_relevant": false
+      },
+      {
+        "id": "c9_v10",
+        "title": "Консультант 1С:ЗУП",
+        "company": "1С Интегратор",
+        "skills": [
+          "1с:зуп",
+          "расчет зарплаты",
+          "консультирование"
+        ],
+        "experience_years": 3.0,
+        "grade": "Middle",
+        "grade_confidence": 0.85,
+        "city": "Москва",
+        "is_remote": false,
+        "published_days_ago": 5,
+        "is_relevant": false
+      }
+    ]
+  },
+  {
+    "case_id": "case_10_lawyer_middle",
+    "role": "Corporate Lawyer",
+    "candidate": {
+      "role": "Корпоративный юрист",
+      "skills": [
+        "договорное право",
+        "корпоративное право",
+        "претензионная работа",
+        "арбитраж",
+        "44-фз"
+      ],
+      "experience_years": 4.0,
+      "grade": "Middle",
+      "city": "Ростов-на-Дону",
+      "is_remote": false
+    },
+    "vacancies": [
+      {
+        "id": "c10_v1",
+        "title": "Ведущий юрист (договорная работа)",
+        "company": "ЮгТранс",
+        "skills": [
+          "договорное право",
+          "претензионная работа",
+          "корпоративное право"
+        ],
+        "experience_years": 4.0,
+        "grade": "Middle",
+        "grade_confidence": 0.9,
+        "city": "Ростов-на-Дону",
+        "is_remote": false,
+        "published_days_ago": 1,
+        "is_relevant": true
+      },
+      {
+        "id": "c10_v2",
+        "title": "Юрист по корпоративному праву",
+        "company": "АгроХолдинг",
+        "skills": [
+          "корпоративное право",
+          "арбитраж",
+          "договорное право"
+        ],
+        "experience_years": 4.0,
+        "grade": "Middle",
+        "grade_confidence": 0.85,
+        "city": "Ростов-на-Дону",
+        "is_remote": false,
+        "published_days_ago": 2,
+        "is_relevant": true
+      },
+      {
+        "id": "c10_v3",
+        "title": "Юрисконсульт",
+        "company": "ПромЗавод",
+        "skills": [
+          "претензионная работа",
+          "договорное право",
+          "44-фз"
+        ],
+        "experience_years": 3.0,
+        "grade": "Middle",
+        "grade_confidence": 0.8,
+        "city": "Ростов-на-Дону",
+        "is_remote": false,
+        "published_days_ago": 3,
+        "is_relevant": true
+      },
+      {
+        "id": "c10_v4",
+        "title": "Юрист по претензионно-исковой работе",
+        "company": "Правовед Юг",
+        "skills": [
+          "арбитраж",
+          "претензионная работа",
+          "договорное право"
+        ],
+        "experience_years": 4.0,
+        "grade": "Middle",
+        "grade_confidence": 0.85,
+        "city": "Ростов-на-Дону",
+        "is_remote": false,
+        "published_days_ago": 4,
+        "is_relevant": true
+      },
+      {
+        "id": "c10_v5",
+        "title": "Корпоративный юрист / Юрисконсульт",
+        "company": "Ритейл Дон",
+        "skills": [
+          "корпоративное право",
+          "договорное право",
+          "44-фз"
+        ],
+        "experience_years": 3.5,
+        "grade": "Middle",
+        "grade_confidence": 0.8,
+        "city": "Ростов-на-Дону",
+        "is_remote": true,
+        "published_days_ago": 5,
+        "is_relevant": true
+      },
+      {
+        "id": "c10_v6",
+        "title": "Data Engineer (Spark/Hadoop)",
+        "company": "BigData Cloud",
+        "skills": [
+          "spark",
+          "hadoop",
+          "scala",
+          "airflow"
+        ],
+        "experience_years": 3.0,
+        "grade": "Middle",
+        "grade_confidence": 0.9,
+        "city": "Ростов-на-Дону",
+        "is_remote": true,
+        "published_days_ago": 1,
+        "is_relevant": false
+      },
+      {
+        "id": "c10_v7",
+        "title": "Швея-портной",
+        "company": "Модный Дом",
+        "skills": [
+          "раскрой",
+          "пошив изделий",
+          "оверлок"
+        ],
+        "experience_years": 3.0,
+        "grade": "Middle",
+        "grade_confidence": 0.85,
+        "city": "Ростов-на-Дону",
+        "is_remote": false,
+        "published_days_ago": 2,
+        "is_relevant": false
+      },
+      {
+        "id": "c10_v8",
+        "title": "Аниматор детских праздников",
+        "company": "Праздник Шоу",
+        "skills": [
+          "актерское мастерство",
+          "работа с детьми"
+        ],
+        "experience_years": 1.0,
+        "grade": "Junior",
+        "grade_confidence": 0.75,
+        "city": "Ростов-на-Дону",
+        "is_remote": false,
+        "published_days_ago": 3,
+        "is_relevant": false
+      },
+      {
+        "id": "c10_v9",
+        "title": "DevOps Engineer (GCP)",
+        "company": "Fintech SaaS",
+        "skills": [
+          "gcp",
+          "terraform",
+          "k8s"
+        ],
+        "experience_years": 4.0,
+        "grade": "Middle",
+        "grade_confidence": 0.9,
+        "city": "Ростов-на-Дону",
+        "is_remote": true,
+        "published_days_ago": 4,
+        "is_relevant": false
+      },
+      {
+        "id": "c10_v10",
+        "title": "Кладовщик-комплектовщик",
+        "company": "Озон Склад",
+        "skills": [
+          "тсд",
+          "комплектация заказов",
+          "склад"
+        ],
+        "experience_years": 0.5,
+        "grade": "Junior",
+        "grade_confidence": 0.8,
+        "city": "Ростов-на-Дону",
+        "is_remote": false,
+        "published_days_ago": 5,
+        "is_relevant": false
+      }
+    ]
+  },
+  {
+    "case_id": "case_11_qa_automation_middle",
+    "role": "QA Automation Engineer",
+    "candidate": {
+      "role": "QA Automation Engineer",
+      "skills": [
+        "python",
+        "pytest",
+        "selenium",
+        "allure",
+        "api testing",
+        "postman"
+      ],
+      "experience_years": 3.0,
+      "grade": "Middle",
+      "city": "Москва",
+      "is_remote": true
+    },
+    "vacancies": [
+      {
+        "id": "c11_v1",
+        "title": "QA Automation (Python)",
+        "company": "InnoTech",
+        "skills": [
+          "python",
+          "pytest",
+          "selenium",
+          "allure"
+        ],
+        "experience_years": 3.0,
+        "grade": "Middle",
+        "grade_confidence": 0.9,
+        "city": "Москва",
+        "is_remote": true,
+        "published_days_ago": 1,
+        "is_relevant": true
+      },
+      {
+        "id": "c11_v2",
+        "title": "Автоматизатор тестирования Python",
+        "company": "Bank System",
+        "skills": [
+          "python",
+          "api testing",
+          "postman",
+          "pytest"
+        ],
+        "experience_years": 3.0,
+        "grade": "Middle",
+        "grade_confidence": 0.85,
+        "city": "Москва",
+        "is_remote": true,
+        "published_days_ago": 2,
+        "is_relevant": true
+      },
+      {
+        "id": "c11_v3",
+        "title": "Middle QA Automation Engineer",
+        "company": "Crypto Exchange",
+        "skills": [
+          "python",
+          "selenium",
+          "allure",
+          "api testing"
+        ],
+        "experience_years": 2.5,
+        "grade": "Middle",
+        "grade_confidence": 0.8,
+        "city": "Москва",
+        "is_remote": true,
+        "published_days_ago": 3,
+        "is_relevant": true
+      },
+      {
+        "id": "c11_v4",
+        "title": "Тестировщик-автоматизатор",
+        "company": "SaaS Platform",
+        "skills": [
+          "pytest",
+          "python",
+          "postman",
+          "selenium"
+        ],
+        "experience_years": 3.0,
+        "grade": "Middle",
+        "grade_confidence": 0.85,
+        "city": "Москва",
+        "is_remote": false,
+        "published_days_ago": 4,
+        "is_relevant": true
+      },
+      {
+        "id": "c11_v5",
+        "title": "QA Engineer (Python Auto)",
+        "company": "Media Soft",
+        "skills": [
+          "python",
+          "allure",
+          "api testing",
+          "pytest"
+        ],
+        "experience_years": 2.0,
+        "grade": "Middle",
+        "grade_confidence": 0.75,
+        "city": "Москва",
+        "is_remote": true,
+        "published_days_ago": 5,
+        "is_relevant": true
+      },
+      {
+        "id": "c11_v6",
+        "title": "Бухгалтер по расчету зарплаты",
+        "company": "Аудит Групп",
+        "skills": [
+          "1с:зуп",
+          "ндфл",
+          "страховые взносы"
+        ],
+        "experience_years": 3.0,
+        "grade": "Middle",
+        "grade_confidence": 0.9,
+        "city": "Москва",
+        "is_remote": false,
+        "published_days_ago": 1,
+        "is_relevant": false
+      },
+      {
+        "id": "c11_v7",
+        "title": "Менеджер по продажам металлопроката",
+        "company": "СтальТорг",
+        "skills": [
+          "металлопрокат",
+          "b2b",
+          "холодная база"
+        ],
+        "experience_years": 2.0,
+        "grade": "Middle",
+        "grade_confidence": 0.85,
+        "city": "Москва",
+        "is_remote": false,
+        "published_days_ago": 2,
+        "is_relevant": false
+      },
+      {
+        "id": "c11_v8",
+        "title": "Врач-терапевт",
+        "company": "Клиника Мед",
+        "skills": [
+          "диагностика",
+          "терапия",
+          "ведение карт"
+        ],
+        "experience_years": 5.0,
+        "grade": "Senior",
+        "grade_confidence": 0.95,
+        "city": "Москва",
+        "is_remote": false,
+        "published_days_ago": 3,
+        "is_relevant": false
+      },
+      {
+        "id": "c11_v9",
+        "title": "Ландшафтный дизайнер",
+        "company": "Грин Арт",
+        "skills": [
+          "дендроплан",
+          "автокад",
+          "озеленение"
+        ],
+        "experience_years": 3.0,
+        "grade": "Middle",
+        "grade_confidence": 0.85,
+        "city": "Москва",
+        "is_remote": false,
+        "published_days_ago": 4,
+        "is_relevant": false
+      },
+      {
+        "id": "c11_v10",
+        "title": "Грузчик на склад",
+        "company": "ПромСклад",
+        "skills": [
+          "физическая выносливость",
+          "погрузка"
+        ],
+        "experience_years": 0.0,
+        "grade": "Junior",
+        "grade_confidence": 0.8,
+        "city": "Москва",
+        "is_remote": false,
+        "published_days_ago": 5,
+        "is_relevant": false
+      }
+    ]
+  },
+  {
+    "case_id": "case_12_data_analyst_middle",
+    "role": "Data Analyst",
+    "candidate": {
+      "role": "Аналитик данных",
+      "skills": [
+        "sql",
+        "python",
+        "power bi",
+        "pandas",
+        "tableau",
+        "a/b тестирование"
+      ],
+      "experience_years": 2.5,
+      "grade": "Middle",
+      "city": "Уфа",
+      "is_remote": true
+    },
+    "vacancies": [
+      {
+        "id": "c12_v1",
+        "title": "Аналитик данных (Middle)",
+        "company": "Fintech Insight",
+        "skills": [
+          "sql",
+          "python",
+          "power bi",
+          "pandas"
+        ],
+        "experience_years": 2.5,
+        "grade": "Middle",
+        "grade_confidence": 0.9,
+        "city": "Уфа",
+        "is_remote": true,
+        "published_days_ago": 1,
+        "is_relevant": true
+      },
+      {
+        "id": "c12_v2",
+        "title": "Product Analyst / Аналитик данных",
+        "company": "Online Cinema",
+        "skills": [
+          "sql",
+          "a/b тестирование",
+          "python",
+          "tableau"
+        ],
+        "experience_years": 2.5,
+        "grade": "Middle",
+        "grade_confidence": 0.85,
+        "city": "Москва",
+        "is_remote": true,
+        "published_days_ago": 2,
+        "is_relevant": true
+      },
+      {
+        "id": "c12_v3",
+        "title": "BI Аналитик",
+        "company": "Retail Retail",
+        "skills": [
+          "power bi",
+          "sql",
+          "pandas",
+          "tableau"
+        ],
+        "experience_years": 2.0,
+        "grade": "Middle",
+        "grade_confidence": 0.8,
+        "city": "Уфа",
+        "is_remote": true,
+        "published_days_ago": 3,
+        "is_relevant": true
+      },
+      {
+        "id": "c12_v4",
+        "title": "Data Analyst",
+        "company": "EdTech Pro",
+        "skills": [
+          "python",
+          "sql",
+          "pandas",
+          "a/b тестирование"
+        ],
+        "experience_years": 3.0,
+        "grade": "Middle",
+        "grade_confidence": 0.85,
+        "city": "Уфа",
+        "is_remote": true,
+        "published_days_ago": 4,
+        "is_relevant": true
+      },
+      {
+        "id": "c12_v5",
+        "title": "Младший / Middle аналитик",
+        "company": "TeleStat",
+        "skills": [
+          "sql",
+          "power bi",
+          "python"
+        ],
+        "experience_years": 1.5,
+        "grade": "Middle",
+        "grade_confidence": 0.75,
+        "city": "Уфа",
+        "is_remote": false,
+        "published_days_ago": 5,
+        "is_relevant": true
+      },
+      {
+        "id": "c12_v6",
+        "title": "Шеф-кондитер",
+        "company": "Сладкий Мир",
+        "skills": [
+          "выпечка",
+          "десерты",
+          "санитарные нормы"
+        ],
+        "experience_years": 5.0,
+        "grade": "Senior",
+        "grade_confidence": 0.9,
+        "city": "Уфа",
+        "is_remote": false,
+        "published_days_ago": 1,
+        "is_relevant": false
+      },
+      {
+        "id": "c12_v7",
+        "title": "Менеджер по закупкам ВЭД (Китай)",
+        "company": "ИмпортГрупп",
+        "skills": [
+          "китайский язык",
+          "вэд",
+          "таможня"
+        ],
+        "experience_years": 3.0,
+        "grade": "Middle",
+        "grade_confidence": 0.85,
+        "city": "Уфа",
+        "is_remote": false,
+        "published_days_ago": 2,
+        "is_relevant": false
+      },
+      {
+        "id": "c12_v8",
+        "title": "Senior iOS Developer",
+        "company": "Mobile App Lab",
+        "skills": [
+          "swift",
+          "combine",
+          "uikit",
+          "swiftui"
+        ],
+        "experience_years": 5.0,
+        "grade": "Senior",
+        "grade_confidence": 0.95,
+        "city": "Уфа",
+        "is_remote": true,
+        "published_days_ago": 3,
+        "is_relevant": false
+      },
+      {
+        "id": "c12_v9",
+        "title": "Агроном-семеновод",
+        "company": "АгроТех",
+        "skills": [
+          "селекция",
+          "растениеводство",
+          "удобрения"
+        ],
+        "experience_years": 4.0,
+        "grade": "Middle",
+        "grade_confidence": 0.9,
+        "city": "Уфа",
+        "is_remote": false,
+        "published_days_ago": 4,
+        "is_relevant": false
+      },
+      {
+        "id": "c12_v10",
+        "title": "Монтажник натяжных потолков",
+        "company": "УютСервис",
+        "skills": [
+          "монтаж",
+          "перфоратор",
+          "пушка"
+        ],
+        "experience_years": 2.0,
+        "grade": "Junior",
+        "grade_confidence": 0.8,
+        "city": "Уфа",
+        "is_remote": false,
+        "published_days_ago": 5,
+        "is_relevant": false
+      }
+    ]
+  },
+  {
+    "case_id": "case_13_project_manager_middle",
+    "role": "IT Project Manager",
+    "candidate": {
+      "role": "Project Manager",
+      "skills": [
+        "agile",
+        "scrum",
+        "jira",
+        "управление проектами",
+        "confluence",
+        "риск-менеджмент"
+      ],
+      "experience_years": 3.5,
+      "grade": "Middle",
+      "city": "Казань",
+      "is_remote": true
+    },
+    "vacancies": [
+      {
+        "id": "c13_v1",
+        "title": "IT Project Manager",
+        "company": "Digital Factory",
+        "skills": [
+          "agile",
+          "scrum",
+          "jira",
+          "управление проектами"
+        ],
+        "experience_years": 3.0,
+        "grade": "Middle",
+        "grade_confidence": 0.9,
+        "city": "Казань",
+        "is_remote": true,
+        "published_days_ago": 1,
+        "is_relevant": true
+      },
+      {
+        "id": "c13_v2",
+        "title": "Менеджер IT-проектов",
+        "company": "Fintech Solutions",
+        "skills": [
+          "jira",
+          "confluence",
+          "scrum",
+          "риск-менеджмент"
+        ],
+        "experience_years": 3.5,
+        "grade": "Middle",
+        "grade_confidence": 0.85,
+        "city": "Казань",
+        "is_remote": true,
+        "published_days_ago": 2,
+        "is_relevant": true
+      },
+      {
+        "id": "c13_v3",
+        "title": "Scrum Master / PM",
+        "company": "SaaS Platform",
+        "skills": [
+          "agile",
+          "scrum",
+          "управление проектами",
+          "jira"
+        ],
+        "experience_years": 3.0,
+        "grade": "Middle",
+        "grade_confidence": 0.8,
+        "city": "Казань",
+        "is_remote": true,
+        "published_days_ago": 3,
+        "is_relevant": true
+      },
+      {
+        "id": "c13_v4",
+        "title": "Project Manager (Web/Mobile)",
+        "company": "App Studio",
+        "skills": [
+          "jira",
+          "agile",
+          "риск-менеджмент",
+          "confluence"
+        ],
+        "experience_years": 3.0,
+        "grade": "Middle",
+        "grade_confidence": 0.85,
+        "city": "Казань",
+        "is_remote": false,
+        "published_days_ago": 4,
+        "is_relevant": true
+      },
+      {
+        "id": "c13_v5",
+        "title": "Руководитель проектов разработки",
+        "company": "Software Lab",
+        "skills": [
+          "управление проектами",
+          "agile",
+          "jira"
+        ],
+        "experience_years": 4.0,
+        "grade": "Middle",
+        "grade_confidence": 0.75,
+        "city": "Казань",
+        "is_remote": true,
+        "published_days_ago": 5,
+        "is_relevant": true
+      },
+      {
+        "id": "c13_v6",
+        "title": "Инженер-электроник",
+        "company": "Завод Электроника",
+        "skills": [
+          "пайка",
+          "осциллограф",
+          "микроконтроллеры"
+        ],
+        "experience_years": 3.0,
+        "grade": "Middle",
+        "grade_confidence": 0.9,
+        "city": "Казань",
+        "is_remote": false,
+        "published_days_ago": 1,
+        "is_relevant": false
+      },
+      {
+        "id": "c13_v7",
+        "title": "Фармацевт",
+        "company": "Аптека Вита",
+        "skills": [
+          "фармация",
+          "отпуск лс",
+          "касса"
+        ],
+        "experience_years": 2.0,
+        "grade": "Junior",
+        "grade_confidence": 0.85,
+        "city": "Казань",
+        "is_remote": false,
+        "published_days_ago": 2,
+        "is_relevant": false
+      },
+      {
+        "id": "c13_v8",
+        "title": "3D Моделлер персонажей",
+        "company": "Game Dev Indie",
+        "skills": [
+          "blender",
+          "zbrush",
+          "substance painter"
+        ],
+        "experience_years": 3.0,
+        "grade": "Middle",
+        "grade_confidence": 0.85,
+        "city": "Казань",
+        "is_remote": true,
+        "published_days_ago": 3,
+        "is_relevant": false
+      },
+      {
+        "id": "c13_v9",
+        "title": "Бухгалтер по учету ТМЦ",
+        "company": "Оптовик",
+        "skills": [
+          "1с:бухгалтерия",
+          "списание тмц",
+          "инвентаризация"
+        ],
+        "experience_years": 3.0,
+        "grade": "Middle",
+        "grade_confidence": 0.9,
+        "city": "Казань",
+        "is_remote": false,
+        "published_days_ago": 4,
+        "is_relevant": false
+      },
+      {
+        "id": "c13_v10",
+        "title": "Курьер на личном авто",
+        "company": "Экспресс Доставка",
+        "skills": [
+          "безаварийный стаж",
+          "смартфон"
+        ],
+        "experience_years": 1.0,
+        "grade": "Junior",
+        "grade_confidence": 0.8,
+        "city": "Казань",
+        "is_remote": false,
+        "published_days_ago": 5,
+        "is_relevant": false
+      }
+    ]
+  },
+  {
+    "case_id": "case_14_logistics_middle",
+    "role": "Logistics Coordinator",
+    "candidate": {
+      "role": "Менеджер по логистике",
+      "skills": [
+        "транспортная логистика",
+        "1c:предприятие",
+        "работа с перевозчиками",
+        "документооборот",
+        "оптимизация маршрутов"
+      ],
+      "experience_years": 3.0,
+      "grade": "Middle",
+      "city": "Краснодар",
+      "is_remote": false
+    },
+    "vacancies": [
+      {
+        "id": "c14_v1",
+        "title": "Менеджер по транспортной логистике",
+        "company": "ЮгЛогистик",
+        "skills": [
+          "транспортная логистика",
+          "1c:предприятие",
+          "работа с перевозчиками"
+        ],
+        "experience_years": 3.0,
+        "grade": "Middle",
+        "grade_confidence": 0.9,
+        "city": "Краснодар",
+        "is_remote": false,
+        "published_days_ago": 1,
+        "is_relevant": true
+      },
+      {
+        "id": "c14_v2",
+        "title": "Логист по автоперевозкам",
+        "company": "ТрансЮг",
+        "skills": [
+          "работа с перевозчиками",
+          "оптимизация маршрутов",
+          "документооборот"
+        ],
+        "experience_years": 2.5,
+        "grade": "Middle",
+        "grade_confidence": 0.85,
+        "city": "Краснодар",
+        "is_remote": false,
+        "published_days_ago": 2,
+        "is_relevant": true
+      },
+      {
+        "id": "c14_v3",
+        "title": "Координатор логистических процессов",
+        "company": "АгроТранс",
+        "skills": [
+          "транспортная логистика",
+          "1c:предприятие",
+          "документооборот"
+        ],
+        "experience_years": 3.0,
+        "grade": "Middle",
+        "grade_confidence": 0.8,
+        "city": "Краснодар",
+        "is_remote": false,
+        "published_days_ago": 3,
+        "is_relevant": true
+      },
+      {
+        "id": "c14_v4",
+        "title": "Диспетчер-логист",
+        "company": "Грузовой Альянс",
+        "skills": [
+          "работа с перевозчиками",
+          "транспортная логистика",
+          "оптимизация маршрутов"
+        ],
+        "experience_years": 2.0,
+        "grade": "Middle",
+        "grade_confidence": 0.8,
+        "city": "Краснодар",
+        "is_remote": false,
+        "published_days_ago": 4,
+        "is_relevant": true
+      },
+      {
+        "id": "c14_v5",
+        "title": "Специалист по логистике",
+        "company": "КубаньТорг",
+        "skills": [
+          "1c:предприятие",
+          "документооборот",
+          "транспортная логистика"
+        ],
+        "experience_years": 3.0,
+        "grade": "Middle",
+        "grade_confidence": 0.75,
+        "city": "Краснодар",
+        "is_remote": true,
+        "published_days_ago": 5,
+        "is_relevant": true
+      },
+      {
+        "id": "c14_v6",
+        "title": "Fullstack Ruby on Rails Dev",
+        "company": "Ruby Studio",
+        "skills": [
+          "ruby on rails",
+          "postgresql",
+          "stimulus"
+        ],
+        "experience_years": 4.0,
+        "grade": "Middle",
+        "grade_confidence": 0.9,
+        "city": "Краснодар",
+        "is_remote": true,
+        "published_days_ago": 1,
+        "is_relevant": false
+      },
+      {
+        "id": "c14_v7",
+        "title": "Мастер маникюра",
+        "company": "Салон Красоты",
+        "skills": [
+          "аппаратный маникюр",
+          "дизайн ногтей"
+        ],
+        "experience_years": 2.0,
+        "grade": "Junior",
+        "grade_confidence": 0.85,
+        "city": "Краснодар",
+        "is_remote": false,
+        "published_days_ago": 2,
+        "is_relevant": false
+      },
+      {
+        "id": "c14_v8",
+        "title": "Инженер по качеству (ПО)",
+        "company": "TechLab",
+        "skills": [
+          "qa",
+          "тестирование",
+          "тест-кейсы"
+        ],
+        "experience_years": 2.0,
+        "grade": "Middle",
+        "grade_confidence": 0.85,
+        "city": "Краснодар",
+        "is_remote": true,
+        "published_days_ago": 3,
+        "is_relevant": false
+      },
+      {
+        "id": "c14_v9",
+        "title": "Педагог-психолог",
+        "company": "Гимназия",
+        "skills": [
+          "детская психология",
+          "диагностика"
+        ],
+        "experience_years": 4.0,
+        "grade": "Middle",
+        "grade_confidence": 0.9,
+        "city": "Краснодар",
+        "is_remote": false,
+        "published_days_ago": 4,
+        "is_relevant": false
+      },
+      {
+        "id": "c14_v10",
+        "title": "Бармен-бариста",
+        "company": "Крафт Бар",
+        "skills": [
+          "коктейли",
+          "кофемашина",
+          "инвентаризация"
+        ],
+        "experience_years": 1.0,
+        "grade": "Junior",
+        "grade_confidence": 0.8,
+        "city": "Краснодар",
+        "is_remote": false,
+        "published_days_ago": 5,
+        "is_relevant": false
+      }
+    ]
+  },
+  {
+    "case_id": "case_15_financial_analyst_middle",
+    "role": "Financial Analyst",
+    "candidate": {
+      "role": "Финансовый аналитик",
+      "skills": [
+        "финансовое моделирование",
+        "excel",
+        "бюджетирование",
+        "p&l",
+        "cf",
+        "управленческий учет"
+      ],
+      "experience_years": 3.0,
+      "grade": "Middle",
+      "city": "Москва",
+      "is_remote": true
+    },
+    "vacancies": [
+      {
+        "id": "c15_v1",
+        "title": "Финансовый аналитик (Middle)",
+        "company": "Инвест Капитал",
+        "skills": [
+          "финансовое моделирование",
+          "excel",
+          "p&l",
+          "бюджетирование"
+        ],
+        "experience_years": 3.0,
+        "grade": "Middle",
+        "grade_confidence": 0.9,
+        "city": "Москва",
+        "is_remote": true,
+        "published_days_ago": 1,
+        "is_relevant": true
+      },
+      {
+        "id": "c15_v2",
+        "title": "Аналитик по бюджетированию",
+        "company": "Холдинг Групп",
+        "skills": [
+          "бюджетирование",
+          "управленческий учет",
+          "cf",
+          "excel"
+        ],
+        "experience_years": 3.0,
+        "grade": "Middle",
+        "grade_confidence": 0.85,
+        "city": "Москва",
+        "is_remote": false,
+        "published_days_ago": 2,
+        "is_relevant": true
+      },
+      {
+        "id": "c15_v3",
+        "title": "Финансовый менеджер / аналитик",
+        "company": "Ритейл Маркет",
+        "skills": [
+          "p&l",
+          "cf",
+          "финансовое моделирование",
+          "excel"
+        ],
+        "experience_years": 2.5,
+        "grade": "Middle",
+        "grade_confidence": 0.8,
+        "city": "Москва",
+        "is_remote": true,
+        "published_days_ago": 3,
+        "is_relevant": true
+      },
+      {
+        "id": "c15_v4",
+        "title": "Middle Financial Analyst",
+        "company": "Fintech Global",
+        "skills": [
+          "финансовое моделирование",
+          "управленческий учет",
+          "excel"
+        ],
+        "experience_years": 3.0,
+        "grade": "Middle",
+        "grade_confidence": 0.85,
+        "city": "Москва",
+        "is_remote": true,
+        "published_days_ago": 4,
+        "is_relevant": true
+      },
+      {
+        "id": "c15_v5",
+        "title": "Экономист-аналитик",
+        "company": "ПромИнвест",
+        "skills": [
+          "бюджетирование",
+          "excel",
+          "p&l"
+        ],
+        "experience_years": 2.0,
+        "grade": "Middle",
+        "grade_confidence": 0.75,
+        "city": "Москва",
+        "is_remote": true,
+        "published_days_ago": 5,
+        "is_relevant": true
+      },
+      {
+        "id": "c15_v6",
+        "title": "iOS Разработчик (Swift)",
+        "company": "App Studio",
+        "skills": [
+          "swift",
+          "uikit",
+          "autolayout"
+        ],
+        "experience_years": 3.0,
+        "grade": "Middle",
+        "grade_confidence": 0.9,
+        "city": "Москва",
+        "is_remote": true,
+        "published_days_ago": 1,
+        "is_relevant": false
+      },
+      {
+        "id": "c15_v7",
+        "title": "Охранник ГБР",
+        "company": "Охрана Союз",
+        "skills": [
+          "разрешение на оружие",
+          "физподготовка"
+        ],
+        "experience_years": 2.0,
+        "grade": "Middle",
+        "grade_confidence": 0.85,
+        "city": "Москва",
+        "is_remote": false,
+        "published_days_ago": 2,
+        "is_relevant": false
+      },
+      {
+        "id": "c15_v8",
+        "title": "Монтажник СКС",
+        "company": "СвязьСтрой",
+        "skills": [
+          "скс",
+          "прокладка кабеля",
+          "витая пара"
+        ],
+        "experience_years": 1.5,
+        "grade": "Junior",
+        "grade_confidence": 0.8,
+        "city": "Москва",
+        "is_remote": false,
+        "published_days_ago": 3,
+        "is_relevant": false
+      },
+      {
+        "id": "c15_v9",
+        "title": "Шеф-повар итальянской кухни",
+        "company": "Траттория",
+        "skills": [
+          "паста",
+          "пицца",
+          "калькуляционные карты"
+        ],
+        "experience_years": 6.0,
+        "grade": "Senior",
+        "grade_confidence": 0.9,
+        "city": "Москва",
+        "is_remote": false,
+        "published_days_ago": 4,
+        "is_relevant": false
+      },
+      {
+        "id": "c15_v10",
+        "title": "Флорист",
+        "company": "Цветы Люкс",
+        "skills": [
+          "сборка букетов",
+          "уход за цветами"
+        ],
+        "experience_years": 1.0,
+        "grade": "Junior",
+        "grade_confidence": 0.8,
+        "city": "Москва",
+        "is_remote": false,
+        "published_days_ago": 5,
+        "is_relevant": false
+      }
+    ]
+  },
+  {
+    "case_id": "case_16_sysadmin_middle",
+    "role": "System Administrator",
+    "candidate": {
+      "role": "Системный администратор",
+      "skills": [
+        "linux",
+        "windows server",
+        "active directory",
+        "сетевые протоколы",
+        "виртуализация",
+        "резервное копирование"
+      ],
+      "experience_years": 4.0,
+      "grade": "Middle",
+      "city": "Челябинск",
+      "is_remote": false
+    },
+    "vacancies": [
+      {
+        "id": "c16_v1",
+        "title": "Системный администратор (Linux / Windows)",
+        "company": "ТехноСервис",
+        "skills": [
+          "linux",
+          "windows server",
+          "active directory",
+          "сетевые протоколы"
+        ],
+        "experience_years": 3.5,
+        "grade": "Middle",
+        "grade_confidence": 0.9,
+        "city": "Челябинск",
+        "is_remote": false,
+        "published_days_ago": 1,
+        "is_relevant": true
+      },
+      {
+        "id": "c16_v2",
+        "title": "Ведущий системный администратор",
+        "company": "ЧТПЗ Групп",
+        "skills": [
+          "active directory",
+          "виртуализация",
+          "резервное копирование",
+          "windows server"
+        ],
+        "experience_years": 4.0,
+        "grade": "Middle",
+        "grade_confidence": 0.85,
+        "city": "Челябинск",
+        "is_remote": false,
+        "published_days_ago": 2,
+        "is_relevant": true
+      },
+      {
+        "id": "c16_v3",
+        "title": "Инженер техподдержки 2 линии / Сисадмин",
+        "company": "Регион Связь",
+        "skills": [
+          "linux",
+          "сетевые протоколы",
+          "active directory"
+        ],
+        "experience_years": 3.0,
+        "grade": "Middle",
+        "grade_confidence": 0.8,
+        "city": "Челябинск",
+        "is_remote": false,
+        "published_days_ago": 3,
+        "is_relevant": true
+      },
+      {
+        "id": "c16_v4",
+        "title": "Администратор серверов и сетей",
+        "company": "ПромКомплект",
+        "skills": [
+          "виртуализация",
+          "linux",
+          "сетевые протоколы",
+          "резервное копирование"
+        ],
+        "experience_years": 4.0,
+        "grade": "Middle",
+        "grade_confidence": 0.85,
+        "city": "Челябинск",
+        "is_remote": false,
+        "published_days_ago": 4,
+        "is_relevant": true
+      },
+      {
+        "id": "c16_v5",
+        "title": "Системный администратор офиса",
+        "company": "ТоргСнаб",
+        "skills": [
+          "windows server",
+          "active directory",
+          "резервное копирование"
+        ],
+        "experience_years": 3.0,
+        "grade": "Middle",
+        "grade_confidence": 0.75,
+        "city": "Челябинск",
+        "is_remote": true,
+        "published_days_ago": 5,
+        "is_relevant": true
+      },
+      {
+        "id": "c16_v6",
+        "title": "SMM-копирайтер",
+        "company": "Бьюти Бренд",
+        "skills": [
+          "тексты",
+          "рилс",
+          "сторис"
+        ],
+        "experience_years": 1.0,
+        "grade": "Junior",
+        "grade_confidence": 0.85,
+        "city": "Челябинск",
+        "is_remote": true,
+        "published_days_ago": 1,
+        "is_relevant": false
+      },
+      {
+        "id": "c16_v7",
+        "title": "Врач-стоматолог",
+        "company": "Дент Люкс",
+        "skills": [
+          "терапия",
+          "пломбирование",
+          "рентген"
+        ],
+        "experience_years": 5.0,
+        "grade": "Senior",
+        "grade_confidence": 0.95,
+        "city": "Челябинск",
+        "is_remote": false,
+        "published_days_ago": 2,
+        "is_relevant": false
+      },
+      {
+        "id": "c16_v8",
+        "title": "Главный энергетик",
+        "company": "Завод Теплоприбор",
+        "skills": [
+          "энергохозяйство",
+          "птэээ",
+          "допуски"
+        ],
+        "experience_years": 8.0,
+        "grade": "Lead",
+        "grade_confidence": 0.9,
+        "city": "Челябинск",
+        "is_remote": false,
+        "published_days_ago": 3,
+        "is_relevant": false
+      },
+      {
+        "id": "c16_v9",
+        "title": "Асессор-тестировщик поиска",
+        "company": "Поиск Онлайн",
+        "skills": [
+          "разметка данных",
+          "внимательность"
+        ],
+        "experience_years": 0.5,
+        "grade": "Junior",
+        "grade_confidence": 0.8,
+        "city": "Челябинск",
+        "is_remote": true,
+        "published_days_ago": 4,
+        "is_relevant": false
+      },
+      {
+        "id": "c16_v10",
+        "title": "Водитель такси",
+        "company": "Такси Парк",
+        "skills": [
+          "стаж вождения",
+          "знание города"
+        ],
+        "experience_years": 3.0,
+        "grade": "Middle",
+        "grade_confidence": 0.85,
+        "city": "Челябинск",
+        "is_remote": false,
+        "published_days_ago": 5,
+        "is_relevant": false
+      }
+    ]
+  },
+  {
+    "case_id": "case_17_copywriter_middle",
+    "role": "Content Manager / Copywriter",
+    "candidate": {
+      "role": "Копирайтер",
+      "skills": [
+        "копирайтинг",
+        "редактура",
+        "smm",
+        "контент-план",
+        "статьи",
+        "seo-копирайтинг"
+      ],
+      "experience_years": 2.5,
+      "grade": "Middle",
+      "city": "Самара",
+      "is_remote": true
+    },
+    "vacancies": [
+      {
+        "id": "c17_v1",
+        "title": "Копирайтер / Автор текстов",
+        "company": "Media House",
+        "skills": [
+          "копирайтинг",
+          "статьи",
+          "редактура",
+          "seo-копирайтинг"
+        ],
+        "experience_years": 2.5,
+        "grade": "Middle",
+        "grade_confidence": 0.9,
+        "city": "Самара",
+        "is_remote": true,
+        "published_days_ago": 1,
+        "is_relevant": true
+      },
+      {
+        "id": "c17_v2",
+        "title": "Контент-менеджер / Копирайтер",
+        "company": "E-Commerce Shop",
+        "skills": [
+          "контент-план",
+          "копирайтинг",
+          "smm",
+          "редактура"
+        ],
+        "experience_years": 2.0,
+        "grade": "Middle",
+        "grade_confidence": 0.85,
+        "city": "Самара",
+        "is_remote": true,
+        "published_days_ago": 2,
+        "is_relevant": true
+      },
+      {
+        "id": "c17_v3",
+        "title": "Автор статей / SEO-копирайтер",
+        "company": "SEO Agency",
+        "skills": [
+          "seo-копирайтинг",
+          "статьи",
+          "копирайтинг"
+        ],
+        "experience_years": 2.5,
+        "grade": "Middle",
+        "grade_confidence": 0.8,
+        "city": "Самара",
+        "is_remote": true,
+        "published_days_ago": 3,
+        "is_relevant": true
+      },
+      {
+        "id": "c17_v4",
+        "title": "Редактор блога и соцсетей",
+        "company": "EdTech Platform",
+        "skills": [
+          "редактура",
+          "контент-план",
+          "статьи",
+          "smm"
+        ],
+        "experience_years": 3.0,
+        "grade": "Middle",
+        "grade_confidence": 0.85,
+        "city": "Самара",
+        "is_remote": true,
+        "published_days_ago": 4,
+        "is_relevant": true
+      },
+      {
+        "id": "c17_v5",
+        "title": "SMM-копирайтер",
+        "company": "Маркетинг Лаб",
+        "skills": [
+          "smm",
+          "копирайтинг",
+          "контент-план"
+        ],
+        "experience_years": 2.0,
+        "grade": "Middle",
+        "grade_confidence": 0.75,
+        "city": "Самара",
+        "is_remote": true,
+        "published_days_ago": 5,
+        "is_relevant": true
+      },
+      {
+        "id": "c17_v6",
+        "title": "Инженер-программист PLC",
+        "company": "АСУТП Сервис",
+        "skills": [
+          "siemens",
+          "step7",
+          "tia portal"
+        ],
+        "experience_years": 4.0,
+        "grade": "Middle",
+        "grade_confidence": 0.9,
+        "city": "Самара",
+        "is_remote": false,
+        "published_days_ago": 1,
+        "is_relevant": false
+      },
+      {
+        "id": "c17_v7",
+        "title": "Слесарь-сантехник",
+        "company": "ЖКХ Волга",
+        "skills": [
+          "монтаж труб",
+          "сварка",
+          "замена радиаторов"
+        ],
+        "experience_years": 3.0,
+        "grade": "Middle",
+        "grade_confidence": 0.85,
+        "city": "Самара",
+        "is_remote": false,
+        "published_days_ago": 2,
+        "is_relevant": false
+      },
+      {
+        "id": "c17_v8",
+        "title": "Machine Learning Engineer",
+        "company": "DeepTech",
+        "skills": [
+          "pytorch",
+          "nlp",
+          "transformers",
+          "python"
+        ],
+        "experience_years": 4.0,
+        "grade": "Middle",
+        "grade_confidence": 0.95,
+        "city": "Самара",
+        "is_remote": true,
+        "published_days_ago": 3,
+        "is_relevant": false
+      },
+      {
+        "id": "c17_v9",
+        "title": "Кредитный аналитик",
+        "company": "Банк Кредит",
+        "skills": [
+          "скоринг",
+          "финансовый анализ",
+          "мсфо"
+        ],
+        "experience_years": 3.0,
+        "grade": "Middle",
+        "grade_confidence": 0.85,
+        "city": "Самара",
+        "is_remote": false,
+        "published_days_ago": 4,
+        "is_relevant": false
+      },
+      {
+        "id": "c17_v10",
+        "title": "Повар сушист",
+        "company": "Суши Вок",
+        "skills": [
+          "приготовление роллов",
+          "техкарты"
+        ],
+        "experience_years": 1.5,
+        "grade": "Junior",
+        "grade_confidence": 0.8,
+        "city": "Самара",
+        "is_remote": false,
+        "published_days_ago": 5,
+        "is_relevant": false
+      }
+    ]
+  },
+  {
+    "case_id": "case_18_support_lead_middle",
+    "role": "Customer Support Lead",
+    "candidate": {
+      "role": "Руководитель службы поддержки",
+      "skills": [
+        "управление командой поддержки",
+        "helpdesk",
+        "sla",
+        "csat",
+        "клиентский сервис",
+        "обучение персонала"
+      ],
+      "experience_years": 4.0,
+      "grade": "Middle",
+      "city": "Воронеж",
+      "is_remote": true
+    },
+    "vacancies": [
+      {
+        "id": "c18_v1",
+        "title": "Team Lead службы поддержки пользователей",
+        "company": "SaaS Help",
+        "skills": [
+          "управление командой поддержки",
+          "helpdesk",
+          "sla",
+          "csat"
+        ],
+        "experience_years": 3.5,
+        "grade": "Middle",
+        "grade_confidence": 0.9,
+        "city": "Воронеж",
+        "is_remote": true,
+        "published_days_ago": 1,
+        "is_relevant": true
+      },
+      {
+        "id": "c18_v2",
+        "title": "Руководитель группы технической поддержки",
+        "company": "Fintech App",
+        "skills": [
+          "helpdesk",
+          "sla",
+          "клиентский сервис",
+          "обучение персонала"
+        ],
+        "experience_years": 4.0,
+        "grade": "Middle",
+        "grade_confidence": 0.85,
+        "city": "Воронеж",
+        "is_remote": true,
+        "published_days_ago": 2,
+        "is_relevant": true
+      },
+      {
+        "id": "c18_v3",
+        "title": "Head of Customer Support (Middle+)",
+        "company": "E-Commerce",
+        "skills": [
+          "csat",
+          "sla",
+          "управление командой поддержки"
+        ],
+        "experience_years": 4.0,
+        "grade": "Middle",
+        "grade_confidence": 0.85,
+        "city": "Воронеж",
+        "is_remote": true,
+        "published_days_ago": 3,
+        "is_relevant": true
+      },
+      {
+        "id": "c18_v4",
+        "title": "Ведущий специалист клиентского сервиса",
+        "company": "Онлайн Сервис",
+        "skills": [
+          "клиентский сервис",
+          "csat",
+          "обучение персонала",
+          "helpdesk"
+        ],
+        "experience_years": 3.0,
+        "grade": "Middle",
+        "grade_confidence": 0.8,
+        "city": "Воронеж",
+        "is_remote": false,
+        "published_days_ago": 4,
+        "is_relevant": true
+      },
+      {
+        "id": "c18_v5",
+        "title": "Team Lead техподдержки",
+        "company": "Game Platform",
+        "skills": [
+          "управление командой поддержки",
+          "sla",
+          "helpdesk"
+        ],
+        "experience_years": 3.5,
+        "grade": "Middle",
+        "grade_confidence": 0.8,
+        "city": "Воронеж",
+        "is_remote": true,
+        "published_days_ago": 5,
+        "is_relevant": true
+      },
+      {
+        "id": "c18_v6",
+        "title": "Разработчик Embedded C",
+        "company": "Микросхемы",
+        "skills": [
+          "c",
+          "stm32",
+          "rtos",
+          "arm"
+        ],
+        "experience_years": 4.0,
+        "grade": "Middle",
+        "grade_confidence": 0.95,
+        "city": "Воронеж",
+        "is_remote": false,
+        "published_days_ago": 1,
+        "is_relevant": false
+      },
+      {
+        "id": "c18_v7",
+        "title": "Агроном по защите растений",
+        "company": "Черноземье Агро",
+        "skills": [
+          "сизр",
+          "мониторинг полей",
+          "гербициды"
+        ],
+        "experience_years": 3.0,
+        "grade": "Middle",
+        "grade_confidence": 0.9,
+        "city": "Воронеж",
+        "is_remote": false,
+        "published_days_ago": 2,
+        "is_relevant": false
+      },
+      {
+        "id": "c18_v8",
+        "title": "Сметчик в строительстве",
+        "company": "ГрандСмета",
+        "skills": [
+          "гранд-смета",
+          "фер",
+          "тер",
+          "кс-2"
+        ],
+        "experience_years": 5.0,
+        "grade": "Middle",
+        "grade_confidence": 0.85,
+        "city": "Воронеж",
+        "is_remote": false,
+        "published_days_ago": 3,
+        "is_relevant": false
+      },
+      {
+        "id": "c18_v9",
+        "title": "Шлифовщик по металлу",
+        "company": "ВоронежСталь",
+        "skills": [
+          "шлифовальный станок",
+          "допуски и посадки"
+        ],
+        "experience_years": 2.0,
+        "grade": "Junior",
+        "grade_confidence": 0.8,
+        "city": "Воронеж",
+        "is_remote": false,
+        "published_days_ago": 4,
+        "is_relevant": false
+      },
+      {
+        "id": "c18_v10",
+        "title": "Учитель английского языка",
+        "company": "Языковая Школа",
+        "skills": [
+          "ielts",
+          "toefl",
+          "коммуникативная методика"
+        ],
+        "experience_years": 3.0,
+        "grade": "Middle",
+        "grade_confidence": 0.85,
+        "city": "Воронеж",
+        "is_remote": true,
+        "published_days_ago": 5,
+        "is_relevant": false
+      }
+    ]
+  },
+  {
+    "case_id": "case_19_product_manager_senior",
+    "role": "Product Manager",
+    "candidate": {
+      "role": "Product Manager",
+      "skills": [
+        "product discovery",
+        "roadmap",
+        "unit economics",
+        "a/b тесты",
+        "анализ метрик",
+        "custdev"
+      ],
+      "experience_years": 6.0,
+      "grade": "Senior",
+      "city": "Москва",
+      "is_remote": true
+    },
+    "vacancies": [
+      {
+        "id": "c19_v1",
+        "title": "Senior Product Manager",
+        "company": "SuperApp Inc",
+        "skills": [
+          "product discovery",
+          "roadmap",
+          "unit economics",
+          "a/b тесты"
+        ],
+        "experience_years": 5.5,
+        "grade": "Senior",
+        "grade_confidence": 0.95,
+        "city": "Москва",
+        "is_remote": true,
+        "published_days_ago": 1,
+        "is_relevant": true
+      },
+      {
+        "id": "c19_v2",
+        "title": "Ведущий продакт-менеджер",
+        "company": "Fintech Ecosystem",
+        "skills": [
+          "custdev",
+          "roadmap",
+          "анализ метрик",
+          "unit economics"
+        ],
+        "experience_years": 6.0,
+        "grade": "Senior",
+        "grade_confidence": 0.9,
+        "city": "Москва",
+        "is_remote": true,
+        "published_days_ago": 2,
+        "is_relevant": true
+      },
+      {
+        "id": "c19_v3",
+        "title": "Product Lead (B2C)",
+        "company": "Marketplace Pro",
+        "skills": [
+          "product discovery",
+          "a/b тесты",
+          "custdev",
+          "анализ метрик"
+        ],
+        "experience_years": 6.0,
+        "grade": "Senior",
+        "grade_confidence": 0.9,
+        "city": "Москва",
+        "is_remote": true,
+        "published_days_ago": 3,
+        "is_relevant": true
+      },
+      {
+        "id": "c19_v4",
+        "title": "Senior Product Owner",
+        "company": "Online Bank",
+        "skills": [
+          "roadmap",
+          "unit economics",
+          "product discovery",
+          "custdev"
+        ],
+        "experience_years": 5.0,
+        "grade": "Senior",
+        "grade_confidence": 0.85,
+        "city": "Москва",
+        "is_remote": false,
+        "published_days_ago": 4,
+        "is_relevant": true
+      },
+      {
+        "id": "c19_v5",
+        "title": "Руководитель продукта / CPO",
+        "company": "Travel Tech",
+        "skills": [
+          "roadmap",
+          "анализ метрик",
+          "unit economics",
+          "a/b тесты"
+        ],
+        "experience_years": 6.0,
+        "grade": "Senior",
+        "grade_confidence": 0.95,
+        "city": "Москва",
+        "is_remote": true,
+        "published_days_ago": 5,
+        "is_relevant": true
+      },
+      {
+        "id": "c19_v6",
+        "title": "Монтажник кондиционеров",
+        "company": "Климат Сервис",
+        "skills": [
+          "вальцовка",
+          "вакуумирование",
+          "монтаж трассы"
+        ],
+        "experience_years": 3.0,
+        "grade": "Middle",
+        "grade_confidence": 0.85,
+        "city": "Москва",
+        "is_remote": false,
+        "published_days_ago": 1,
+        "is_relevant": false
+      },
+      {
+        "id": "c19_v7",
+        "title": "Массажист спа-салона",
+        "company": "Релакс Спа",
+        "skills": [
+          "классический массаж",
+          "медкнижка"
+        ],
+        "experience_years": 2.0,
+        "grade": "Junior",
+        "grade_confidence": 0.8,
+        "city": "Москва",
+        "is_remote": false,
+        "published_days_ago": 2,
+        "is_relevant": false
+      },
+      {
+        "id": "c19_v8",
+        "title": "Специалист по охране труда",
+        "company": "СтройТрест",
+        "skills": [
+          "соут",
+          "инструктажи",
+          "гост 12.0.230"
+        ],
+        "experience_years": 4.0,
+        "grade": "Middle",
+        "grade_confidence": 0.9,
+        "city": "Москва",
+        "is_remote": false,
+        "published_days_ago": 3,
+        "is_relevant": false
+      },
+      {
+        "id": "c19_v9",
+        "title": "Инженер-конструктор КМД",
+        "company": "МеталлПроект",
+        "skills": [
+          "tekla structures",
+          "автокад",
+          "кмд"
+        ],
+        "experience_years": 5.0,
+        "grade": "Middle",
+        "grade_confidence": 0.9,
+        "city": "Москва",
+        "is_remote": false,
+        "published_days_ago": 4,
+        "is_relevant": false
+      },
+      {
+        "id": "c19_v10",
+        "title": "Повар пиццмейкер",
+        "company": "Додо Франчайзи",
+        "skills": [
+          "раскатка теста",
+          "выпекание",
+          "чистота"
+        ],
+        "experience_years": 1.0,
+        "grade": "Junior",
+        "grade_confidence": 0.8,
+        "city": "Москва",
+        "is_remote": false,
+        "published_days_ago": 5,
+        "is_relevant": false
+      }
+    ]
+  },
+  {
+    "case_id": "case_20_mobile_ios_middle",
+    "role": "iOS Developer",
+    "candidate": {
+      "role": "iOS Developer",
+      "skills": [
+        "swift",
+        "swiftui",
+        "uikit",
+        "coredata",
+        "combine",
+        "git"
+      ],
+      "experience_years": 3.0,
+      "grade": "Middle",
+      "city": "Санкт-Петербург",
+      "is_remote": true
+    },
+    "vacancies": [
+      {
+        "id": "c20_v1",
+        "title": "iOS Developer (Swift / SwiftUI)",
+        "company": "Mobile Lab",
+        "skills": [
+          "swift",
+          "swiftui",
+          "combine",
+          "uikit"
+        ],
+        "experience_years": 3.0,
+        "grade": "Middle",
+        "grade_confidence": 0.9,
+        "city": "Санкт-Петербург",
+        "is_remote": true,
+        "published_days_ago": 1,
+        "is_relevant": true
+      },
+      {
+        "id": "c20_v2",
+        "title": "Middle iOS Разработчик",
+        "company": "Fintech App",
+        "skills": [
+          "swift",
+          "uikit",
+          "coredata",
+          "git"
+        ],
+        "experience_years": 3.0,
+        "grade": "Middle",
+        "grade_confidence": 0.85,
+        "city": "Санкт-Петербург",
+        "is_remote": true,
+        "published_days_ago": 2,
+        "is_relevant": true
+      },
+      {
+        "id": "c20_v3",
+        "title": "iOS Инженер",
+        "company": "Media Stream",
+        "skills": [
+          "swift",
+          "swiftui",
+          "combine",
+          "coredata"
+        ],
+        "experience_years": 2.5,
+        "grade": "Middle",
+        "grade_confidence": 0.8,
+        "city": "Москва",
+        "is_remote": true,
+        "published_days_ago": 3,
+        "is_relevant": true
+      },
+      {
+        "id": "c20_v4",
+        "title": "Разработчик iOS приложений",
+        "company": "Retail Mobile",
+        "skills": [
+          "swift",
+          "uikit",
+          "git",
+          "swiftui"
+        ],
+        "experience_years": 3.0,
+        "grade": "Middle",
+        "grade_confidence": 0.85,
+        "city": "Санкт-Петербург",
+        "is_remote": false,
+        "published_days_ago": 4,
+        "is_relevant": true
+      },
+      {
+        "id": "c20_v5",
+        "title": "Junior+ / Middle iOS Developer",
+        "company": "Game App",
+        "skills": [
+          "swift",
+          "uikit",
+          "combine"
+        ],
+        "experience_years": 2.0,
+        "grade": "Middle",
+        "grade_confidence": 0.75,
+        "city": "Санкт-Петербург",
+        "is_remote": true,
+        "published_days_ago": 5,
+        "is_relevant": true
+      },
+      {
+        "id": "c20_v6",
+        "title": "Главный ветеринарный врач",
+        "company": "ВетКлиника Друг",
+        "skills": [
+          "терапия",
+          "хирургия",
+          "вакцинация"
+        ],
+        "experience_years": 7.0,
+        "grade": "Senior",
+        "grade_confidence": 0.9,
+        "city": "Санкт-Петербург",
+        "is_remote": false,
+        "published_days_ago": 1,
+        "is_relevant": false
+      },
+      {
+        "id": "c20_v7",
+        "title": "Учитель физики",
+        "company": "Лицей 55",
+        "skills": [
+          "егэ",
+          "огэ",
+          "лабораторные работы"
+        ],
+        "experience_years": 4.0,
+        "grade": "Middle",
+        "grade_confidence": 0.85,
+        "city": "Санкт-Петербург",
+        "is_remote": false,
+        "published_days_ago": 2,
+        "is_relevant": false
+      },
+      {
+        "id": "c20_v8",
+        "title": "Электрогазосварщик 5 разряда",
+        "company": "СпецМонтаж",
+        "skills": [
+          "накс",
+          "аргон",
+          "ручная дуговая"
+        ],
+        "experience_years": 5.0,
+        "grade": "Senior",
+        "grade_confidence": 0.9,
+        "city": "Санкт-Петербург",
+        "is_remote": false,
+        "published_days_ago": 3,
+        "is_relevant": false
+      },
+      {
+        "id": "c20_v9",
+        "title": "Специалист по контекстной рекламе",
+        "company": "Директ Про",
+        "skills": [
+          "яндекс директ",
+          "гугл эдс",
+          "метрика"
+        ],
+        "experience_years": 2.0,
+        "grade": "Middle",
+        "grade_confidence": 0.85,
+        "city": "Санкт-Петербург",
+        "is_remote": true,
+        "published_days_ago": 4,
+        "is_relevant": false
+      },
+      {
+        "id": "c20_v10",
+        "title": "Помощник нотариуса",
+        "company": "Нотариальная контора",
+        "skills": [
+          "нотариальное делопроизводство",
+          "реестры"
+        ],
+        "experience_years": 2.0,
+        "grade": "Junior",
+        "grade_confidence": 0.8,
+        "city": "Санкт-Петербург",
+        "is_remote": false,
+        "published_days_ago": 5,
+        "is_relevant": false
+      }
+    ]
+  }
+]

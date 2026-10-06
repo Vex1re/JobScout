@@ -103,5 +103,10 @@ class Settings(BaseSettings):
         description="Minimum interval in seconds between user actions"
     )
 
+    # Matching Engine Scoring Weights
+    SCORE_WEIGHT_SKILLS: float = Field(default=0.45, description="Weight of skills match in total score (0.0 to 1.0)")
+    SCORE_WEIGHT_GRADE: float = Field(default=0.25, description="Weight of grade compatibility in total score (0.0 to 1.0)")
+    SCORE_WEIGHT_EXPERIENCE: float = Field(default=0.30, description="Weight of experience duration in total score (0.0 to 1.0)")
+
 
 settings = Settings()

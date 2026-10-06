@@ -113,6 +113,9 @@ async def init_db() -> None:
                     if "is_active" not in cols:
                         connection.execute(text("ALTER TABLE vacancies ADD COLUMN is_active BOOLEAN DEFAULT 1"))
 
+                if "user_interactions" not in inspector.get_table_names():
+                    Base.metadata.tables["user_interactions"].create(connection)
+
             await conn.run_sync(_migrate)
 
 

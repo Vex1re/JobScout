@@ -1,5 +1,9 @@
+import json
 import re
+from pathlib import Path
 from typing import Optional, Dict
+
+CITIES_CATALOG_FILE = Path(__file__).resolve().parent.parent.parent / "data" / "cities.json"
 
 
 class CityNormalizer:
@@ -158,6 +162,25 @@ class CityNormalizer:
         "remote": "Удаленно"
     }
 
+    _CATALOG_INITIALIZED: bool = False
+    _CATALOG_CITIES: Dict[str, str] = {}
+
+    @classmethod
+    def _init_catalog(cls) -> None:
+        if not cls._CATALOG_INITIALIZED:
+            cls._CATALOG_CITIES = dict(cls.SYNONYMS)
+            if CITIES_CATALOG_FILE.exists():
+                try:
+                    with open(CITIES_CATALOG_FILE, "r", encoding="utf-8") as f:
+                        data = json.load(f)
+                        for item in data:
+                            name = item.get("name")
+                            if name:
+                                cls._CATALOG_CITIES[name.lower()] = name
+                except Exception:
+                    pass
+            cls._CATALOG_INITIALIZED = True
+
     @classmethod
     def normalize(cls, city: Optional[str]) -> Optional[str]:
         """
@@ -170,6 +193,7 @@ class CityNormalizer:
         if not clean:
             return None
 
+        cls._init_catalog()
         lowered = clean.lower()
 
         # Remove common prefixes like 'г. ', 'город ', 'гор. '
@@ -180,14 +204,14 @@ class CityNormalizer:
            lowered_stripped in ["любой", "все", "любой город", "none", "null", "all", "any"]:
             return None
 
-        # Direct dictionary match
-        if lowered in cls.SYNONYMS:
-            return cls.SYNONYMS[lowered]
-        if lowered_stripped in cls.SYNONYMS:
-            return cls.SYNONYMS[lowered_stripped]
+        # Direct dictionary / catalog match
+        if lowered in cls._CATALOG_CITIES:
+            return cls._CATALOG_CITIES[lowered]
+        if lowered_stripped in cls._CATALOG_CITIES:
+            return cls._CATALOG_CITIES[lowered_stripped]
 
         # Substring / pattern match for compound strings (e.g. "Москва, ЦАО", "г. Санкт-Петербург, м. Сенная")
-        for alias, canonical in cls.SYNONYMS.items():
+        for alias, canonical in cls._CATALOG_CITIES.items():
             if len(alias) >= 3:
                 pattern = r"(?<![a-zA-Zа-яА-Я0-9_-])" + re.escape(alias) + r"(?![a-zA-Zа-яА-Я0-9_-])"
                 if re.search(pattern, lowered):

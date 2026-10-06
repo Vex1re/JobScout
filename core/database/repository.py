@@ -1,4 +1,4 @@
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Set
 from sqlalchemy import select, delete, desc, and_, not_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -10,6 +10,7 @@ from core.database.models import (
     UserHidden,
     UserMatch,
     UserViewed,
+    UserInteraction,
     utc_now
 )
 
@@ -493,3 +494,51 @@ class InteractionRepository:
             session.add(match)
         await session.commit()
         return match
+
+    @staticmethod
+    async def log_interaction(
+        session: AsyncSession,
+        user_id: int,
+        vacancy_canonical_id: str,
+        action: str
+    ) -> UserInteraction:
+        """Logs user interaction (favorite, hide, apply_click) for recommendation relevance."""
+        interaction = UserInteraction(
+            user_id=user_id,
+            vacancy_canonical_id=vacancy_canonical_id,
+            action=action,
+            created_at=utc_now()
+        )
+        session.add(interaction)
+        await session.commit()
+        return interaction
+
+    @staticmethod
+    async def get_hidden_canonical_ids(session: AsyncSession, user_id: int) -> Set[str]:
+        """Returns set of vacancy_canonical_ids hidden by user."""
+        stmt = select(UserInteraction.vacancy_canonical_id).where(
+            UserInteraction.user_id == user_id,
+            UserInteraction.action == "hide"
+        )
+        res = await session.execute(stmt)
+        return set(res.scalars().all())
+
+    @staticmethod
+    async def get_positive_interactions(
+        session: AsyncSession,
+        user_id: int,
+        action: Optional[str] = None
+    ) -> List[UserInteraction]:
+        """Returns recent positive interactions (favorite, apply_click) to boost similar items."""
+        actions = [action] if action else ["favorite", "apply_click"]
+        stmt = (
+            select(UserInteraction)
+            .where(
+                UserInteraction.user_id == user_id,
+                UserInteraction.action.in_(actions)
+            )
+            .order_by(desc(UserInteraction.created_at))
+            .limit(100)
+        )
+        res = await session.execute(stmt)
+        return list(res.scalars().all())

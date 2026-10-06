@@ -1,5 +1,7 @@
 import re
+import datetime
 from typing import List, Dict, Any, Set, Tuple, Optional
+from core.config import settings
 from services.resume_analyzer.extractor import ResumeExtractor
 from services.resume_analyzer.vacancy_extractor import VacancyExperienceExtractor, VacancyGradeDetector
 
@@ -75,7 +77,9 @@ class VacancyMatcher:
         risk_level: str = "safe",
         vacancy_min_exp: Optional[float] = None,
         vacancy_max_exp: Optional[float] = None,
-        vacancy_grade: Optional[str] = None
+        vacancy_grade: Optional[str] = None,
+        grade_confidence: float = 1.0,
+        published_at: Optional[datetime.datetime] = None
     ) -> Dict[str, Any]:
         """
         Calculates compatibility between candidate profile and vacancy.
@@ -94,6 +98,8 @@ class VacancyMatcher:
                 - exp_diff: Optional[float]
                 - is_disqualified: bool
                 - is_growth_opportunity: bool
+                - grade_confidence: float
+                - time_decay_factor: float
                 - reason: str
         """
         # If vacancy is completely blocked for scam, return score 0
@@ -111,6 +117,8 @@ class VacancyMatcher:
                 "exp_diff": None,
                 "is_disqualified": True,
                 "is_growth_opportunity": False,
+                "grade_confidence": grade_confidence,
+                "time_decay_factor": 1.0,
                 "reason": "⛔ Вакансия заблокирована алгоритмом защиты от мошенничества"
             }
 
@@ -160,50 +168,83 @@ class VacancyMatcher:
 
         exp_diff = (candidate_experience - vac_min_exp) if vac_min_exp is not None else None
 
-        # 4. HARD CUTOFF RULE (Disqualification)
-        # If candidate is Junior, and vacancy is Senior/Lead (grade_diff >= 2),
-        # OR experience deficit exp_diff <= -2.0 when vacancy requires 3.5+ years:
+        # 4. HARD CUTOFF RULE vs SOFT PENALTY (Grade Confidence)
+        # If grade_confidence < 0.7: apply soft penalty (10-15%) instead of hard cutoff
         is_disqualified = False
-        if candidate_grade == "Junior" and (grade_diff >= 2 or v_rank >= 3):
-            is_disqualified = True
-        elif vac_min_exp is not None and vac_min_exp >= 3.5 and exp_diff is not None and exp_diff <= -2.0:
-            is_disqualified = True
+        soft_grade_penalty = 0.0
+
+        if grade_confidence < 0.7:
+            soft_grade_penalty = 12.0
+        else:
+            if candidate_grade == "Junior" and (grade_diff >= 2 or v_rank >= 3):
+                is_disqualified = True
+            elif vac_min_exp is not None and vac_min_exp >= 3.5 and exp_diff is not None and exp_diff <= -2.0:
+                is_disqualified = True
 
         # 5. GROWTH OPPORTUNITY & EXPERIENCE GAP PENALTY
         is_growth_opportunity = False
-        penalty = 0.0
+        penalty = soft_grade_penalty
 
         if not is_disqualified:
             if candidate_grade == "Junior" and vac_grade == "Middle":
                 if vac_min_exp is None or vac_min_exp <= 2.5:
                     is_growth_opportunity = True
                     if exp_diff is not None and exp_diff < 0:
-                        penalty = 5.0 * abs(exp_diff)
+                        penalty += 5.0 * abs(exp_diff)
 
             if not is_growth_opportunity and exp_diff is not None and exp_diff < 0:
                 deficit = abs(exp_diff)
                 if deficit < 1.5:
-                    penalty = 15.0 * deficit
+                    penalty += 15.0 * deficit
                 else:
-                    penalty = 35.0 + 20.0 * (deficit - 1.5)
+                    penalty += 35.0 + 20.0 * (deficit - 1.5)
 
         # 6. Weighted total score calculation
         grade_score, base_grade_comp = cls._calculate_grade_score(candidate_grade, vac_grade, candidate_experience)
         grade_comp = "growth_opportunity" if is_growth_opportunity else base_grade_comp
 
-        # Weights: 50% hard skills, 30% role title match, 20% grade match
-        total_score = (skill_score * 0.50) + (role_score * 0.30) + (grade_score * 0.20)
+        # Configurable weights from core.config (default: skills 45%, grade 25%, experience 30%)
+        w_skills = getattr(settings, "SCORE_WEIGHT_SKILLS", 0.45)
+        w_grade = getattr(settings, "SCORE_WEIGHT_GRADE", 0.25)
+        w_exp = getattr(settings, "SCORE_WEIGHT_EXPERIENCE", 0.30)
+
+        # Experience score component (0..100)
+        if vac_min_exp is None or exp_diff is None or exp_diff >= 0:
+            exp_score = 100.0
+        else:
+            exp_score = max(0.0, 100.0 - (abs(exp_diff) * 25.0))
+
+        # Skills component: combines hard skills (70%) and role title match (30%)
+        skills_component = (skill_score * 0.70) + (role_score * 0.30)
+
+        total_score = (skills_component * w_skills) + (grade_score * w_grade) + (exp_score * w_exp)
 
         # Apply slight penalty for warnings
         if risk_level == "warning":
             total_score = max(10.0, total_score - 15.0)
 
         # 7. Apply disqualification or penalty
+        time_decay_factor = 1.0
         if is_disqualified:
             final_score = min(int(round(total_score * 0.15)), 18)
             grade_comp = "disqualified"
         else:
             penalized_score = max(0.0, total_score - penalty)
+
+            # 8. Time decay for freshness (piecewise linear decay)
+            if published_at is not None:
+                now = datetime.datetime.now(datetime.timezone.utc)
+                pub_tz = published_at if published_at.tzinfo is not None else published_at.replace(tzinfo=datetime.timezone.utc)
+                days_old = max(0, (now - pub_tz).days)
+                if days_old >= 30:
+                    time_decay_factor = 0.70  # 30% penalty for > 30 days
+                elif days_old >= 14:
+                    # Decay from 0.88 down to 0.70
+                    time_decay_factor = 0.88 - 0.18 * ((days_old - 14) / 16.0)
+                elif days_old >= 7:
+                    time_decay_factor = 0.95
+
+            penalized_score = penalized_score * time_decay_factor
             final_score = int(round(penalized_score))
             final_score = min(100, max(0, final_score))
 
@@ -233,6 +274,8 @@ class VacancyMatcher:
             "exp_diff": round(exp_diff, 1) if exp_diff is not None else None,
             "is_disqualified": is_disqualified,
             "is_growth_opportunity": is_growth_opportunity,
+            "grade_confidence": grade_confidence,
+            "time_decay_factor": round(time_decay_factor, 2),
             "reason": reason
         }
 
