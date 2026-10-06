@@ -36,10 +36,10 @@ class LLMHelper:
 
         prompt = f"""
 Проанализируй следующее резюме кандидата и верни СТРОГО валидный JSON со следующими полями:
-- "title": целевая должность кандидата (например, "Python Backend Developer")
-- "grade": грейд ("Junior", "Middle", "Senior", "Lead")
+- "title": целевая должность или профессия кандидата (например, "Python Backend Developer", "Интернет-маркетолог", "Главный бухгалтер", "Менеджер по продажам")
+- "grade": грейд или уровень квалификации ("Junior", "Middle", "Senior", "Lead")
 - "years_of_experience": число полных лет опыта (число с плавающей точкой, например 3.5)
-- "skills": список ключевых технических навыков и технологий (массив строк)
+- "skills": список ключевых профессиональных навыков и инструментов (массив строк)
 - "salary_expectation": число ожидаемой зарплаты в рублях (или null, если не указано)
 - "summary": краткое профессиональное резюме кандидата на 1-2 предложения
 
@@ -50,7 +50,7 @@ class LLMHelper:
             response = await self.client.chat.completions.create(
                 model=settings.OPENAI_MODEL,
                 messages=[
-                    {"role": "system", "content": "Ты экспертный IT-HR и технический рекрутер. Отвечай только валидным JSON."},
+                    {"role": "system", "content": "Ты экспертный HR и карьерный консультант для любых профессиональных сфер. Отвечай только валидным JSON."},
                     {"role": "user", "content": prompt}
                 ],
                 temperature=0.1,
@@ -85,7 +85,7 @@ class LLMHelper:
             response = await self.client.chat.completions.create(
                 model=settings.OPENAI_MODEL,
                 messages=[
-                    {"role": "system", "content": "Ты карьерный консультант для разработчиков. Отвечай кратко, емко, без воды."},
+                    {"role": "system", "content": "Ты карьерный консультант. Отвечай кратко, емко, без воды."},
                     {"role": "user", "content": prompt}
                 ],
                 temperature=0.4,

@@ -74,7 +74,7 @@ class Resume(Base):
     user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("users.telegram_id", ondelete="CASCADE"), unique=True)
     
     # Analyzed resume fields
-    title: Mapped[str] = mapped_column(String(255), default="Разработчик")
+    title: Mapped[str] = mapped_column(String(255), default="Специалист")
     grade: Mapped[str] = mapped_column(String(50), default="Middle") # Junior, Middle, Senior, Lead
     years_of_experience: Mapped[float] = mapped_column(Float, default=1.0)
     salary_expectation: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)

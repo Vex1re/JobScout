@@ -594,3 +594,45 @@ async def test_trudvsem_500_regional_fallback():
         results2 = await parser.fetch_vacancies(query="fastapi", city="Москва")
         assert len(results2) == 1
 
+
+@pytest.mark.asyncio
+async def test_trudvsem_pagination_and_500_fallback():
+    parser = TrudVsemParser()
+    resp_500 = MagicMock()
+    resp_500.status_code = 500
+
+    resp_200 = MagicMock()
+    resp_200.status_code = 200
+    resp_200.json.return_value = {
+        "results": {
+            "vacancies": [
+                {
+                    "vacancy": {
+                        "id": "page1-vac",
+                        "job-name": "Java Developer",
+                        "vac_url": "https://trudvsem.ru/vacancy/card/p1",
+                        "company": {"name": "Test Co"},
+                        "salary_min": 100000,
+                        "salary_max": 200000,
+                        "currency": "RUB",
+                        "duty": "Java Docker",
+                        "schedule": "Полный рабочий день"
+                    }
+                }
+            ]
+        }
+    }
+
+    def side_effect(url, params=None, **kwargs):
+        # If offset > 1, simulate 500 server error; if offset == 1, return 200
+        if params and params.get("offset", 1) > 1:
+            return resp_500
+        return resp_200
+
+    with patch("httpx.AsyncClient.get", new_callable=AsyncMock, side_effect=side_effect):
+        # Even with high page number (e.g. 84), it stays bounded and recovers from 500
+        results = await parser.fetch_vacancies(query="Docker Java", page=84)
+        assert len(results) == 1
+        assert results[0]["id"] == "trudvsem_page1-vac"
+
+

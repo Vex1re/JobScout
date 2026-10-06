@@ -18,13 +18,14 @@ Test1/
 │   │   ├── resume.py                   # Загрузка резюме (PDF/DOCX/текст), валидация, редактирование стека
 │   │   ├── vacancies.py                # Поиск, мульти-запросы, карточки, пагинация, скрытие, AI-советы
 │   │   ├── favorites.py                # Просмотр и удаление из избранного
-│   │   └── settings.py                 # Фильтры (город, удаленка, минимальная ЗП, Kwork, уведомления)
+│   │   └── settings.py                 # Фильтры, источники, 152-ФЗ (/delete_me) и автопоиск
 │   ├── keyboards/                      # Клавиатуры бота
 │   │   ├── __init__.py
 │   │   ├── reply.py                    # Постоянное нижнее меню (Reply)
-│   │   └── inline.py                   # Инлайн-кнопки (карточки вакансий, выбор города, пагинация)
+│   │   └── inline.py                   # Инлайн-кнопки (карточки вакансий, выбор города, пагинация, 152-ФЗ)
 │   ├── middlewares/                    # Промежуточные слои Aiogram
-│   │   └── db.py                       # Внедрение асинхронной сессии БД (AsyncSession) в хэндлеры
+│   │   ├── db.py                       # Внедрение асинхронной сессии БД (AsyncSession) в хэндлеры
+│   │   └── throttling.py               # ThrottlingMiddleware (защита от флуда и спама с alert-сообщениями)
 │   └── states/                         # FSM-состояния конечного автомата
 │       ├── __init__.py
 │       └── profile.py                  # Состояния загрузки резюме, ввода навыков, выбора города
@@ -32,10 +33,10 @@ Test1/
 │   ├── database/                       # Слой базы данных (SQLAlchemy 2.0 Async)
 │   │   ├── __init__.py
 │   │   ├── models.py                   # ORM-модели (User, Resume, Vacancy, Favorite, Match, UserViewed)
-│   │   ├── session.py                  # Создание движка create_async_engine и init_db()
-│   │   └── repository.py               # Репозитории CRUD операций (лимит расширен до 500)
-│   ├── config.py                       # Настройки через Pydantic-Settings и чтение .env
-│   └── scheduler.py                    # Фоновый планировщик APScheduler для пуш-уведомлений
+│   │   ├── session.py                  # Создание движка create_async_engine (Connection Pooling) и init_db()
+│   │   └── repository.py               # Репозитории CRUD операций и каскадного удаления 152-ФЗ
+│   ├── config.py                       # Настройки через Pydantic-Settings и чтение .env (REDIS_URL, THROTTLE)
+│   └── scheduler.py                    # Фоновый планировщик APScheduler с защитой от TelegramForbiddenError
 ├── services/                           # Бизнес-логика, парсеры и анализ
 │   ├── ai/                             # Интеграция с языковыми моделями (LLM)
 │   │   └── llm_helper.py               # Опциональный вызов OpenAI/LLM для генерации советов
@@ -52,15 +53,17 @@ Test1/
 │   │   ├── freelance_ru.py             # Парсер проектов и IT-заказов биржи Freelance.ru
 │   │   ├── rabota.py                   # Парсер вакансий Работа.ру (с поддержкой PROXY_URL)
 │   │   ├── normalizer.py               # CityNormalizer (нормализация синонимов городов и правил офиса)
-│   │   └── manager.py                  # AggregatorManager (мульти-запросный параллельный сбор)
+│   │   └── manager.py                  # AggregatorManager (мульти-запросный параллельный сбор для любых профессий)
 │   └── resume_analyzer/                # Анализ резюме, скоринг и фильтрация ред-флагов
 │       ├── __init__.py
 │       ├── validator.py                # ResumeValidator (защита от рецептов, договоров и мусора)
-│       ├── extractor.py                # Извлечение стека (300+ скиллов), стажа (Interval Union)
+│       ├── extractor.py                # Извлечение навыков (450+ скиллов всех профессий), стажа (Interval Union)
 │       ├── vacancy_extractor.py        # VacancyExperienceExtractor и VacancyGradeDetector
 │       ├── matcher.py                  # Взвешенный алгоритм скоринга, Hard Cutoff и штрафы стажа
 │       └── red_flags.py                # Детектор мошенников, залогов, серой ЗП и токсичных условий
-├── tests/                              # Автоматические тесты (pytest — 118 тестов, 100% pass)
+├── tests/                              # Автоматические тесты (pytest — 130 тестов, 100% pass)
+│   ├── test_universal_professions.py   # Тесты универсальных профессий (маркетинг, финансы, дизайн, продажи)
+│   ├── test_prod_stability.py          # Тесты Throttling, GDPR удаления, TTL кэша, заблокированных пользователей
 │   ├── test_extractor.py               # Тесты извлечения стека, стажа (Interval Union, 0.0 лет)
 │   ├── test_features.py                # Тесты валидации, городов, пула запросов и БД
 │   ├── test_matcher.py                 # Тесты алгоритма совместимости, грейдов и опыта

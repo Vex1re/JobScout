@@ -1,5 +1,6 @@
 import pytest
 import datetime
+from freezegun import freeze_time
 from core.database.models import User, Resume, Vacancy
 from core.database.repository import (
     UserRepository,
@@ -222,14 +223,15 @@ class TestExperienceCalculation:
         result = ResumeExtractor.extract_experience_years(interval_text)
         assert result == expected_years
 
+    @freeze_time("2026-10-06")
     def test_present_period_relative_to_current_year_2026(self):
         """
         Расчет периода по настоящее время 'январь 2024 — по н.в.'
-        с учетом текущего системного года (2026).
-        Интервал от января 2024 до конца 2026 года должен составлять ~2.8 - 2.9 года.
+        с учетом зафиксированного системного года (2026 через freezegun).
+        Интервал от января 2024 до октября 2026 года составляет ~2.8 года.
         """
-        current_year = datetime.datetime.now().year
-        assert current_year == 2026, "Test environment must be running in 2026"
+        current_year = datetime.date.today().year
+        assert current_year == 2026, "Test environment must be frozen to 2026"
 
         text_monthly = "Период работы: январь 2024 — по н.в."
         exp_monthly = ResumeExtractor.extract_experience_years(text_monthly)

@@ -23,8 +23,56 @@ from bot.keyboards.inline import (
 
 router = Router(name="vacancies")
 
-# In-memory session store for user active search results: user_id -> list of (vac_dict, match_dict)
-USER_SEARCH_RESULTS: Dict[int, List[Tuple[Vacancy, Dict[str, Any]]]] = {}
+import time
+
+class SearchResultsCache(dict):
+    """
+    Bounded, TTL-aware session store for active user search results.
+    Prevents memory leaks in production and provides seamless dict compatibility.
+    """
+    def __init__(self, ttl_seconds: float = 7200.0, max_users: int = 1000):
+        super().__init__()
+        self.ttl = ttl_seconds
+        self.max_users = max_users
+        self.timestamps: Dict[int, float] = {}
+
+    def __setitem__(self, user_id: int, results: Any):
+        now = time.time()
+        cutoff = now - self.ttl
+        expired = [u for u, t in self.timestamps.items() if t < cutoff]
+        for u in expired:
+            self.pop(u, None)
+            self.timestamps.pop(u, None)
+
+        if len(self.timestamps) >= self.max_users and user_id not in self.timestamps:
+            oldest_user = min(self.timestamps, key=self.timestamps.get)
+            self.pop(oldest_user, None)
+            self.timestamps.pop(oldest_user, None)
+
+        self.timestamps[user_id] = now
+        super().__setitem__(user_id, results)
+
+    def get(self, user_id: int, default: Any = None) -> Any:
+        now = time.time()
+        if user_id in self:
+            if now - self.timestamps.get(user_id, 0) > self.ttl:
+                self.pop(user_id, None)
+                self.timestamps.pop(user_id, None)
+                return default
+            return super().get(user_id, default)
+        return default
+
+    def __len__(self) -> int:
+        now = time.time()
+        cutoff = now - self.ttl
+        expired = [u for u, t in self.timestamps.items() if t < cutoff]
+        for u in expired:
+            self.pop(u, None)
+            self.timestamps.pop(u, None)
+        return super().__len__()
+
+# Session store for user active search results: user_id -> list of (vac_dict, match_dict)
+USER_SEARCH_RESULTS: Dict[int, List[Tuple[Vacancy, Dict[str, Any]]]] = SearchResultsCache()
 
 
 @router.message(Command("search"))
@@ -47,15 +95,16 @@ async def trigger_search(event: types.Message | types.CallbackQuery, session: As
         await message.answer(
             "⚠️ <b>У вас пока нет сохраненного резюме!</b>\n\n"
             "Пожалуйста, загрузите резюме (PDF/DOCX или текстом), "
-            "чтобы бот знал ваши технологии и опыт.",
+            "чтобы бот знал ваши навыки и опыт.",
             reply_markup=get_onboarding_keyboard()
         )
         return
 
+    skills_desc = f"Навыки: <code>{', '.join(resume.skills[:5])}</code>\n\n" if resume.skills else ""
     status_msg = await message.answer(
-        f"🔎 <b>Ищу вакансии для {html.escape(resume.title)}...</b>\n"
-        f"Стек: <code>{', '.join(resume.skills[:4])}</code>\n\n"
-        f"🌐 Опрашиваю <b>HeadHunter</b>, <b>Хабр Карьеру</b>, <b>Kwork</b> и <b>Работа.ру</b>...\n"
+        f"🔎 <b>Ищу вакансии для: {html.escape(resume.title)}...</b>\n"
+        f"{skills_desc}"
+        f"🌐 Опрашиваю подключенные площадки и биржи...\n"
         f"🛡️ Проверяю на мошенничество и ред-флаги..."
     )
 

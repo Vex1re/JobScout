@@ -111,123 +111,199 @@ class AggregatorManager:
             "Python", "Golang", "Go", "Java", "JavaScript", "TypeScript",
             "C++", "C#", "PHP", "Ruby", "Rust", "Kotlin", "Swift"
         ]
-        primary_lang = None
-        for lang in common_langs:
-            if any(s.lower() == lang.lower() for s in skills):
-                primary_lang = lang
-                break
-        if not primary_lang:
-            for lang in common_langs:
-                if re.search(rf"\b{re.escape(lang.lower())}\b", title_lower):
-                    primary_lang = lang
-                    break
-        if not primary_lang and skills:
-            primary_lang = skills[0]
-        if not primary_lang:
-            primary_lang = "Python"
-
-        # 2. Identify specialization / role direction
-        is_backend = any(w in title_lower for w in ["backend", "бэкенд", "бэкэнд", "серверный"]) or (
-            primary_lang.lower() in ["python", "go", "golang", "java", "php", "c#", "ruby"]
-            and not any(w in title_lower for w in ["data", "ml", "qa", "frontend", "тестировщик"])
+        # Check if candidate is in IT / Software Development
+        tech_indicators = [
+            "developer", "разработчик", "программист", "backend", "бэкенд", "frontend",
+            "фронтенд", "fullstack", "фулстек", "devops", "девопс", "qa", "тестировщик",
+            "data scientist", "data engineer", "инженер данных", "ml", "software",
+            "сисадмин", "sysadmin"
+        ]
+        is_it_role = any(re.search(rf"\b{re.escape(ti)}\b", title_lower) for ti in tech_indicators) or any(
+            any(s.lower() == l.lower() for l in common_langs) or s.lower() in ["docker", "kubernetes", "fastapi", "django", "react", "vue"]
+            for s in skills
         )
-        is_frontend = any(w in title_lower for w in ["frontend", "фронтенд", "фронтэнд"])
-        is_fullstack = any(w in title_lower for w in ["fullstack", "фулстек", "фуллстек"])
-        is_devops = any(w in title_lower for w in ["devops", "девопс", "sre", "инфраструктура", "sysadmin"])
-        is_qa = any(w in title_lower for w in ["qa", "тестировщик", "тестирование", "test"])
-        is_data = any(w in title_lower for w in ["data", "дата", "ml", "machine learning", "аналитик"])
 
-        # 3. English role variants
-        if is_backend:
-            queries.append(f"{primary_lang} Developer")
-            queries.append("Backend Developer")
-            queries.append(f"{primary_lang} Backend Developer")
-        elif is_frontend:
-            queries.append(f"{primary_lang} Developer")
-            queries.append("Frontend Developer")
-            queries.append(f"{primary_lang} Frontend Developer")
-        elif is_fullstack:
-            queries.append(f"{primary_lang} Fullstack Developer")
-            queries.append("Fullstack Developer")
-            queries.append(f"{primary_lang} Developer")
-        elif is_devops:
-            queries.append("DevOps Engineer")
-            queries.append(f"{primary_lang} DevOps")
-        elif is_qa:
-            queries.append("QA Engineer")
-            queries.append(f"QA Automation {primary_lang}")
-        elif is_data:
-            queries.append("Data Engineer")
-            queries.append(f"{primary_lang} Data Engineer")
-        else:
-            queries.append(f"{primary_lang} Developer")
-
-        # 4. Russian role synonyms
-        queries.append(f"Разработчик {primary_lang}")
-        queries.append(f"Программист {primary_lang}")
-        queries.append(f"{primary_lang} разработчик")
-        if is_backend:
-            queries.append("Бэкенд разработчик")
-        elif is_frontend:
-            queries.append("Фронтенд разработчик")
-        elif is_fullstack:
-            queries.append("Фулстек разработчик")
-
-        # 5. Positional skill combinations (retains compatibility with test suites)
-        if len(skills) >= 2:
-            queries.append(f"{skills[0]} {skills[1]}")
-        if len(skills) >= 3:
-            queries.append(f"{skills[0]} {skills[2]}")
-        if len(skills) >= 4:
-            queries.append(f"{skills[1]} {skills[3]}")
-        if skills:
-            queries.append(skills[0])
-        if len(skills) >= 2:
-            queries.append(skills[1])
-
-        # 6. Framework pairings
-        known_frameworks = [
-            "FastAPI", "Django", "Flask", "aiohttp", "React", "Vue", "Angular",
-            "Next.js", "NestJS", "Spring", "ASP.NET", "Laravel", "Gin"
-        ]
-        cand_frameworks = [s for s in skills if any(s.lower() == f.lower() for f in known_frameworks)]
-        for fw in cand_frameworks[:2]:
-            queries.append(f"{primary_lang} {fw}")
-        if len(cand_frameworks) >= 2:
-            queries.append(f"{cand_frameworks[0]} {cand_frameworks[1]}")
-        # Default framework pairings if primary is Python
-        if primary_lang.lower() == "python":
-            if "FastAPI" not in [f.capitalize() for f in cand_frameworks]:
-                queries.append("Python FastAPI")
-            if "Django" not in [f.capitalize() for f in cand_frameworks]:
-                queries.append("Python Django")
-
-        # 7. Infrastructure pairings
-        known_infra = [
-            "Docker", "PostgreSQL", "Redis", "Kafka", "Kubernetes", "RabbitMQ", "ClickHouse", "Linux"
-        ]
-        cand_infra = [s for s in skills if any(s.lower() == inf.lower() for inf in known_infra)]
-        for inf in cand_infra[:2]:
-            queries.append(f"{primary_lang} {inf}")
-        if cand_frameworks and cand_infra:
-            queries.append(f"{cand_frameworks[0]} {cand_infra[0]}")
-        elif primary_lang.lower() == "python":
-            queries.append("Python Docker")
-            queries.append("FastAPI PostgreSQL")
-
-        # 8. Broader role title (without grade/level)
-        if raw_title:
-            clean_role = re.sub(
-                r"\b(backend|frontend|fullstack|junior|middle|senior|lead|стажер|разработчик|developer)\b",
+        if not is_it_role and (raw_title or skills):
+            # Non-IT / Universal profession query generation
+            clean_title = re.sub(
+                r"\b(junior|middle|senior|lead|ведущий|главный|старший|младший|помощник|стажер)\b",
                 "",
                 raw_title,
                 flags=re.IGNORECASE
             ).strip()
-            if clean_role and len(clean_role) >= 3:
-                queries.append(clean_role)
+
+            base_role = clean_title if clean_title else raw_title
+
+            # Clean role variants
+            if base_role and base_role not in queries:
+                queries.append(base_role)
+
+            # Role + top skill pairings
+            for s in skills[:3]:
+                if s.lower() not in base_role.lower():
+                    queries.append(f"{base_role} {s}".strip())
+
+            # Top skills
+            for s in skills[:3]:
+                queries.append(s)
+
+            if len(skills) >= 2:
+                queries.append(f"{skills[0]} {skills[1]}")
+
+            # Universal domain synonyms
+            if any(w in title_lower for w in ["маркетолог", "маркетинг", "smm", "seo", "таргет"]):
+                for syn in ["Маркетолог", "Интернет-маркетолог", "Специалист по маркетингу"]:
+                    if syn not in queries:
+                        queries.append(syn)
+            elif any(w in title_lower for w in ["бухгалтер", "бухгалтерия", "финанс", "экономист"]):
+                for syn in ["Бухгалтер", "Бухгалтер 1С", "Помощник бухгалтера"]:
+                    if syn not in queries:
+                        queries.append(syn)
+            elif any(w in title_lower for w in ["продаж", "sales", "b2b", "клиент"]):
+                for syn in ["Менеджер по продажам", "Специалист по продажам", "Менеджер по работе с клиентами"]:
+                    if syn not in queries:
+                        queries.append(syn)
+            elif any(w in title_lower for w in ["дизайн", "дизайнер", "ui/ux", "графическ"]):
+                for syn in ["Дизайнер", "Графический дизайнер", "Веб-дизайнер"]:
+                    if syn not in queries:
+                        queries.append(syn)
+            elif any(w in title_lower for w in ["hr", "рекрутер", "кадр", "персонал"]):
+                for syn in ["HR-менеджер", "Рекрутер", "Менеджер по персоналу"]:
+                    if syn not in queries:
+                        queries.append(syn)
+            elif any(w in title_lower for w in ["юрист", "юрисконсульт", "право"]):
+                for syn in ["Юрист", "Юрисконсульт"]:
+                    if syn not in queries:
+                        queries.append(syn)
+            elif any(w in title_lower for w in ["логист", "логистик", "склад", "закупк"]):
+                for syn in ["Логист", "Менеджер по логистике"]:
+                    if syn not in queries:
+                        queries.append(syn)
+            elif any(w in title_lower for w in ["project", "проект", "управлен"]):
+                for syn in ["Project Manager", "Менеджер проектов"]:
+                    if syn not in queries:
+                        queries.append(syn)
+
+        else:
+            # IT Developer query generation pipeline
+            # 1. Identify primary language / tech
+            primary_lang = None
+            for lang in common_langs:
+                if any(s.lower() == lang.lower() for s in skills):
+                    primary_lang = lang
+                    break
+            if not primary_lang:
+                for lang in common_langs:
+                    if re.search(rf"\b{re.escape(lang.lower())}\b", title_lower):
+                        primary_lang = lang
+                        break
+            if not primary_lang and skills:
+                primary_lang = skills[0]
+            if not primary_lang:
+                primary_lang = "Python"
+
+            # 2. Identify specialization / role direction
+            is_backend = any(w in title_lower for w in ["backend", "бэкенд", "бэкэнд", "серверный"]) or (
+                primary_lang.lower() in ["python", "go", "golang", "java", "php", "c#", "ruby"]
+                and not any(w in title_lower for w in ["data", "ml", "qa", "frontend", "тестировщик"])
+            )
+            is_frontend = any(w in title_lower for w in ["frontend", "фронтенд", "фронтэнд"])
+            is_fullstack = any(w in title_lower for w in ["fullstack", "фулстек", "фуллстек"])
+            is_devops = any(w in title_lower for w in ["devops", "девопс", "sre", "инфраструктура", "sysadmin"])
+            is_qa = any(w in title_lower for w in ["qa", "тестировщик", "тестирование", "test"])
+            is_data = any(w in title_lower for w in ["data", "дата", "ml", "machine learning", "аналитик"])
+
+            # 3. English role variants
+            if is_backend:
+                queries.append(f"{primary_lang} Developer")
+                queries.append("Backend Developer")
+                queries.append(f"{primary_lang} Backend Developer")
+            elif is_frontend:
+                queries.append(f"{primary_lang} Developer")
+                queries.append("Frontend Developer")
+                queries.append(f"{primary_lang} Frontend Developer")
+            elif is_fullstack:
+                queries.append(f"{primary_lang} Fullstack Developer")
+                queries.append("Fullstack Developer")
+                queries.append(f"{primary_lang} Developer")
+            elif is_devops:
+                queries.append("DevOps Engineer")
+                queries.append(f"{primary_lang} DevOps")
+            elif is_qa:
+                queries.append("QA Engineer")
+                queries.append(f"QA Automation {primary_lang}")
+            elif is_data:
+                queries.append("Data Engineer")
+                queries.append(f"{primary_lang} Data Engineer")
+            else:
+                queries.append(f"{primary_lang} Developer")
+
+            # 4. Russian role synonyms
+            queries.append(f"Разработчик {primary_lang}")
+            queries.append(f"Программист {primary_lang}")
+            queries.append(f"{primary_lang} разработчик")
+            if is_backend:
+                queries.append("Бэкенд разработчик")
+            elif is_frontend:
+                queries.append("Фронтенд разработчик")
+            elif is_fullstack:
+                queries.append("Фулстек разработчик")
+
+            # 5. Positional skill combinations (retains compatibility with test suites)
+            if len(skills) >= 2:
+                queries.append(f"{skills[0]} {skills[1]}")
+            if len(skills) >= 3:
+                queries.append(f"{skills[0]} {skills[2]}")
+            if len(skills) >= 4:
+                queries.append(f"{skills[1]} {skills[3]}")
+            if skills:
+                queries.append(skills[0])
+            if len(skills) >= 2:
+                queries.append(skills[1])
+
+            # 6. Framework pairings
+            known_frameworks = [
+                "FastAPI", "Django", "Flask", "aiohttp", "React", "Vue", "Angular",
+                "Next.js", "NestJS", "Spring", "ASP.NET", "Laravel", "Gin"
+            ]
+            cand_frameworks = [s for s in skills if any(s.lower() == f.lower() for f in known_frameworks)]
+            for fw in cand_frameworks[:2]:
+                queries.append(f"{primary_lang} {fw}")
+            if len(cand_frameworks) >= 2:
+                queries.append(f"{cand_frameworks[0]} {cand_frameworks[1]}")
+            # Default framework pairings if primary is Python
+            if primary_lang.lower() == "python":
+                if "FastAPI" not in [f.capitalize() for f in cand_frameworks]:
+                    queries.append("Python FastAPI")
+                if "Django" not in [f.capitalize() for f in cand_frameworks]:
+                    queries.append("Python Django")
+
+            # 7. Infrastructure pairings
+            known_infra = [
+                "Docker", "PostgreSQL", "Redis", "Kafka", "Kubernetes", "RabbitMQ", "ClickHouse", "Linux"
+            ]
+            cand_infra = [s for s in skills if any(s.lower() == inf.lower() for inf in known_infra)]
+            for inf in cand_infra[:2]:
+                queries.append(f"{primary_lang} {inf}")
+            if cand_frameworks and cand_infra:
+                queries.append(f"{cand_frameworks[0]} {cand_infra[0]}")
+            elif primary_lang.lower() == "python":
+                queries.append("Python Docker")
+                queries.append("FastAPI PostgreSQL")
+
+            # 8. Broader role title (without grade/level)
+            if raw_title:
+                clean_role = re.sub(
+                    r"\b(backend|frontend|fullstack|junior|middle|senior|lead|стажер|разработчик|developer)\b",
+                    "",
+                    raw_title,
+                    flags=re.IGNORECASE
+                ).strip()
+                if clean_role and len(clean_role) >= 3:
+                    queries.append(clean_role)
 
         if not queries:
-            queries.append("Python Developer")
+            queries.append(raw_title if raw_title else "Специалист")
 
         # Deduplicate while preserving order
         seen = set()
@@ -381,11 +457,11 @@ class AggregatorManager:
         """
         if custom_query:
             batch_queries = [custom_query]
-            current_page = user.search_page_offset or 0
+            current_page = (user.search_page_offset or 0) % 5
         else:
             pool = self.generate_query_pool(resume)
             query_idx = user.last_query_index or 0
-            current_page = user.search_page_offset or 0
+            current_page = (user.search_page_offset or 0) % 5
 
             # Select a batch of 3-5 diverse queries from the rotated pool
             target_batch_size = min(4, len(pool)) if len(pool) >= 3 else len(pool)

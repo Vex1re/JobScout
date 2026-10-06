@@ -16,8 +16,8 @@ class TrudVsemParser(BaseVacanciesParser):
     Endpoint: https://opendata.trudvsem.ru/api/v1/vacancies
     """
 
-    API_URL = "https://opendata.trudvsem.ru/api/v1/vacancies"
-    FALLBACK_URL = "http://opendata.trudvsem.ru/api/v1/vacancies"
+    API_URL = "http://opendata.trudvsem.ru/api/v1/vacancies"
+    FALLBACK_URL = "https://opendata.trudvsem.ru/api/v1/vacancies"
 
     REGION_CODES = {
         "москва": "77",
@@ -68,12 +68,14 @@ class TrudVsemParser(BaseVacanciesParser):
         from services.parser.normalizer import CityNormalizer
 
         effective_limit = min(max(limit, 10), 100)
-        offset = page * 50
+        # In TrudVsem OpenData REST API, 'offset' parameter represents the 1-based page number (1, 2, 3...)
+        # Passing unbounded numbers or item offsets (e.g. 4200) causes internal database 500 Server Error
+        page_num = max(1, (page % 5) + 1)
 
         params = {
             "text": query,
             "limit": effective_limit,
-            "offset": offset,
+            "offset": page_num,
         }
 
         region_code = None
@@ -83,10 +85,10 @@ class TrudVsemParser(BaseVacanciesParser):
 
         urls_to_try = []
         if region_code and not self._region_endpoint_unhealthy:
-            urls_to_try.append(f"https://opendata.trudvsem.ru/api/v1/vacancies/region/{region_code}")
             urls_to_try.append(f"http://opendata.trudvsem.ru/api/v1/vacancies/region/{region_code}")
+            urls_to_try.append(f"https://opendata.trudvsem.ru/api/v1/vacancies/region/{region_code}")
 
-        # Always include base vacancies endpoint as primary / fallback
+        # Always include base vacancies endpoint as primary / fallback (HTTP first, then HTTPS)
         urls_to_try.append(self.API_URL)
         urls_to_try.append(self.FALLBACK_URL)
 
@@ -101,6 +103,17 @@ class TrudVsemParser(BaseVacanciesParser):
                         response_data = response.json()
                         break
                     elif response.status_code >= 500:
+                        # If a secondary page (page_num > 1) returned 500, attempt fallback to page 1
+                        if params.get("offset", 1) > 1:
+                            fallback_params = dict(params, offset=1)
+                            try:
+                                fb_resp = await client.get(url, params=fallback_params)
+                                if fb_resp.status_code == 200:
+                                    response_data = fb_resp.json()
+                                    break
+                            except Exception:
+                                pass
+
                         # Server temporary issue on regional endpoint (e.g. 500 Internal Server Error)
                         if "/region/" in url:
                             self._region_endpoint_unhealthy = True
@@ -109,7 +122,7 @@ class TrudVsemParser(BaseVacanciesParser):
                                 f"falling back to general vacancies API..."
                             )
                         else:
-                            logger.info(f"TrudVsem endpoint {url} returned {response.status_code}")
+                            logger.warning(f"TrudVsem endpoint {url} returned {response.status_code}")
                     else:
                         logger.info(f"TrudVsem returned status {response.status_code} for URL {url}")
                 except (httpx.ConnectError, httpx.TimeoutException) as exc:

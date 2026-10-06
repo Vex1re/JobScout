@@ -149,7 +149,155 @@ TECH_SKILLS_MAP: Dict[str, str] = {
     "playwright": "Playwright",
     "cypress": "Cypress",
     "allure": "Allure",
-    "postman": "Postman"
+    "postman": "Postman",
+
+    # Marketing & Digital
+    "smm": "SMM",
+    "seo": "SEO",
+    "контекстная реклама": "Контекстная реклама",
+    "яндекс директ": "Яндекс.Директ",
+    "яндекс.директ": "Яндекс.Директ",
+    "директ": "Яндекс.Директ",
+    "google ads": "Google Ads",
+    "таргетинг": "Таргетированная реклама",
+    "таргетированная реклама": "Таргетированная реклама",
+    "копирайтинг": "Копирайтинг",
+    "контент-маркетинг": "Контент-маркетинг",
+    "email маркетинг": "Email-маркетинг",
+    "e-mail маркетинг": "Email-маркетинг",
+    "яндекс метрика": "Яндекс.Метрика",
+    "яндекс.метрика": "Яндекс.Метрика",
+    "google analytics": "Google Analytics",
+    "лидогенерация": "Лидогенерация",
+    "медиапланирование": "Медиапланирование",
+    "pr": "PR",
+
+    # Design & Creative
+    "figma": "Figma",
+    "photoshop": "Adobe Photoshop",
+    "adobe photoshop": "Adobe Photoshop",
+    "illustrator": "Adobe Illustrator",
+    "adobe illustrator": "Adobe Illustrator",
+    "after effects": "After Effects",
+    "coreldraw": "CorelDRAW",
+    "corel draw": "CorelDRAW",
+    "ui/ux": "UI/UX",
+    "ux/ui": "UI/UX",
+    "web-дизайн": "Веб-дизайн",
+    "веб дизайн": "Веб-дизайн",
+    "графический дизайн": "Графический дизайн",
+    "3d max": "3ds Max",
+    "3ds max": "3ds Max",
+    "blender": "Blender",
+    "indesign": "InDesign",
+    "motion design": "Motion Design",
+    "моушн дизайн": "Motion Design",
+    "типографика": "Типографика",
+    "sketch": "Sketch",
+
+    # Sales & Commerce
+    "b2b": "B2B продажи",
+    "b2b продажи": "B2B продажи",
+    "b2c": "B2C продажи",
+    "b2c продажи": "B2C продажи",
+    "amocrm": "amoCRM",
+    "amo crm": "amoCRM",
+    "битрикс24": "Битрикс24",
+    "битрикс 24": "Битрикс24",
+    "bitrix24": "Битрикс24",
+    "холодные звонки": "Холодные звонки",
+    "переговоры": "Переговоры",
+    "деловые переговоры": "Переговоры",
+    "воронка продаж": "Воронка продаж",
+    "работа с возражениями": "Работа с возражениями",
+    "клиентский сервис": "Клиентский сервис",
+    "управление продажами": "Управление продажами",
+    "прямые продажи": "Прямые продажи",
+    "тендеры": "Тендеры",
+    "госзакупки": "Госзакупки",
+    "44-фз": "44-ФЗ",
+    "223-фз": "223-ФЗ",
+
+    # Finance & Accounting
+    "1с": "1С:Предприятие",
+    "1с:бухгалтерия": "1С:Бухгалтерия",
+    "1с бухгалтерия": "1С:Бухгалтерия",
+    "1с:зуп": "1С:ЗУП",
+    "1с зуп": "1С:ЗУП",
+    "бухгалтерский учет": "Бухгалтерский учет",
+    "бухучет": "Бухгалтерский учет",
+    "налоговый учет": "Налоговый учет",
+    "первичная документация": "Первичная документация",
+    "первичка": "Первичная документация",
+    "excel": "MS Excel",
+    "ms excel": "MS Excel",
+    "финансовый анализ": "Финансовый анализ",
+    "мсфо": "МСФО",
+    "банк-клиент": "Банк-Клиент",
+    "расчет заработной платы": "Расчет заработной платы",
+    "расчет зарплаты": "Расчет заработной платы",
+    "налоговая отчетность": "Налоговая отчетность",
+    "аудит": "Аудит",
+    "управленческий учет": "Управленческий учет",
+
+    # HR & Recruitment
+    "рекрутинг": "Рекрутинг",
+    "подбор персонала": "Подбор персонала",
+    "адаптация персонала": "Адаптация персонала",
+    "кадровое делопроизводство": "Кадровое делопроизводство",
+    "кдп": "Кадровое делопроизводство",
+    "хедхантинг": "Хедхантинг",
+    "оценка персонала": "Оценка персонала",
+    "мотивация персонала": "Мотивация персонала",
+    "проведение собеседований": "Проведение собеседований",
+
+    # Legal
+    "договорное право": "Договорное право",
+    "составление договоров": "Договорное право",
+    "претензионная работа": "Претензионная работа",
+    "корпоративное право": "Корпоративное право",
+    "арбитраж": "Арбитраж",
+    "судебная практика": "Судебная практика",
+    "юридическое сопровождение": "Юридическое сопровождение",
+
+    # Management & Operations
+    "scrum": "Scrum",
+    "agile": "Agile",
+    "kanban": "Kanban",
+    "jira": "Jira",
+    "confluence": "Confluence",
+    "управление проектами": "Управление проектами",
+    "project management": "Project Management",
+    "product management": "Product Management",
+    "управление командой": "Управление командой",
+    "custdev": "CustDev",
+    "юнит-экономика": "Unit-экономика",
+    "бизнес-процессы": "Бизнес-процессы",
+
+    # Logistics & Supply
+    "логистика": "Логистика",
+    "вэд": "ВЭД",
+    "управление складом": "Складской учет",
+    "складской учет": "Складской учет",
+    "закупки": "Закупки",
+    "снабжение": "Снабжение",
+    "транспортная логистика": "Транспортная логистика",
+
+    # Office & General
+    "деловая переписка": "Деловая переписка",
+    "документооборот": "Документооборот",
+    "эдо": "ЭДО",
+    "ms office": "MS Office",
+    "powerpoint": "PowerPoint",
+    "английский язык": "Английский язык",
+
+    # Engineering & Technical
+    "autocad": "AutoCAD",
+    "автокад": "AutoCAD",
+    "solidworks": "SolidWorks",
+    "компас-3d": "Компас-3D",
+    "проектирование": "Проектирование",
+    "чпу": "ЧПУ"
 }
 
 
@@ -176,15 +324,26 @@ class ResumeExtractor:
 
     @classmethod
     def extract_skills(cls, text: str) -> List[str]:
-        """Extract normalized technical skills found in text."""
+        """Extract normalized technical and professional skills found in text."""
         lowered = f" {text.lower()} "
         found_skills: Set[str] = set()
 
         for key, canonical in TECH_SKILLS_MAP.items():
-            # Match whole words or boundary patterns
-            pattern = r"(?<![a-zA-Z0-9_#+])" + re.escape(key) + r"(?![a-zA-Z0-9_#+])"
+            pattern = r"(?<![a-zA-Z0-9_#+а-яА-ЯёЁ])" + re.escape(key) + r"(?![a-zA-Z0-9_#+а-яА-ЯёЁ])"
             if re.search(pattern, lowered):
                 found_skills.add(canonical)
+
+        # Dynamic extraction from explicit skills section if present
+        section_pattern = r"(?:ключевые\s+навыки|профессиональные\s+навыки|навыки|компетенции|стек|skills)[:\s\n]+([^\n\r]+(?:\n[•\-\*\s]+[^\n\r]+|\n[^\n\r]+){0,10})"
+        sec_match = re.search(section_pattern, text, re.IGNORECASE)
+        if sec_match:
+            sec_text = sec_match.group(1)
+            raw_tokens = re.split(r"[,;•\n\*\t]+", sec_text)
+            for token in raw_tokens:
+                cleaned = token.strip().strip("-").strip()
+                if 2 <= len(cleaned) <= 35 and not any(kw in cleaned.lower() for kw in ["опыт", "образование", "контакт", "телефон", "email", "город"]):
+                    if len(cleaned.split()) <= 4:
+                        found_skills.add(cleaned.strip().capitalize())
 
         # Sort alphabetically for consistent representation
         return sorted(list(found_skills))
@@ -311,9 +470,9 @@ class ResumeExtractor:
         from date intervals in the text.
         Coord = year * 12 + month.
         """
-        now = datetime.datetime.now()
-        current_year = now.year
-        current_month = now.month
+        today = datetime.date.today()
+        current_year = today.year
+        current_month = today.month
         current_coord = current_year * 12 + current_month
 
         months_map = {
@@ -385,9 +544,10 @@ class ResumeExtractor:
 
     @classmethod
     def extract_target_role(cls, text: str, detected_skills: List[str]) -> str:
-        """Extract or infer target job title."""
+        """Extract or infer target job title across all professions."""
         lowered = text.lower()
         role_patterns = [
+            # IT & Software (High priority)
             (r"(python\s+(?:developer|разработчик|backend|программист))", "Python Backend Developer"),
             (r"(backend\s+(?:developer|разработчик|инженер))", "Backend Developer"),
             (r"(frontend\s+(?:developer|разработчик))", "Frontend Developer"),
@@ -398,13 +558,70 @@ class ResumeExtractor:
             (r"(go\s+developer|golang\s+разработчик)", "Go Developer"),
             (r"(java\s+developer|java\s+разработчик)", "Java Developer"),
             (r"(android\s+developer|ios\s+developer|мобильный\s+разработчик)", "Mobile Developer"),
+
+            # Sales & Commerce
+            (r"(руководитель\s+отдела\s+продаж)", "Руководитель отдела продаж"),
+            (r"(менеджер\s+по\s+продажам|b2b\s+продажи|менеджер\s+по\s+работе\s+с\s+клиентами|аккаунт-менеджер)", "Менеджер по продажам"),
+            (r"(торговый\s+представитель|продавец-консультант|продавец)", "Менеджер по продажам"),
+
+            # Finance & Accounting
+            (r"(главный\s+бухгалтер)", "Главный бухгалтер"),
+            (r"(бухгалтер|бухгалтерия)", "Бухгалтер"),
+            (r"(финансовый\s+аналитик|экономист|финансист)", "Финансовый аналитик"),
+            (r"(аудитор)", "Аудитор"),
+
+            # Marketing & Media
+            (r"(интернет-маркетолог|диджитал-маркетолог)", "Интернет-маркетолог"),
+            (r"(таргетолог|smm-специалист|smm-менеджер|smm)", "SMM-специалист"),
+            (r"(seo-специалист|seo)", "SEO-специалист"),
+            (r"(копирайтер|контент-менеджер)", "Копирайтер"),
+            (r"(маркетолог|специалист\s+по\s+маркетингу)", "Маркетолог"),
+
+            # Design & Creative
+            (r"(ui/ux\s+дизайнер|веб-дизайнер|web-дизайнер)", "UI/UX Дизайнер"),
+            (r"(графический\s+дизайнер|моушн-дизайнер|моушн\s+дизайнер)", "Графический дизайнер"),
+            (r"(дизайнер)", "Дизайнер"),
+
+            # HR & Recruitment
+            (r"(hr-менеджер|рекрутер|менеджер\s+по\s+персоналу|специалист\s+по\s+кадрам)", "HR-менеджер"),
+
+            # Legal
+            (r"(юрист|юрисконсульт|адвокат)", "Юрист"),
+
+            # Management & Operations
+            (r"(project\s+manager|руководитель\s+проектов|менеджер\s+проектов)", "Project Manager"),
+            (r"(product\s+manager|продакт-менеджер|менеджер\s+продукта)", "Product Manager"),
+            (r"(бизнес-аналитик)", "Бизнес-аналитик"),
+
+            # Logistics & Supply
+            (r"(менеджер\s+по\s+логистике|логист)", "Менеджер по логистике"),
+            (r"(водитель-экспедитор|водитель)", "Водитель-экспедитор"),
+            (r"(кладовщик)", "Кладовщик"),
+
+            # Engineering & Production
+            (r"(инженер-конструктор|инженер-проектировщик|инженер)", "Инженер"),
+
+            # Service & Hospitality
+            (r"(повар|шеф-повар)", "Повар"),
+            (r"(администратор)", "Администратор"),
+
+            # Education
+            (r"(преподаватель|учитель|репетитор)", "Преподаватель"),
+            (r"(переводчик)", "Переводчик")
         ]
 
         for pattern, role in role_patterns:
             if re.search(pattern, lowered):
                 return role
 
-        # Infer from skills
+        # Explicit role heading in text (e.g. "Должность: Графический дизайнер")
+        role_label_match = re.search(r"(?:желаемая\s+)?(?:должность|позиция|специальность)[:\s]+([^\n\r,]+)", text, re.IGNORECASE)
+        if role_label_match:
+            candidate = role_label_match.group(1).strip()
+            if 3 <= len(candidate) <= 50:
+                return candidate.title()
+
+        # Infer from detected skills
         if "Python" in detected_skills:
             return "Python Developer"
         elif "React" in detected_skills or "Vue.js" in detected_skills:
@@ -415,8 +632,27 @@ class ResumeExtractor:
             return "Java Developer"
         elif "Docker" in detected_skills and "Kubernetes" in detected_skills:
             return "DevOps Engineer"
+        elif any(s in detected_skills for s in ["1С:Бухгалтерия", "Бухгалтерский учет", "Первичная документация"]):
+            return "Бухгалтер"
+        elif any(s in detected_skills for s in ["Figma", "UI/UX", "Adobe Photoshop"]):
+            return "Дизайнер"
+        elif any(s in detected_skills for s in ["SMM", "SEO", "Яндекс.Директ", "Таргетированная реклама"]):
+            return "Маркетолог"
+        elif any(s in detected_skills for s in ["B2B продажи", "amoCRM", "Битрикс24", "Холодные звонки"]):
+            return "Менеджер по продажам"
+        elif any(s in detected_skills for s in ["Рекрутинг", "Подбор персонала", "Кадровое делопроизводство"]):
+            return "HR-менеджер"
+        elif any(s in detected_skills for s in ["Договорное право", "Претензионная работа"]):
+            return "Юрист"
 
-        return "Software Developer"
+        # Check the first non-empty lines for role title
+        lines = [line.strip() for line in text.split("\n") if line.strip()]
+        for line in lines[:3]:
+            if 3 <= len(line) <= 40 and not any(kw in line.lower() for kw in ["@", "+7", "тел", "резюме", "обо мне", "опыт"]):
+                if not re.search(r"\d", line):
+                    return line.title()
+
+        return "Специалист"
 
     @classmethod
     def extract_salary_expectation(cls, text: str) -> Optional[int]:

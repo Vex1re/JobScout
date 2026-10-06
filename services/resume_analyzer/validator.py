@@ -48,10 +48,12 @@ class ResumeValidator:
         "experience": [
             "опыт", "опыт работы", "коммерческий опыт", "проекты", "пет-проект",
             "разработка", "стажировка", "практика", "работал", "участвовал",
-            "обязанности", "достижения", "experience", "work history", "projects"
+            "обязанности", "достижения", "место работы", "должность", "компания",
+            "experience", "work history", "projects"
         ],
         "skills": [
             "навыки", "стек", "технологии", "ключевые навыки", "инструменты",
+            "компетенции", "профессиональные навыки", "знания", "умения",
             "hard skills", "skills", "tech stack", "technologies"
         ],
         "education": [
@@ -78,7 +80,7 @@ class ResumeValidator:
         if len(text.strip()) < 40 or len(words) < 6:
             return (
                 "gibberish",
-                "⚠️ Текст слишком короткий для полноценного резюме. Пожалуйста, укажите ваш опыт, ключевые технологии и желаемую должность."
+                "⚠️ Текст слишком короткий для полноценного резюме. Пожалуйста, укажите ваш опыт, ключевые навыки и желаемую должность."
             )
 
         # Repetition of characters (e.g. aaaaa, asdfasdf)
@@ -94,7 +96,7 @@ class ResumeValidator:
             return (
                 "recipe",
                 "⚠️ Текст похож на кулинарный рецепт, а не резюме специалиста. "
-                "Пожалуйста, отправьте документ с описанием профессионального IT-опыта и стека технологий."
+                "Пожалуйста, отправьте документ с описанием профессионального опыта и ключевых навыков."
             )
 
         # High density of legal contract phrases
@@ -144,7 +146,7 @@ class ResumeValidator:
         if has_experience:
             present_sections.append("experience")
         else:
-            missing_sections.append("Опыт работы / коммерческие проекты")
+            missing_sections.append("Опыт работы / выполненные проекты")
 
         # Skills check
         has_skills_section = any(kw in lowered for kw in cls.SECTION_MARKERS["skills"])
@@ -152,7 +154,7 @@ class ResumeValidator:
         if has_skills:
             present_sections.append("skills")
         else:
-            missing_sections.append("Технологический стек (навыки и инструменты)")
+            missing_sections.append("Профессиональные навыки и инструменты")
 
         # Education check
         has_education = any(kw in lowered for kw in cls.SECTION_MARKERS["education"])
@@ -171,16 +173,16 @@ class ResumeValidator:
         score = int((len(present_sections) / 4.0) * 100)
 
         # 3. Decision threshold:
-        # A valid resume must have at least technical skills identified OR a skills section,
+        # A valid resume must have at least professional skills identified OR a skills section,
         # plus at least one other structural block (or total score >= 50).
         if not has_skills and tech_skills_count == 0:
             missing_text = "\n• ".join(missing_sections)
             return ValidationResult(
                 is_valid=False,
                 error_message=(
-                    "⚠️ В резюме не обнаружено технических навыков или стека технологий.\n\n"
-                    "Для точного подбора вакансий укажите языки программирования, фреймворки и базы данных "
-                    "(например: Python, FastAPI, PostgreSQL, Docker).\n\n"
+                    "⚠️ В резюме не обнаружено ключевых навыков или специализации.\n\n"
+                    "Для точного подбора вакансий укажите ваши ключевые навыки и инструменты "
+                    "(например: B2B продажи, Переговоры, или Figma, или 1С, или Python, Docker).\n\n"
                     f"<b>Не хватает разделов:</b>\n• {missing_text}"
                 ),
                 score=score,

@@ -10,6 +10,8 @@ from services.parser.manager import aggregator_manager
 from bot.formatters.card import format_vacancy_card
 from bot.keyboards.inline import get_vacancy_card_keyboard
 
+from aiogram.exceptions import TelegramForbiddenError, TelegramBadRequest
+
 logger = logging.getLogger(__name__)
 
 
@@ -28,7 +30,7 @@ async def run_periodic_alerts(bot: Bot):
             for user in users:
                 try:
                     resume = user.resume
-                    if not resume or not resume.skills:
+                    if not resume or (not resume.skills and not resume.title):
                         continue
 
                     # Search and match
@@ -48,7 +50,6 @@ async def run_periodic_alerts(bot: Bot):
                     sent_count = 0
                     for vac, info in fresh_high_matches:
                         # Check if user already marked it or if already sent
-                        # We save is_sent=True once notified
                         match_rec = await InteractionRepository.save_or_update_match(
                             session=session,
                             user_id=user.telegram_id,
@@ -69,14 +70,24 @@ async def run_periodic_alerts(bot: Bot):
                             has_ai_tip=True
                         )
 
-                        alert_msg = f"🔔 <b>Свежая вакансия под ваш стек!</b>\n\n{card_text}"
+                        alert_msg = f"🔔 <b>Свежая вакансия под ваш профиль!</b>\n\n{card_text}"
                         
-                        await bot.send_message(
-                            chat_id=user.telegram_id,
-                            text=alert_msg,
-                            reply_markup=keyboard,
-                            parse_mode="HTML"
-                        )
+                        try:
+                            await bot.send_message(
+                                chat_id=user.telegram_id,
+                                text=alert_msg,
+                                reply_markup=keyboard,
+                                parse_mode="HTML"
+                            )
+                        except TelegramForbiddenError:
+                            logger.info(f"User {user.telegram_id} blocked bot. Deactivating user.")
+                            user.is_active = False
+                            await session.commit()
+                            break
+                        except TelegramBadRequest as br_err:
+                            logger.warning(f"Bad request sending alert to {user.telegram_id}: {br_err}")
+                            break
+
                         sent_count += 1
                         if sent_count >= 2:
                             break

@@ -147,7 +147,7 @@ async def _process_parsed_text(status_msg: types.Message, user_id: int, text: st
         f"📌 <b>Позиция:</b> {html.escape(data['title'])}\n"
         f"💼 <b>Грейд:</b> {data['grade']} (~{data['years_of_experience']} г. опыта)\n"
         f"💰 <b>Желаемая ЗП:</b> {salary_str}\n\n"
-        f"🛠️ <b>Распознанный стек ({len(data['skills'])}):</b>\n"
+        f"🛠️ <b>Распознанные ключевые навыки ({len(data['skills'])}):</b>\n"
         f"<code>{html.escape(skills_str)}</code>\n\n"
         f"<i>Все верно или хотите скорректировать перед сохранением?</i>"
     )
@@ -176,7 +176,7 @@ async def confirm_and_save_resume(callback: types.CallbackQuery, state: FSMConte
     await ResumeRepository.save_or_update_resume(
         session=session,
         user_id=callback.from_user.id,
-        title=resume_data.get("title", "Разработчик"),
+        title=resume_data.get("title", "Специалист"),
         grade=resume_data.get("grade", "Middle"),
         years_of_experience=resume_data.get("years_of_experience", 1.0),
         skills=resume_data.get("skills", []),

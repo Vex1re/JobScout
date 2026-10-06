@@ -68,3 +68,20 @@ def test_salary_expectation_extraction():
     salary = ResumeExtractor.extract_salary_expectation(text)
     assert salary == 200000
 
+
+@pytest.mark.parametrize(
+    "frozen_date, start_text, min_expected, max_expected",
+    [
+        ("2025-07-01", "01.2024 — по настоящее время", 1.4, 1.6),
+        ("2027-01-01", "01.2024 — по настоящее время", 2.9, 3.1),
+        ("2030-01-01", "2024 — н.в.", 5.5, 6.2),
+    ]
+)
+def test_dynamic_years_with_freezegun(frozen_date, start_text, min_expected, max_expected):
+    from freezegun import freeze_time
+    with freeze_time(frozen_date):
+        years = ResumeExtractor.extract_experience_years(start_text)
+        assert min_expected <= years <= max_expected, (
+            f"At {frozen_date}, expected {min_expected}-{max_expected} for '{start_text}', got {years}"
+        )
+

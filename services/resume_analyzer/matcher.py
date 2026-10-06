@@ -18,6 +18,7 @@ class VacancyMatcher:
     }
 
     ROLE_KEYWORDS = {
+        # Tech & Engineering
         "python": {"python", "django", "fastapi", "flask", "aiohttp"},
         "backend": {"backend", "бэкенд", "бэкэнд", "серверный"},
         "frontend": {"frontend", "фронтенд", "фронтэнд", "react", "vue", "angular", "next.js"},
@@ -28,7 +29,37 @@ class VacancyMatcher:
         "mobile": {"mobile", "мобильный", "android", "ios", "flutter", "react native", "swift", "kotlin"},
         "go": {"go", "golang"},
         "java": {"java", "spring"},
-        "php": {"php", "laravel", "symfony", "1с-битрикс"}
+        "php": {"php", "laravel", "symfony", "1с-битрикс"},
+
+        # Marketing & Advertising
+        "marketing": {"маркетинг", "маркетолог", "smm", "seo", "таргетолог", "копирайтер", "контент", "pr", "трафик", "лидогенерация"},
+
+        # Sales & Commerce
+        "sales": {"продажи", "менеджер по продажам", "b2b", "b2c", "торговый представитель", "работа с клиентами", "аккаунт", "продавец", "телемаркетинг"},
+
+        # Design & Media
+        "design": {"дизайнер", "дизайн", "ui/ux", "figma", "графический дизайнер", "моушн", "веб-дизайнер", "иллюстратор", "3d", "art director"},
+
+        # Finance & Accounting
+        "finance": {"бухгалтер", "бухгалтерия", "главный бухгалтер", "экономист", "финансист", "аудит", "1с", "налоги", "расчет зарплаты"},
+
+        # HR & Recruiting
+        "hr": {"hr", "рекрутер", "подбор персонала", "специалист по кадрам", "human resources", "кадровик", "recruiter"},
+
+        # Legal
+        "legal": {"юрист", "юрисконсульт", "юриспруденция", "адвокат", "договорное право"},
+
+        # Logistics & Supply
+        "logistics": {"логист", "логистика", "закупки", "снабжение", "склад", "водитель", "экспедитор", "курьер", "кладовщик"},
+
+        # Management & Operations
+        "management": {"project manager", "product manager", "руководитель", "директор", "управляющий", "менеджер проектов", "тимлид"},
+
+        # Engineering & Technical
+        "engineering": {"инженер", "проектировщик", "техник", "технолог", "конструктор", "механик"},
+
+        # Support & Office
+        "support": {"поддержка", "оператор", "call-центр", "диспетчер", "консультант", "секретарь", "ассистент", "офис-менеджер"}
     }
 
     @classmethod
@@ -234,8 +265,14 @@ class VacancyMatcher:
         if overlap:
             return 75.0
 
-        # Freelance orders or generic orders often have descriptive titles like "Сделать сайт"
-        if any(term in vac_title_lower for term in ["скрипт", "бот", "парсер", "сайт", "разработка", "доработка", "api"]):
+        # Freelance orders or generic project tasks often have descriptive titles
+        generic_tasks = [
+            "скрипт", "бот", "парсер", "сайт", "разработка", "доработка", "api",
+            "дизайн", "макет", "логотип", "баннер", "презентация",
+            "текст", "статья", "копирайтинг", "перевод", "рерайт",
+            "настройка", "реклама", "трафик", "таблица", "отчет"
+        ]
+        if any(term in vac_title_lower for term in generic_tasks):
             return 60.0
 
         # Role mismatch (e.g. Python Backend vs 1C or iOS)

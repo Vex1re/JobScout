@@ -60,5 +60,33 @@ class Settings(BaseSettings):
         description="Optional HTTP/SOCKS5 proxy URL (e.g. socks5://user:pass@host:port or http://host:port)"
     )
 
+    # Environment & Bot Execution Mode
+    ENV: str = Field(default="dev", description="Environment mode: 'dev' or 'prod'")
+    BOT_MODE: str = Field(default="polling", description="Bot run mode: 'polling' or 'webhook'")
+    WEBHOOK_URL: Optional[str] = Field(default=None, description="Public HTTPS URL for Telegram webhook")
+    WEBHOOK_PATH: str = Field(default="/webhook", description="Path for Telegram webhook requests")
+    WEBHOOK_HOST: str = Field(default="0.0.0.0", description="Host to bind webhook server")
+    WEBHOOK_PORT: int = Field(default=8080, description="Port to bind webhook server")
+    WEBHOOK_SECRET: Optional[str] = Field(default=None, description="Optional secret token for Telegram webhook")
+
+    # Database Pool Settings
+    DB_POOL_SIZE: int = Field(default=10, description="SQLAlchemy connection pool size")
+    DB_MAX_OVERFLOW: int = Field(default=5, description="SQLAlchemy connection pool max overflow")
+    DB_POOL_TIMEOUT: int = Field(default=30, description="SQLAlchemy connection pool timeout in seconds")
+    DB_POOL_RECYCLE: int = Field(default=1800, description="SQLAlchemy connection pool recycle in seconds")
+    SQLITE_BUSY_TIMEOUT: int = Field(default=5000, description="SQLite busy timeout in milliseconds")
+
+    # Redis (for FSM, rate limiting, and queues)
+    REDIS_URL: Optional[str] = Field(
+        default=None,
+        description="Redis URL (e.g. redis://localhost:6379/0). Required for prod."
+    )
+
+    # Throttling & Rate Limiting
+    THROTTLE_RATE_LIMIT: float = Field(
+        default=0.8,
+        description="Minimum interval in seconds between user actions"
+    )
+
 
 settings = Settings()

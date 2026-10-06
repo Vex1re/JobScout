@@ -126,7 +126,7 @@ def format_vacancy_card(vacancy: Vacancy, match_info: Dict[str, Any]) -> str:
         growth_info = f"\n🌱 <b>Рекомендация:</b> <i>{html.escape(reason)}</i>\n"
 
     # Short clean description
-    clean_desc = vacancy.description.strip()
+    clean_desc = (vacancy.description or "").strip()
     clean_desc = re.sub(r"(удаленно|удалённо)([А-ЯA-Z])", r"\1 • \2", clean_desc, flags=re.IGNORECASE)
     if len(clean_desc) > 300:
         clean_desc = clean_desc[:297] + "..."
@@ -166,16 +166,16 @@ def format_profile_view(user: User, resume: Optional[Resume]) -> str:
     notify_status = "Включены 🔔" if user.auto_notify else "Отключены 🔕"
 
     return (
-        f"👤 <b>Ваш профиль разработчика</b>\n\n"
+        f"👤 <b>Ваш профессиональный профиль</b>\n\n"
         f"🎯 <b>Целевая позиция:</b> {html.escape(resume.title)}\n"
         f"💼 <b>Грейд:</b> {resume.grade} (~{resume.years_of_experience} г. опыта)\n"
         f"💰 <b>Желаемая ЗП:</b> {salary_exp}\n\n"
-        f"🛠️ <b>Распознанный стек ({len(resume.skills)}):</b>\n"
+        f"🛠️ <b>Распознанные ключевые навыки ({len(resume.skills)}):</b>\n"
         f"<code>{html.escape(skills_formatted)}</code>\n\n"
         f"⚙️ <b>Настройки поиска:</b>\n"
         f"• 📍 Город поиска: {city_display}\n"
         f"• Только удаленка: {remote_status}\n"
         f"• Включать фриланс заказы: {freelance_status}\n"
         f"• Автопоиск в фоне: {notify_status}\n\n"
-        f"<i>Вы можете в любой момент обновить резюме или стек по кнопкам ниже.</i>"
+        f"<i>Вы можете в любой момент обновить резюме или навыки по кнопкам ниже.</i>"
     )

@@ -253,3 +253,49 @@ async def handle_preset_freelance(callback: types.CallbackQuery, session: AsyncS
     await callback.answer("Выбраны только биржи фриланса (3 биржи) 💻")
 
 
+@router.message(Command("delete_me"))
+@router.message(Command("delete_data"))
+@router.callback_query(F.data == "request_delete_account")
+async def handle_request_delete_data(event: types.Message | types.CallbackQuery):
+    msg = event.message if isinstance(event, types.CallbackQuery) else event
+    kb = types.InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                types.InlineKeyboardButton(text="🗑️ Да, удалить всё навсегда", callback_data="confirm_delete_all_data")
+            ],
+            [
+                types.InlineKeyboardButton(text="🔙 Отмена", callback_data="back_to_settings")
+            ]
+        ]
+    )
+    text = (
+        "⚠️ <b>Удаление персональных данных (152-ФЗ / GDPR)</b>\n\n"
+        "Вы действительно хотите удалить все ваши данные из бота?\n\n"
+        "Будут удалены:\n"
+        "• Ваше резюме и профессиональный профиль\n"
+        "• История просмотров и сохраненные подборки\n"
+        "• Избранные и скрытые вакансии\n\n"
+        "Это действие необратимо."
+    )
+    if isinstance(event, types.CallbackQuery):
+        await event.answer()
+        await msg.edit_text(text, reply_markup=kb)
+    else:
+        await msg.answer(text, reply_markup=kb)
+
+
+@router.callback_query(F.data == "confirm_delete_all_data")
+async def handle_confirm_delete_data(callback: types.CallbackQuery, session: AsyncSession):
+    user_id = callback.from_user.id
+    deleted = await UserRepository.delete_user_all_data(session=session, telegram_id=user_id)
+    if deleted:
+        await callback.message.edit_text(
+            "✅ <b>Все ваши персональные данные, резюме и история успешно удалены.</b>\n\n"
+            "Если захотите воспользоваться ботом снова, просто отправьте /start."
+        )
+    else:
+        await callback.message.edit_text("ℹ️ Данные уже были удалены или не найдены.")
+    await callback.answer("Данные удалены.", show_alert=True)
+
+
+

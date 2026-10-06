@@ -227,6 +227,12 @@ def get_settings_keyboard(user: User) -> InlineKeyboardMarkup:
                     text="🔍 Искать с этими фильтрами",
                     callback_data="action_search_now"
                 )
+            ],
+            [
+                InlineKeyboardButton(
+                    text="🗑️ Удалить мои данные (152-ФЗ)",
+                    callback_data="request_delete_account"
+                )
             ]
         ]
     )

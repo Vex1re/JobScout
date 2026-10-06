@@ -162,7 +162,20 @@ class UserRepository:
         )
         res = await session.execute(stmt)
         users = res.scalars().all()
-        return [u for u in users if u.resume is not None and len(u.resume.skills) > 0]
+        return [u for u in users if u.resume is not None and (len(u.resume.skills) > 0 or bool(u.resume.title))]
+
+    @staticmethod
+    async def delete_user_all_data(session: AsyncSession, telegram_id: int) -> bool:
+        """Deletes all user personal data, resume, history, and matches (GDPR / 152-ФЗ compliance)."""
+        await session.execute(delete(Resume).where(Resume.user_id == telegram_id))
+        await session.execute(delete(UserFavorite).where(UserFavorite.user_id == telegram_id))
+        await session.execute(delete(UserHidden).where(UserHidden.user_id == telegram_id))
+        await session.execute(delete(UserMatch).where(UserMatch.user_id == telegram_id))
+        await session.execute(delete(UserViewed).where(UserViewed.user_id == telegram_id))
+        stmt = delete(User).where(User.telegram_id == telegram_id)
+        res = await session.execute(stmt)
+        await session.commit()
+        return res.rowcount > 0
 
 
 class ResumeRepository:

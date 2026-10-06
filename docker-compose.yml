@@ -1,7 +1,58 @@
-version: '3.8'
-
 services:
-  jobscout_bot:
+  postgres:
+    image: postgres:16-alpine
+    container_name: jobscout_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-jobscout}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-jobscout_password}
+      POSTGRES_DB: ${POSTGRES_DB:-jobscout_db}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-jobscout} -d ${POSTGRES_DB:-jobscout_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - jobscout_net
+
+  pgbouncer:
+    image: edoburu/pgbouncer:v1.22.0
+    container_name: jobscout_pgbouncer
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_USER: ${POSTGRES_USER:-jobscout}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-jobscout_password}
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${POSTGRES_DB:-jobscout_db}
+      POOL_MODE: transaction
+      MAX_CLIENT_CONN: 100
+      DEFAULT_POOL_SIZE: 20
+      AUTH_TYPE: scram-sha-256
+    networks:
+      - jobscout_net
+
+  redis:
+    image: redis:7-alpine
+    container_name: jobscout_redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - jobscout_net
+
+  bot:
     build:
       context: .
       dockerfile: Dockerfile
@@ -9,14 +60,93 @@ services:
     restart: unless-stopped
     env_file:
       - .env
+    depends_on:
+      redis:
+        condition: service_healthy
+      pgbouncer:
+        condition: service_started
     volumes:
-      # Persistent volume for SQLite database and logs
-      - ./data:/app/data
+      - bot_data:/app/data
     environment:
-      - DATABASE_URL=sqlite+aiosqlite:////app/data/job_hunter.db
       - PYTHONUNBUFFERED=1
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
+      - ENV=${ENV:-prod}
+      - DATABASE_URL=${DATABASE_URL:-postgresql+asyncpg://jobscout:jobscout_password@pgbouncer:5432/jobscout_db}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
+    command: ["python", "main.py"]
+    networks:
+      - jobscout_net
+
+  scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: jobscout_scheduler
+    restart: unless-stopped
+    env_file:
+      - .env
+    depends_on:
+      redis:
+        condition: service_healthy
+      pgbouncer:
+        condition: service_started
+    environment:
+      - PYTHONUNBUFFERED=1
+      - ENV=${ENV:-prod}
+      - DATABASE_URL=${DATABASE_URL:-postgresql+asyncpg://jobscout:jobscout_password@pgbouncer:5432/jobscout_db}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
+    command: ["python", "services/scheduler/scheduler_service.py"]
+    networks:
+      - jobscout_net
+
+  worker-crawler:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: jobscout_worker_crawler
+    restart: unless-stopped
+    env_file:
+      - .env
+    depends_on:
+      redis:
+        condition: service_healthy
+      pgbouncer:
+        condition: service_started
+    environment:
+      - PYTHONUNBUFFERED=1
+      - ENV=${ENV:-prod}
+      - DATABASE_URL=${DATABASE_URL:-postgresql+asyncpg://jobscout:jobscout_password@pgbouncer:5432/jobscout_db}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
+    command: ["python", "-m", "arq", "workers.worker.WorkerSettings"]
+    networks:
+      - jobscout_net
+
+  worker-notifier:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: jobscout_worker_notifier
+    restart: unless-stopped
+    env_file:
+      - .env
+    depends_on:
+      redis:
+        condition: service_healthy
+      pgbouncer:
+        condition: service_started
+    environment:
+      - PYTHONUNBUFFERED=1
+      - ENV=${ENV:-prod}
+      - DATABASE_URL=${DATABASE_URL:-postgresql+asyncpg://jobscout:jobscout_password@pgbouncer:5432/jobscout_db}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
+    command: ["python", "-m", "arq", "workers.worker.WorkerSettings"]
+    networks:
+      - jobscout_net
+
+volumes:
+  postgres_data:
+  redis_data:
+  bot_data:
+
+networks:
+  jobscout_net:
+    driver: bridge
