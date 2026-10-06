@@ -233,3 +233,36 @@ class CityNormalizer:
             return True
 
         return norm_user.lower() == norm_vac.lower()
+
+
+class CurrencyNormalizer:
+    """Normalizes multi-currency salary figures into standardized RUB equivalent."""
+
+    RATES_TO_RUB: Dict[str, float] = {
+        "RUB": 1.0,
+        "RUR": 1.0,
+        "USD": 95.0,
+        "EUR": 105.0,
+        "KZT": 0.20,
+        "BYN": 30.0,
+        "GEL": 35.0,
+        "TRY": 2.8,
+        "AED": 26.0,
+        "CNY": 13.0,
+        "USDT": 95.0,
+    }
+
+    @classmethod
+    def normalize_to_rub(cls, amount: Optional[int], currency: Optional[str]) -> Optional[int]:
+        if amount is None:
+            return None
+        curr = (currency or "RUB").upper().strip()
+        if curr in ["₽", "РУБ", "РУБ."]:
+            curr = "RUB"
+        elif curr in ["$", "USDT"]:
+            curr = "USD"
+        elif curr == "€":
+            curr = "EUR"
+
+        rate = cls.RATES_TO_RUB.get(curr, 1.0)
+        return int(round(amount * rate))

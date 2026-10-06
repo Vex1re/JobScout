@@ -66,6 +66,13 @@ class TrudVsemParser(BaseVacanciesParser):
         city: Optional[str] = None
     ) -> List[Dict[str, Any]]:
         from services.parser.normalizer import CityNormalizer
+        from core.resilience import resilience_manager
+
+        if not await resilience_manager.circuit_breaker.can_execute(self.name):
+            logger.warning("TrudVsem circuit breaker is OPEN. Skipping request.")
+            return []
+
+        await resilience_manager.get_token_bucket(self.name).acquire()
 
         effective_limit = min(max(limit, 10), 100)
         # In TrudVsem OpenData REST API, 'offset' parameter represents the 1-based page number (1, 2, 3...)
@@ -95,14 +102,18 @@ class TrudVsemParser(BaseVacanciesParser):
         vacancies: List[Dict[str, Any]] = []
         response_data: Optional[Dict[str, Any]] = None
 
-        async with httpx.AsyncClient(timeout=self.api_timeout, headers=self.headers, follow_redirects=True) as client:
+        async with self.get_client(timeout=self.api_timeout) as client:
             for url in urls_to_try:
                 try:
                     response = await client.get(url, params=params)
                     if response.status_code == 200:
                         response_data = response.json()
+                        await resilience_manager.circuit_breaker.record_success(self.name)
                         break
-                    elif response.status_code >= 500:
+                    elif response.status_code in [500, 502, 503, 504]:
+                        await resilience_manager.circuit_breaker.record_failure(
+                            self.name, f"HTTP {response.status_code} on {url}"
+                        )
                         # If a secondary page (page_num > 1) returned 500, attempt fallback to page 1
                         if params.get("offset", 1) > 1:
                             fallback_params = dict(params, offset=1)
@@ -110,11 +121,12 @@ class TrudVsemParser(BaseVacanciesParser):
                                 fb_resp = await client.get(url, params=fallback_params)
                                 if fb_resp.status_code == 200:
                                     response_data = fb_resp.json()
+                                    await resilience_manager.circuit_breaker.record_success(self.name)
                                     break
                             except Exception:
                                 pass
 
-                        # Server temporary issue on regional endpoint (e.g. 500 Internal Server Error)
+                        # Server temporary issue on regional endpoint
                         if "/region/" in url:
                             self._region_endpoint_unhealthy = True
                             logger.info(
@@ -126,11 +138,13 @@ class TrudVsemParser(BaseVacanciesParser):
                     else:
                         logger.info(f"TrudVsem returned status {response.status_code} for URL {url}")
                 except (httpx.ConnectError, httpx.TimeoutException) as exc:
+                    await resilience_manager.circuit_breaker.record_failure(self.name, f"Network error: {exc}")
                     if "/region/" in url:
                         self._region_endpoint_unhealthy = True
                     logger.info(f"TrudVsem connection issue with {url}: {exc}")
                     continue
                 except Exception as exc:
+                    await resilience_manager.circuit_breaker.record_failure(self.name, f"Request error: {exc}")
                     logger.info(f"TrudVsem request failed for {url}: {exc}")
                     continue
 

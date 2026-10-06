@@ -51,14 +51,25 @@ class Settings(BaseSettings):
     VACANCIES_PER_PAGE: int = Field(default=5, description="Number of vacancies per page in Telegram inline list")
     MAX_VACANCIES_PER_SOURCE: int = Field(default=50, description="Max vacancies to parse per aggregator per cycle")
 
-    # Aggregator API Keys
+    # Aggregator API Keys & Feature Flags
     SUPERJOB_API_KEY: Optional[str] = Field(default=None, description="SuperJob API secret / App ID")
+    ENABLE_FREELANCEHUNT: bool = Field(default=False, description="Feature flag to enable Freelancehunt parser")
+    FREELANCEHUNT_API_TOKEN: Optional[str] = Field(default=None, description="Freelancehunt API v2 Token")
 
     # Proxy settings
     PROXY_URL: Optional[str] = Field(
         default=None,
         description="Optional HTTP/SOCKS5 proxy URL (e.g. socks5://user:pass@host:port or http://host:port)"
     )
+    PROXIES: List[str] = Field(
+        default_factory=list,
+        description="Optional list of proxy URLs for rotation"
+    )
+
+    # Ingestion & Resilience Settings
+    SEARCH_CACHE_TTL_MINUTES: int = Field(default=20, description="TTL for on-demand search cache in minutes")
+    CIRCUIT_BREAKER_MAX_FAILURES: int = Field(default=5, description="Max consecutive failures before circuit breaker opens")
+    CIRCUIT_BREAKER_RESET_TIMEOUT: int = Field(default=900, description="Circuit breaker reset timeout in seconds (15m)")
 
     # Environment & Bot Execution Mode
     ENV: str = Field(default="dev", description="Environment mode: 'dev' or 'prod'")

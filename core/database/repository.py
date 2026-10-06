@@ -240,39 +240,67 @@ class VacancyRepository:
             if not existing:
                 vac = Vacancy(
                     id=vac_id,
+                    external_id=data.get("external_id") or (vac_id.split("_", 1)[-1] if "_" in vac_id else vac_id),
+                    canonical_id=data.get("canonical_id"),
                     source=data.get("source", "unknown"),
                     title=data.get("title", ""),
                     company=data.get("company", "Не указана"),
                     url=data.get("url", ""),
                     salary_min=data.get("salary_min"),
                     salary_max=data.get("salary_max"),
+                    salary_from=data.get("salary_from") or data.get("salary_min"),
+                    salary_to=data.get("salary_to") or data.get("salary_max"),
                     currency=data.get("currency", "RUB"),
+                    salary_gross_net=data.get("salary_gross_net", "unknown"),
+                    salary_rub_normalized=data.get("salary_rub_normalized"),
                     description=data.get("description", ""),
+                    snippet=data.get("snippet"),
                     requirements=data.get("requirements", []),
+                    skills=data.get("skills") or data.get("requirements", []),
                     is_remote=data.get("is_remote", False),
+                    remote_scope=data.get("remote_scope", "unknown"),
                     is_freelance=data.get("is_freelance", False),
                     city=data.get("city"),
+                    city_norm=data.get("city_norm") or data.get("city"),
                     min_experience=data.get("min_experience"),
                     max_experience=data.get("max_experience"),
+                    required_experience=data.get("required_experience"),
                     target_grade=data.get("target_grade"),
+                    grade=data.get("grade") or data.get("target_grade"),
+                    grade_confidence=data.get("grade_confidence", 1.0),
                     risk_level=data.get("risk_level", "safe"),
+                    red_flag_level=data.get("red_flag_level") or data.get("risk_level", "safe"),
                     red_flags=data.get("red_flags", []),
-                    published_at=data.get("published_at")
+                    published_at=data.get("published_at"),
+                    first_seen_at=utc_now(),
+                    last_seen_at=utc_now(),
+                    is_active=True
                 )
                 session.add(vac)
                 added_count += 1
             else:
-                # Update status or details if needed
+                existing.last_seen_at = utc_now()
+                existing.is_active = True
+                if data.get("canonical_id"):
+                    existing.canonical_id = data.get("canonical_id")
+                if data.get("salary_rub_normalized") is not None:
+                    existing.salary_rub_normalized = data.get("salary_rub_normalized")
+                if data.get("snippet"):
+                    existing.snippet = data.get("snippet")
+                if data.get("remote_scope") and existing.remote_scope == "unknown":
+                    existing.remote_scope = data.get("remote_scope")
                 existing.risk_level = data.get("risk_level", existing.risk_level)
                 existing.red_flags = data.get("red_flags", existing.red_flags)
                 if data.get("city"):
                     existing.city = data.get("city")
+                    existing.city_norm = data.get("city")
                 if data.get("min_experience") is not None:
                     existing.min_experience = data.get("min_experience")
                 if data.get("max_experience") is not None:
                     existing.max_experience = data.get("max_experience")
                 if data.get("target_grade"):
                     existing.target_grade = data.get("target_grade")
+                    existing.grade = data.get("target_grade")
                 
         await session.commit()
         return added_count

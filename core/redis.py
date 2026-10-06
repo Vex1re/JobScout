@@ -46,3 +46,43 @@ async def close_redis() -> None:
         except Exception:
             pass
         _redis_client = None
+
+
+class RedisWrapper:
+    """Convenience async wrapper around Redis client with graceful no-op fallback."""
+
+    @property
+    def is_available(self) -> bool:
+        return bool(settings.REDIS_URL)
+
+    async def get(self, key: str) -> Optional[str]:
+        client = await get_redis()
+        if client:
+            try:
+                return await client.get(key)
+            except Exception:
+                return None
+        return None
+
+    async def set(self, key: str, value: str, ex: Optional[int] = None) -> bool:
+        client = await get_redis()
+        if client:
+            try:
+                await client.set(key, value, ex=ex)
+                return True
+            except Exception:
+                return False
+        return False
+
+    async def delete(self, key: str) -> bool:
+        client = await get_redis()
+        if client:
+            try:
+                await client.delete(key)
+                return True
+            except Exception:
+                return False
+        return False
+
+
+redis_client = RedisWrapper()

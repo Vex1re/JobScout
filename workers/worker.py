@@ -3,6 +3,7 @@ from urllib.parse import urlparse
 from arq.connections import RedisSettings
 from core.config import settings
 from workers.tasks.alerts import process_user_alert
+from workers.tasks.crawler import crawl_bucket, crawl_all_buckets
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +33,7 @@ def get_redis_settings() -> RedisSettings:
 
 class WorkerSettings:
     """arq worker configuration settings."""
-    functions = [process_user_alert]
+    functions = [process_user_alert, crawl_bucket, crawl_all_buckets]
     on_startup = startup
     on_shutdown = shutdown
     redis_settings = get_redis_settings()

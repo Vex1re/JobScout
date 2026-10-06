@@ -18,7 +18,12 @@ from services.parser.remoteok import RemoteOKParser
 from services.parser.superjob import SuperJobParser
 from services.parser.kwork import KworkParser
 from services.parser.rabota import RabotaRuParser
+from services.parser.freelancehunt import FreelancehuntParser
 from services.resume_analyzer.matcher import VacancyMatcher
+from services.deduplication import deduplicate_vacancies
+from core.redis import redis_client
+import json
+import time
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +65,54 @@ SOURCE_LABELS: Dict[str, str] = {
     "freelance_ru": "Freelance.ru (Фриланс)",
     "habr_freelance": "Хабр Фриланс",
     "rabota": "Работа.ру",
+    "freelancehunt": "Freelancehunt (Фриланс)",
 }
+
+if settings.ENABLE_FREELANCEHUNT:
+    if "freelancehunt" not in ALL_SOURCES:
+        ALL_SOURCES.append("freelancehunt")
+    if "freelancehunt" not in FREELANCE_SOURCES:
+        FREELANCE_SOURCES.append("freelancehunt")
+
+
+class OnDemandSearchCache:
+    """Caches raw parsed results by (source, query, city, page) to prevent duplicate crawling."""
+    def __init__(self, ttl_seconds: int = 1200):
+        self.ttl = ttl_seconds
+        self._memory_cache: Dict[str, Tuple[float, List[Dict[str, Any]]]] = {}
+
+    def _make_key(self, source: str, query: str, city: Optional[str], page: int) -> str:
+        q_norm = (query or "").strip().lower()
+        c_norm = (city or "").strip().lower()
+        return f"ondemand_cache:{source}:{q_norm}:{c_norm}:{page}"
+
+    async def get(self, source: str, query: str, city: Optional[str], page: int) -> Optional[List[Dict[str, Any]]]:
+        key = self._make_key(source, query, city, page)
+        if redis_client.is_available:
+            try:
+                raw = await redis_client.get(key)
+                if raw:
+                    return json.loads(raw)
+            except Exception:
+                pass
+
+        if key in self._memory_cache:
+            ts, items = self._memory_cache[key]
+            if time.time() - ts < self.ttl:
+                return items
+            self._memory_cache.pop(key, None)
+        return None
+
+    async def set(self, source: str, query: str, city: Optional[str], page: int, items: List[Dict[str, Any]]) -> None:
+        key = self._make_key(source, query, city, page)
+        # Store up to 50 items per key to preserve memory
+        to_store = items[:50]
+        if redis_client.is_available:
+            try:
+                await redis_client.set(key, json.dumps(to_store, default=str), ex=self.ttl)
+            except Exception:
+                pass
+        self._memory_cache[key] = (time.time(), to_store)
 
 
 class AggregatorManager:
@@ -74,6 +126,7 @@ class AggregatorManager:
     MULTI_PAGE_PARSERS = {"hh", "trudvsem", "superjob", "habr", "rabota", "freelance_ru"}
 
     def __init__(self):
+        self.cache = OnDemandSearchCache(ttl_seconds=settings.SEARCH_CACHE_TTL_MINUTES * 60)
         self.parsers: List[BaseVacanciesParser] = [
             HeadHunterParser(),
             HabrCareerParser(),
@@ -85,6 +138,8 @@ class AggregatorManager:
             FreelanceRuParser(),
             RabotaRuParser()
         ]
+        if settings.ENABLE_FREELANCEHUNT:
+            self.parsers.append(FreelancehuntParser())
 
     @staticmethod
     def generate_query_pool(resume: Resume) -> List[str]:
@@ -329,10 +384,25 @@ class AggregatorManager:
     ) -> List[Dict[str, Any]]:
         """
         Concurrently queries all active aggregators for a given query and city,
-        scanning multiple pages (e.g. page and page + 1) for primary aggregators
-        (HeadHunter, Trudvsem, SuperJob, Habr Career, Rabota.ru).
+        scanning multiple pages (e.g. page and page + 1) for primary aggregators.
+        Uses on-demand query cache to prevent redundant crawler hits.
         Filters aggregators if enabled_sources is specified.
         """
+        async def _fetch_with_cache(p: BaseVacanciesParser, p_num: int):
+            cached = await self.cache.get(p.name, query, city, p_num)
+            if cached is not None:
+                return cached
+            res = await p.fetch_vacancies(
+                query=query,
+                limit=limit_per_source,
+                remote_only=remote_only,
+                page=p_num,
+                city=city
+            )
+            if res and isinstance(res, list):
+                await self.cache.set(p.name, query, city, p_num, res)
+            return res
+
         tasks = []
         for parser in self.parsers:
             if enabled_sources is not None and parser.name not in enabled_sources:
@@ -344,25 +414,9 @@ class AggregatorManager:
 
             if parser.name in self.MULTI_PAGE_PARSERS and scan_pages > 1:
                 for p_offset in range(scan_pages):
-                    tasks.append(
-                        parser.fetch_vacancies(
-                            query=query,
-                            limit=limit_per_source,
-                            remote_only=remote_only,
-                            page=page + p_offset,
-                            city=city
-                        )
-                    )
+                    tasks.append(_fetch_with_cache(parser, page + p_offset))
             else:
-                tasks.append(
-                    parser.fetch_vacancies(
-                        query=query,
-                        limit=limit_per_source,
-                        remote_only=remote_only,
-                        page=page,
-                        city=city
-                    )
-                )
+                tasks.append(_fetch_with_cache(parser, page))
 
         results = await asyncio.gather(*tasks, return_exceptions=True)
         all_vacancies: List[Dict[str, Any]] = []
@@ -445,15 +499,14 @@ class AggregatorManager:
         custom_query: Optional[str] = None
     ) -> List[Tuple[Vacancy, Dict[str, Any]]]:
         """
-        Full dynamic high-yield pipeline:
-        1. Select batch of 3-5 queries from rotated query pool (or custom query)
-        2. Fetch vacancies concurrently across all queries, pages and user's enabled sources & city
-        3. Advance query index & page offset for next search cycle
-        4. Upsert vacancies into database
-        5. Fetch up to 500 unhidden & unviewed vacancies (filtered by city/remote & allowed sources)
-        6. Match vacancies with candidate profile using standard threshold, with adaptive
-           fallback to soft threshold (35%) if fewer than 15 matches found
-        7. Return ranked list of (Vacancy, match_dict)
+        Decoupled search pipeline:
+        1. Checks database first for matching vacancies matching candidate preferences & city.
+        2. If database already has enough fresh matches (>= MIN_DESIRED_MATCHES), serve directly.
+        3. If DB matches < MIN_DESIRED_MATCHES, triggers on-demand fetch with query TTL-cache.
+        4. Deduplicates cross-source postings and upserts into database.
+        5. Matches vacancies with candidate profile using standard threshold, with adaptive
+           fallback to soft threshold (35%) if fewer than 15 matches found.
+        6. Returns ranked list of (Vacancy, match_dict).
         """
         if custom_query:
             batch_queries = [custom_query]
@@ -463,7 +516,6 @@ class AggregatorManager:
             query_idx = user.last_query_index or 0
             current_page = (user.search_page_offset or 0) % 5
 
-            # Select a batch of 3-5 diverse queries from the rotated pool
             target_batch_size = min(4, len(pool)) if len(pool) >= 3 else len(pool)
             batch_queries = []
             for i in range(target_batch_size):
@@ -479,30 +531,11 @@ class AggregatorManager:
             f"page={current_page}, city='{user.city or 'Any'}', sources={user_sources}"
         )
 
-        # 1. Concurrently fetch fresh vacancies across batch of queries, pages, city, and enabled sources
-        raw_vacancies = await self.fetch_all_for_queries(
-            queries=batch_queries,
-            limit_per_source=settings.MAX_VACANCIES_PER_SOURCE,
-            remote_only=user.remote_only,
-            include_freelance=user.include_freelance,
-            page=current_page,
-            scan_pages=2,
-            enabled_sources=user_sources,
-            city=user.city
-        )
+        min_standard_score = getattr(settings, "MIN_MATCH_SCORE", 45)
+        soft_threshold = getattr(settings, "SOFT_MATCH_SCORE", 35)
+        min_desired_count = getattr(settings, "MIN_DESIRED_MATCHES", 15)
 
-        # 2. Advance pagination and query rotation offsets for subsequent searches
-        await UserRepository.increment_search_offsets(
-            session=session,
-            telegram_id=user.telegram_id,
-            offset_inc=2,
-            query_index_inc=len(batch_queries)
-        )
-
-        # 3. Upsert newly fetched vacancies into database
-        await VacancyRepository.upsert_vacancies(session, raw_vacancies)
-
-        # 4. Get unhidden, unviewed vacancies matching user's filters, city & allowed sources (up to 500 limit)
+        # Step 1: Query local database first
         vacancies = await VacancyRepository.get_unhidden_vacancies(
             session=session,
             user_id=user.telegram_id,
@@ -516,7 +549,6 @@ class AggregatorManager:
             limit=500
         )
 
-        # 5. Match candidate resume against vacancies
         all_scored: List[Tuple[Vacancy, Dict[str, Any]]] = []
         for vac in vacancies:
             match_res = VacancyMatcher.match(
@@ -530,6 +562,70 @@ class AggregatorManager:
                 risk_level=vac.risk_level
             )
             all_scored.append((vac, match_res))
+
+        matching_count = sum(1 for _, res in all_scored if res["score"] >= min_standard_score)
+
+        # Step 2: Trigger on-demand external crawl ONLY if DB bucket has fewer than desired matches
+        if matching_count < min_desired_count:
+            logger.info(
+                f"DB matches ({matching_count}) < {min_desired_count} for user {user.telegram_id}. "
+                f"Triggering on-demand external search across aggregators..."
+            )
+            raw_vacancies = await self.fetch_all_for_queries(
+                queries=batch_queries,
+                limit_per_source=settings.MAX_VACANCIES_PER_SOURCE,
+                remote_only=user.remote_only,
+                include_freelance=user.include_freelance,
+                page=current_page,
+                scan_pages=2,
+                enabled_sources=user_sources,
+                city=user.city
+            )
+
+            # Deduplicate and upsert
+            deduped = deduplicate_vacancies(raw_vacancies)
+            await VacancyRepository.upsert_vacancies(session, deduped)
+
+            # Re-fetch from DB
+            vacancies = await VacancyRepository.get_unhidden_vacancies(
+                session=session,
+                user_id=user.telegram_id,
+                exclude_blocked=settings.RED_FLAG_STRICT_MODE,
+                remote_only=user.remote_only,
+                include_freelance=user.include_freelance,
+                min_salary=user.min_salary,
+                exclude_viewed=True,
+                user_city=user.city,
+                allowed_sources=user_sources,
+                limit=500
+            )
+
+            all_scored = []
+            for vac in vacancies:
+                match_res = VacancyMatcher.match(
+                    candidate_skills=resume.skills,
+                    candidate_grade=resume.grade,
+                    candidate_role=resume.title,
+                    candidate_experience=resume.years_of_experience,
+                    vacancy_title=vac.title,
+                    vacancy_description=vac.description,
+                    vacancy_requirements=vac.requirements or [],
+                    risk_level=vac.risk_level
+                )
+                all_scored.append((vac, match_res))
+        else:
+            logger.info(
+                f"Found {matching_count} warm matches in DB for user {user.telegram_id}. "
+                f"Serving directly from database without external scraping."
+            )
+
+        # Advance pagination and query rotation offsets
+        await UserRepository.increment_search_offsets(
+            session=session,
+            telegram_id=user.telegram_id,
+            offset_inc=2,
+            query_index_inc=len(batch_queries)
+        )
 
         min_standard_score = getattr(settings, "MIN_MATCH_SCORE", 45)
         soft_threshold = getattr(settings, "SOFT_MATCH_SCORE", 35)

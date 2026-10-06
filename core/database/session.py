@@ -76,6 +76,40 @@ async def init_db() -> None:
                         connection.execute(text("ALTER TABLE vacancies ADD COLUMN max_experience FLOAT"))
                     if "target_grade" not in cols:
                         connection.execute(text("ALTER TABLE vacancies ADD COLUMN target_grade VARCHAR(50)"))
+                    if "external_id" not in cols:
+                        connection.execute(text("ALTER TABLE vacancies ADD COLUMN external_id VARCHAR(255)"))
+                    if "canonical_id" not in cols:
+                        connection.execute(text("ALTER TABLE vacancies ADD COLUMN canonical_id VARCHAR(255)"))
+                    if "salary_from" not in cols:
+                        connection.execute(text("ALTER TABLE vacancies ADD COLUMN salary_from INTEGER"))
+                    if "salary_to" not in cols:
+                        connection.execute(text("ALTER TABLE vacancies ADD COLUMN salary_to INTEGER"))
+                    if "salary_gross_net" not in cols:
+                        connection.execute(text("ALTER TABLE vacancies ADD COLUMN salary_gross_net VARCHAR(20) DEFAULT 'unknown'"))
+                    if "salary_rub_normalized" not in cols:
+                        connection.execute(text("ALTER TABLE vacancies ADD COLUMN salary_rub_normalized INTEGER"))
+                    if "snippet" not in cols:
+                        connection.execute(text("ALTER TABLE vacancies ADD COLUMN snippet VARCHAR(1000)"))
+                    if "skills" not in cols:
+                        connection.execute(text("ALTER TABLE vacancies ADD COLUMN skills JSON"))
+                    if "remote_scope" not in cols:
+                        connection.execute(text("ALTER TABLE vacancies ADD COLUMN remote_scope VARCHAR(50) DEFAULT 'unknown'"))
+                    if "city_norm" not in cols:
+                        connection.execute(text("ALTER TABLE vacancies ADD COLUMN city_norm VARCHAR(100)"))
+                    if "required_experience" not in cols:
+                        connection.execute(text("ALTER TABLE vacancies ADD COLUMN required_experience VARCHAR(100)"))
+                    if "grade" not in cols:
+                        connection.execute(text("ALTER TABLE vacancies ADD COLUMN grade VARCHAR(50)"))
+                    if "grade_confidence" not in cols:
+                        connection.execute(text("ALTER TABLE vacancies ADD COLUMN grade_confidence FLOAT DEFAULT 1.0"))
+                    if "red_flag_level" not in cols:
+                        connection.execute(text("ALTER TABLE vacancies ADD COLUMN red_flag_level VARCHAR(50) DEFAULT 'safe'"))
+                    if "first_seen_at" not in cols:
+                        connection.execute(text("ALTER TABLE vacancies ADD COLUMN first_seen_at DATETIME"))
+                    if "last_seen_at" not in cols:
+                        connection.execute(text("ALTER TABLE vacancies ADD COLUMN last_seen_at DATETIME"))
+                    if "is_active" not in cols:
+                        connection.execute(text("ALTER TABLE vacancies ADD COLUMN is_active BOOLEAN DEFAULT 1"))
 
             await conn.run_sync(_migrate)
 

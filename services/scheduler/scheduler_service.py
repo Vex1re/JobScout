@@ -44,6 +44,19 @@ async def trigger_periodic_alerts():
             logger.error(f"Error enqueuing user alert jobs: {e}", exc_info=True)
 
 
+async def trigger_crawler_ingestion():
+    """
+    Periodic crawler trigger: enqueues crawl_all_buckets task to background queue.
+    """
+    logger.info("Executing periodic crawler ingestion trigger...")
+    from workers.tasks.crawler import crawl_all_buckets
+    arq_pool = await get_arq_pool()
+    if arq_pool is not None:
+        await enqueue_task("crawl_all_buckets")
+    else:
+        asyncio.create_task(crawl_all_buckets({}))
+
+
 async def main():
     logger.info("Starting JobScout standalone scheduler service...")
     await init_db()
@@ -56,8 +69,15 @@ async def main():
         id="periodic_alerts_job",
         replace_existing=True
     )
+    scheduler.add_job(
+        trigger_crawler_ingestion,
+        trigger="interval",
+        minutes=max(60, settings.AUTO_SEARCH_INTERVAL_MINUTES * 2),
+        id="periodic_crawler_job",
+        replace_existing=True
+    )
     scheduler.start()
-    logger.info(f"Scheduler running (interval: {settings.AUTO_SEARCH_INTERVAL_MINUTES}m). Press Ctrl+C to exit.")
+    logger.info(f"Scheduler running (alert interval: {settings.AUTO_SEARCH_INTERVAL_MINUTES}m). Press Ctrl+C to exit.")
 
     try:
         while True:
