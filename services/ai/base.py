@@ -228,28 +228,130 @@ class YandexGPTProvider(LLMProvider):
 
 
 class GigaChatProvider(LLMProvider):
-    """Sber GigaChat Provider stub."""
+    """Sber GigaChat Provider implementation."""
 
     name: str = "gigachat"
 
     def __init__(self):
         self.credentials = settings.GIGACHAT_CREDENTIALS
+        self.model = settings.GIGACHAT_MODEL or "GigaChat"
+        self._token: Optional[str] = None
+        self._token_expires_at: float = 0.0
 
     @property
     def is_available(self) -> bool:
         return bool(self.credentials)
 
-    async def extract_resume_data(self, text: str) -> Optional[Dict[str, Any]]:
-        if not self.is_available:
-            logger.warning("GigaChat requested but GIGACHAT_CREDENTIALS not configured.")
+    async def _get_access_token(self) -> Optional[str]:
+        import time
+        import uuid
+        import httpx
+
+        if self._token and time.time() < self._token_expires_at:
+            return self._token
+
+        if not self.credentials:
             return None
-        # Stub implementation
-        return None
+
+        url = "https://ngw.devices.sberbank.ru:9443/api/v2/oauth"
+        headers = {
+            "Authorization": f"Basic {self.credentials}",
+            "RqUID": str(uuid.uuid4()),
+            "Content-Type": "application/x-www-form-urlencoded",
+        }
+        data = {"scope": "GIGACHAT_API_PERS"}
+
+        try:
+            async with httpx.AsyncClient(verify=False, timeout=15.0) as client:
+                resp = await client.post(url, headers=headers, data=data)
+                if resp.status_code == 200:
+                    payload = resp.json()
+                    self._token = payload.get("access_token")
+                    expires_at_ms = payload.get("expires_at", 0)
+                    self._token_expires_at = (expires_at_ms / 1000.0) - 60.0
+                    return self._token
+                else:
+                    logger.warning(f"GigaChat OAuth failed with status {resp.status_code}: {resp.text}")
+                    return None
+        except Exception as e:
+            logger.warning(f"GigaChat OAuth error: {e}")
+            return None
+
+    async def _call_chat(self, user_content: str, system_content: str = "Ты опытный карьерный консультант.", max_tokens: int = 400) -> Optional[str]:
+        import httpx
+
+        token = await self._get_access_token()
+        if not token:
+            return None
+
+        url = "https://gigachat.devices.sberbank.ru/api/v1/chat/completions"
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json",
+        }
+        body = {
+            "model": self.model,
+            "messages": [
+                {"role": "system", "content": system_content},
+                {"role": "user", "content": user_content},
+            ],
+            "max_tokens": max_tokens,
+            "temperature": 0.3,
+        }
+
+        try:
+            async with httpx.AsyncClient(verify=False, timeout=20.0) as client:
+                resp = await client.post(url, headers=headers, json=body)
+                if resp.status_code == 200:
+                    result = resp.json()
+                    choices = result.get("choices", [])
+                    if choices:
+                        return choices[0].get("message", {}).get("content", "").strip()
+                else:
+                    logger.warning(f"GigaChat API error {resp.status_code}: {resp.text}")
+                    return None
+        except Exception as e:
+            logger.warning(f"GigaChat chat completions error: {e}")
+            return None
 
     async def generate_cover_letter(self, resume_text: str, vacancy_text: str) -> Optional[str]:
-        return None
+        if not self.is_available:
+            return None
+        clean_resume = sanitize_llm_input(resume_text, max_chars=4000)
+        clean_vacancy = sanitize_llm_input(vacancy_text, max_chars=4000)
+
+        prompt = f"""Напиши краткое, убедительное сопроводительное письмо (Cover Letter) на русском языке от соискателя к работодателю.
+Подчеркни ключевые навыки из резюме, которые требуются в описании вакансии.
+Объём: 2-3 коротких абзаца. Без лишней воды.
+
+Резюме:
+{clean_resume}
+
+Вакансия:
+{clean_vacancy}
+"""
+        return await self._call_chat(prompt, system_content="Ты профессиональный карьерный коуч. Пиши вежливо, грамотно и по делу.")
 
     async def explain_match(self, resume_text: str, vacancy_text: str) -> Optional[str]:
+        if not self.is_available:
+            return None
+        clean_resume = sanitize_llm_input(resume_text, max_chars=4000)
+        clean_vacancy = sanitize_llm_input(vacancy_text, max_chars=4000)
+
+        prompt = f"""Проанализируй соответствие кандидата вакансии.
+Напиши кратко (3-4 пункта):
+1. Сильные стороны кандидата под эту роль
+2. Недостающие навыки или зоны роста (Skill Gap), которые нужно подтянуть
+
+Резюме:
+{clean_resume}
+
+Вакансия:
+{clean_vacancy}
+"""
+        return await self._call_chat(prompt, system_content="Ты объективный технический рекрутер. Пиши четко и конструктивно.")
+
+    async def extract_resume_data(self, text: str) -> Optional[Dict[str, Any]]:
         return None
 
 

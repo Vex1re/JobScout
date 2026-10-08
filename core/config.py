@@ -31,6 +31,7 @@ class Settings(BaseSettings):
     YANDEX_API_KEY: Optional[str] = Field(default=None, description="YandexGPT API Key")
     YANDEX_FOLDER_ID: Optional[str] = Field(default=None, description="Yandex Cloud Folder ID")
     GIGACHAT_CREDENTIALS: Optional[str] = Field(default=None, description="Sber GigaChat Auth Credentials")
+    GIGACHAT_MODEL: str = Field(default="GigaChat", description="GigaChat model name")
 
     # Background polling & alerts
     ENABLE_AUTO_NOTIFICATIONS: bool = Field(default=True, description="Enable background automated search")
