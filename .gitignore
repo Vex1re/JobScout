@@ -1,10 +1,50 @@
+# ==============================================================================
+# JobScout Bot — .gitignore
+# ==============================================================================
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
-
-# C extensions
 *.so
+*.dylib
+*.dll
+
+# Virtual Environments
+.venv/
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Environment variables & secrets (CRITICAL: Never commit to GitHub)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.cert
+*.crt
+*.pfx
+*.p12
+
+# Database files & SQLite journals
+*.db
+*.db-shm
+*.db-wal
+*.db-journal
+*.sqlite
+*.sqlite3
+job_hunter.db
+jobscout.db
+data/*.db
+data/*.db-*
+data/*.sqlite*
+!data/cities.json
+
+# Redis persistent dumps
+dump.rdb
 
 # Distribution / packaging
 .Python
@@ -24,32 +64,51 @@ wheels/
 .installed.cfg
 *.egg
 
-# Virtual environments
-.env
-.venv
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
-
-# Database files
-*.db
-*.db-shm
-*.db-wal
-*.sqlite3
-job_hunter.db
-
-# Pytest / coverage
+# Testing & Coverage
 .pytest_cache/
 .coverage
+.coverage.*
 htmlcov/
+coverage.xml
+.hypothesis/
 
-# IDE files
+# Linting & Type checking caches
+.mypy_cache/
+.ruff_cache/
+
+# IDE & Editor configurations
 .idea/
 .vscode/
 *.swp
 *.swo
+*~
+*.sublime-project
+*.sublime-workspace
 
-# Logs
+# Operating System files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Thumbs.db:encryptable
+desktop.ini
+$RECYCLE.BIN/
+
+# Logs & Runtime telemetry
 *.log
+logs/
+*.out
+*.pid
+*.seed
+*.pid.lock
+
+# User uploads & Temporary files
+uploads/
+resumes/
+data/resumes/
+scratch/
+temp/
+tmp/
