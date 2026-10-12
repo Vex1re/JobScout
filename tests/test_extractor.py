@@ -85,3 +85,64 @@ def test_dynamic_years_with_freezegun(frozen_date, start_text, min_expected, max
             f"At {frozen_date}, expected {min_expected}-{max_expected} for '{start_text}', got {years}"
         )
 
+
+def test_skills_boundary_and_sanitization():
+    resume_text = """
+    Иванов Матвей
+    Java backend разработчик
+
+    Технологический стек: Java Core, ООП, Spring Boot, Spring Data JPA, gRPC, React, PostgreSQL, SQL-transactions, REST, Docker, MySQL, Maven, Railway, Postman, Git, SOLID, Vite, ИИ-агенты, AI Skills, Telegram API, Hibernate, t.tech_investments,
+    Я студент 2-го курса, специализируюсь на Backend - разработке на Java и проектировании реляционных баз данных. Есть практический опыт построения REST API, работы с gRPC-потоками, а также разработки автоматизированных систем на базе банковских API и торговых бирж. Умею проектировать структуры БД (MySQL, PostgreSQL), работать с ACID - транзакциями и писать чистый поддерживаемый код.
+
+    Telegram: @vex1re                                                                                                                                              GitHub: Vex1re
+    Местоположение: Москва                                                                                                                    Английский язык: A2
+    Email: ivanovmatvej4548@gmail.com                                                                                    Телефон: +7 (917) 101-05-80
+
+    Опыт коммерческой разработки – 1 год 9 месяцев
+    Август 2026 (1 месяц)
+    Java Bot T-Investments - Разработал сервис с подключением к gRPC потоку.
+
+    Июль 2026 (1 месяц)
+    Сайты electrochemprogress.ru - Спроектировал клиентскую часть на React + TypeScript + Vite.
+    """
+    skills = ResumeExtractor.extract_skills(resume_text)
+
+    # Valid skills must be cleanly canonicalized
+    assert "Java" in skills
+    assert "Spring Boot" in skills
+    assert "Spring Data JPA" in skills
+    assert "gRPC" in skills
+    assert "PostgreSQL" in skills
+    assert "MySQL" in skills
+    assert "Docker" in skills
+    assert "Maven" in skills
+    assert "SOLID" in skills
+    assert "ООП" in skills
+    assert "REST API" in skills
+    assert "Vite" in skills
+    assert "Telegram API" in skills
+    assert "Hibernate" in skills
+
+    # Fluff and garbage MUST NOT be present
+    assert "Ai skills" not in skills
+    assert "Ии-агенты" not in skills
+    assert "T.tech_investments" not in skills
+    assert "Август 2026 (1 месяц)" not in skills
+    assert "Июль 2026 (1 месяц)" not in skills
+    assert "Английский язык" not in skills
+    assert "Я студент 2-го курса" not in skills
+    assert "Работы с grpc-потоками" not in skills
+
+    # Casing duplicates MUST NOT exist
+    assert "Grpc" not in skills
+    assert "Mysql" not in skills
+    assert "Postgresql" not in skills
+    assert "Postgresql)" not in skills
+    assert "Rest" not in skills
+    assert "Solid" not in skills
+    assert "Java core" not in skills
+    assert "Spring boot" not in skills
+    assert "Spring data jpa" not in skills
+    assert "Telegram api" not in skills
+
+

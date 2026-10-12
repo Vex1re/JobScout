@@ -14,6 +14,22 @@ TECH_SKILLS_MAP: Dict[str, str] = {
     "golang": "Go",
     "go": "Go",
     "java": "Java",
+    "java core": "Java",
+    "core java": "Java",
+    "spring": "Spring Boot",
+    "spring boot": "Spring Boot",
+    "springboot": "Spring Boot",
+    "spring data": "Spring Data JPA",
+    "spring data jpa": "Spring Data JPA",
+    "spring security": "Spring Security",
+    "spring mvc": "Spring MVC",
+    "hibernate": "Hibernate",
+    "jpa": "JPA",
+    "maven": "Maven",
+    "gradle": "Gradle",
+    "javafx": "JavaFX",
+    "jdbc": "JDBC",
+    "jvm": "JVM",
     "kotlin": "Kotlin",
     "scala": "Scala",
     "rust": "Rust",
@@ -61,12 +77,17 @@ TECH_SKILLS_MAP: Dict[str, str] = {
     "redux": "Redux",
     "mobx": "MobX",
     "tailwind": "Tailwind CSS",
+    "vite": "Vite",
+    "webpack": "Webpack",
     "html": "HTML5",
     "css": "CSS3",
     "sass": "SASS/SCSS",
     "scss": "SASS/SCSS",
 
     # Databases & Caches
+    "sql": "SQL",
+    "sql-transactions": "SQL",
+    "sql transactions": "SQL",
     "postgresql": "PostgreSQL",
     "postgres": "PostgreSQL",
     "psql": "PostgreSQL",
@@ -107,6 +128,7 @@ TECH_SKILLS_MAP: Dict[str, str] = {
     "linux": "Linux",
     "bash": "Bash",
     "nginx": "Nginx",
+    "railway": "Railway",
 
     # Cloud
     "aws": "AWS",
@@ -123,6 +145,13 @@ TECH_SKILLS_MAP: Dict[str, str] = {
     "websockets": "WebSocket",
     "microservices": "Microservices",
     "микросервисы": "Microservices",
+    "solid": "SOLID",
+    "ооп": "ООП",
+    "oop": "ООП",
+    "acid": "ACID",
+    "mvc": "MVC",
+    "dao": "DAO",
+    "telegram api": "Telegram API",
     "git": "Git",
 
     # Data Science / ML / AI
@@ -289,7 +318,6 @@ TECH_SKILLS_MAP: Dict[str, str] = {
     "эдо": "ЭДО",
     "ms office": "MS Office",
     "powerpoint": "PowerPoint",
-    "английский язык": "Английский язык",
 
     # Engineering & Technical
     "autocad": "AutoCAD",
@@ -322,31 +350,139 @@ class ResumeExtractor:
         except Exception as e:
             return ""
 
+    SKILLS_BLACKLIST: Set[str] = {
+        "ai skills", "ai skill", "ии-агенты", "ии агенты", "ai agents",
+        "soft skills", "hard skills", "коммуникабельность", "ответственность",
+        "пунктуальность", "стрессоустойчивость", "быстрая обучаемость",
+    }
+
+    @classmethod
+    def _normalize_token(cls, token: str) -> Optional[str]:
+        """Strip leading/trailing punctuation, brackets, and quotes from skill token."""
+        cleaned = re.sub(
+            r"^[\s\(\[\{\.\,\:\;\-\–\—\"\'\«\»\)]+|[\s\(\[\{\.\,\:\;\-\–\—\"\'\«\»\)]+$",
+            "",
+            token,
+        ).strip()
+        if not cleaned or len(cleaned) < 2 or len(cleaned) > 30:
+            return None
+        return cleaned
+
+    @classmethod
+    def _is_garbage_token(cls, low: str) -> bool:
+        """Check if token is noise, date, narrative sentence, or irrelevant data."""
+        if low in cls.SKILLS_BLACKLIST:
+            return True
+
+        # URL / email / domain / repo / package identifiers
+        if any(ext in low for ext in [".ru", ".com", ".org", ".net", ".io", ".tech", "@", "http://", "https://", "t.tech"]):
+            return True
+
+        # Years (19xx, 20xx) or duration patterns (e.g. 1 месяц, 5 лет)
+        if re.search(r"\b(19\d\d|20\d\d)\b", low) or re.search(r"\b(месяц|месяца|месяцев|год|года|лет|month|months|year|years)\b", low):
+            return True
+
+        # Month names
+        if re.search(r"\b(январ|феврал|март|апрел|ма[ей]|июн|июл|август|сентябр|октябр|ноябр|декабр|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\b", low):
+            return True
+
+        # Educational / bio / student indicators
+        if re.search(r"\b(студент|курс|курса|курсе|школа|лицей|университет|факультет|бакалавриат|магистратура)\b", low):
+            return True
+
+        # Prose verbs / narratives
+        if re.search(r"\b(работы|работа|опыт|умею|знаю|владею|понимаю|разработка|разработал|реализовал|проектирование|навыки|компетенции|обо мне|о себе|специализируюсь|направлени)\b", low):
+            return True
+
+        # Spoken languages and CEFR levels (e.g. Английский язык: A2)
+        if re.search(r"\b(английский|русский|немецкий|французский|китайский|испанский)\s*(?:язык)?\b", low):
+            return True
+        if re.search(r"\b(a1|a2|b1|b2|c1|c2|native|fluent|intermediate|beginner|advanced)\b", low):
+            return True
+
+        return False
+
+    @classmethod
+    def _format_custom_skill(cls, cleaned: str) -> str:
+        """Format skill that is not present in TECH_SKILLS_MAP."""
+        if cleaned.isupper() and len(cleaned) <= 6:
+            return cleaned
+        if any(c.isupper() for c in cleaned[1:]):
+            return cleaned
+        return cleaned.title()
+
     @classmethod
     def extract_skills(cls, text: str) -> List[str]:
         """Extract normalized technical and professional skills found in text."""
         lowered = f" {text.lower()} "
-        found_skills: Set[str] = set()
+        deduped_skills: Dict[str, str] = {}
 
+        # 1. Match canonical skills from TECH_SKILLS_MAP across the full text
         for key, canonical in TECH_SKILLS_MAP.items():
             pattern = r"(?<![a-zA-Z0-9_#+а-яА-ЯёЁ])" + re.escape(key) + r"(?![a-zA-Z0-9_#+а-яА-ЯёЁ])"
             if re.search(pattern, lowered):
-                found_skills.add(canonical)
+                deduped_skills[canonical.lower()] = canonical
 
-        # Dynamic extraction from explicit skills section if present
-        section_pattern = r"(?:ключевые\s+навыки|профессиональные\s+навыки|навыки|компетенции|стек|skills)[:\s\n]+([^\n\r]+(?:\n[•\-\*\s]+[^\n\r]+|\n[^\n\r]+){0,10})"
-        sec_match = re.search(section_pattern, text, re.IGNORECASE)
-        if sec_match:
-            sec_text = sec_match.group(1)
-            raw_tokens = re.split(r"[,;•\n\*\t]+", sec_text)
-            for token in raw_tokens:
-                cleaned = token.strip().strip("-").strip()
-                if 2 <= len(cleaned) <= 35 and not any(kw in cleaned.lower() for kw in ["опыт", "образование", "контакт", "телефон", "email", "город"]):
-                    if len(cleaned.split()) <= 4:
-                        found_skills.add(cleaned.strip().capitalize())
+        # 2. Dynamic extraction from explicit skills section if present
+        header_pattern = r"(?:ключевые\s+навыки|профессиональные\s+навыки|технические\s+навыки|технологический\s+стек|стек\s+технологий|компетенции|навыки|стек|skills|tech\s+stack)[:\s]*"
+        match = re.search(header_pattern, text, re.IGNORECASE)
+        if match:
+            start_pos = match.end()
+            lines = text[start_pos:].split("\n")
+            section_lines: List[str] = []
+            if lines and lines[0].strip():
+                section_lines.append(lines[0].strip())
+
+            stop_section_re = re.compile(
+                r"^(?:опыт|образование|обо\s+мне|о\s+себе|контакты|проекты|курсы|сертификаты|языки|дополнительно|"
+                r"activities|experience|education|about|contacts|"
+                r"telegram|github|email|телефон|местоположение|город|"
+                r"я\s+|студент\b|специализируюсь\b|ищу\b|разрабатываю\b|"
+                r"\d{4}\b|январ|феврал|март|апрел|ма[ей]|июн|июл|август|сентябр|октябр|ноябр|декабр)",
+                re.IGNORECASE,
+            )
+            narrative_words_re = re.compile(
+                r"\b(разработал|создал|реализовал|умею|владею|занимался|занимаюсь|специализируюсь|студент|курса|курсе)\b",
+                re.IGNORECASE,
+            )
+
+            for raw_line in lines[1:]:
+                line = raw_line.strip()
+                if not line:
+                    if section_lines:
+                        break
+                    continue
+
+                if stop_section_re.search(line):
+                    break
+
+                is_bulleted = line.startswith(("•", "-", "*", "+"))
+                if not is_bulleted:
+                    if narrative_words_re.search(line) or (len(line.split()) > 8 and "." in line and "," not in line):
+                        break
+
+                section_lines.append(line)
+
+            for sec_line in section_lines:
+                raw_tokens = re.split(r"[,;•\n\*\t|]+", sec_line)
+                for tok in raw_tokens:
+                    cleaned = cls._normalize_token(tok)
+                    if not cleaned or len(cleaned.split()) > 3:
+                        continue
+                    low = cleaned.lower()
+
+                    if cls._is_garbage_token(low):
+                        continue
+
+                    if low in TECH_SKILLS_MAP:
+                        canonical = TECH_SKILLS_MAP[low]
+                    else:
+                        canonical = cls._format_custom_skill(cleaned)
+
+                    deduped_skills[canonical.lower()] = canonical
 
         # Sort alphabetically for consistent representation
-        return sorted(list(found_skills))
+        return sorted(list(deduped_skills.values()))
 
     @classmethod
     def detect_grade(cls, text: str, years: float) -> str:
