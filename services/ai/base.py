@@ -65,6 +65,11 @@ class LLMProvider(ABC):
         """Explains match score and skill gaps."""
         pass
 
+    @abstractmethod
+    async def complete(self, prompt: str, max_tokens: int = 400) -> Optional[str]:
+        """Generates completion for a general prompt."""
+        pass
+
 
 class NoneLLMProvider(LLMProvider):
     """Fallback provider when LLM integration is disabled or user hasn't given consent."""
@@ -82,6 +87,9 @@ class NoneLLMProvider(LLMProvider):
         return None
 
     async def explain_match(self, resume_text: str, vacancy_text: str) -> Optional[str]:
+        return None
+
+    async def complete(self, prompt: str, max_tokens: int = 400) -> Optional[str]:
         return None
 
 
@@ -197,6 +205,22 @@ class OpenAIProvider(LLMProvider):
             return response.choices[0].message.content.strip()
         except Exception as e:
             logger.warning(f"OpenAI explain match error: {e}")
+    async def complete(self, prompt: str, max_tokens: int = 400) -> Optional[str]:
+        if not self.is_available:
+            return None
+        clean_prompt = sanitize_llm_input(prompt, max_chars=4000)
+        try:
+            response = await self._client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {"role": "user", "content": clean_prompt}
+                ],
+                temperature=0.3,
+                max_tokens=max_tokens
+            )
+            return response.choices[0].message.content.strip()
+        except Exception as e:
+            logger.warning(f"OpenAI complete error: {e}")
             return None
 
 
@@ -224,6 +248,9 @@ class YandexGPTProvider(LLMProvider):
         return None
 
     async def explain_match(self, resume_text: str, vacancy_text: str) -> Optional[str]:
+        return None
+
+    async def complete(self, prompt: str, max_tokens: int = 400) -> Optional[str]:
         return None
 
 
@@ -353,6 +380,12 @@ class GigaChatProvider(LLMProvider):
 
     async def extract_resume_data(self, text: str) -> Optional[Dict[str, Any]]:
         return None
+
+    async def complete(self, prompt: str, max_tokens: int = 400) -> Optional[str]:
+        if not self.is_available:
+            return None
+        clean_prompt = sanitize_llm_input(prompt, max_chars=4000)
+        return await self._call_chat(clean_prompt, max_tokens=max_tokens)
 
 
 def get_llm_provider(user_consent: bool = True) -> LLMProvider:

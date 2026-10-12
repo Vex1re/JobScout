@@ -11,8 +11,9 @@ from aiogram.types import (
 from aiogram.filters import Command
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from typing import Optional
 from core.database.models import User
-from core.database.repository import SubscriptionRepository
+from core.database.repository import SubscriptionRepository, UserRepository
 from services.payment.stars import TelegramStarsProvider
 
 logger = logging.getLogger(__name__)
@@ -41,7 +42,15 @@ def get_premium_keyboard(has_pro: bool = False) -> InlineKeyboardMarkup:
 
 
 @router.message(Command("premium"))
-async def cmd_premium(message: Message, session: AsyncSession, user: User) -> None:
+async def cmd_premium(message: Message, session: AsyncSession, user: Optional[User] = None) -> None:
+    if user is None:
+        user = await UserRepository.get_or_create_user(
+            session=session,
+            telegram_id=message.from_user.id,
+            username=message.from_user.username,
+            first_name=message.from_user.first_name
+        )
+
     sub = await SubscriptionRepository.get_subscription(session, user.telegram_id)
     has_active = await SubscriptionRepository.has_active_subscription(session, user.telegram_id)
 
@@ -66,7 +75,15 @@ async def cmd_premium(message: Message, session: AsyncSession, user: User) -> No
 
 
 @router.callback_query(F.data.startswith("buy_sub:"))
-async def on_buy_subscription(call: CallbackQuery, session: AsyncSession, user: User) -> None:
+async def on_buy_subscription(call: CallbackQuery, session: AsyncSession, user: Optional[User] = None) -> None:
+    if user is None:
+        user = await UserRepository.get_or_create_user(
+            session=session,
+            telegram_id=call.from_user.id,
+            username=call.from_user.username,
+            first_name=call.from_user.first_name
+        )
+
     plan = call.data.split(":", 1)[1]
     provider = TelegramStarsProvider()
     payload_data = await provider.create_invoice_payload(user.telegram_id, plan)
@@ -92,7 +109,15 @@ async def process_pre_checkout(pre_checkout_query: PreCheckoutQuery) -> None:
 
 
 @router.message(F.successful_payment)
-async def process_successful_payment(message: Message, session: AsyncSession, user: User) -> None:
+async def process_successful_payment(message: Message, session: AsyncSession, user: Optional[User] = None) -> None:
+    if user is None:
+        user = await UserRepository.get_or_create_user(
+            session=session,
+            telegram_id=message.from_user.id,
+            username=message.from_user.username,
+            first_name=message.from_user.first_name
+        )
+
     payment = message.successful_payment
     provider = TelegramStarsProvider()
 
@@ -108,6 +133,7 @@ async def process_successful_payment(message: Message, session: AsyncSession, us
     await message.answer(
         f"🎉 <b>Оплата успешно получена!</b>\n\n"
         f"Подписка <b>{res['plan'].upper()}</b> активирована до <b>{exp_str}</b>.\n\n"
+
         f"Вам открыт полный доступ:\n"
         f"✅ Все 9 источников вакансий и заказов\n"
         f"✅ AI-генератор сопроводительных писем\n"

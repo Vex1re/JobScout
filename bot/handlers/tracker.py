@@ -12,8 +12,10 @@ from aiogram.filters import Command
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from core.config import settings
 from core.database.models import User, Vacancy, Resume, JobApplicationTracker
 from core.database.repository import (
+    UserRepository,
     TrackerRepository,
     SubscriptionRepository,
     VacancyRepository,
@@ -55,16 +57,28 @@ def get_application_keyboard(app: JobApplicationTracker) -> InlineKeyboardMarkup
 
 @router.message(Command("tracker"))
 @router.callback_query(F.data == "open_tracker")
-async def show_tracker(event: Message | CallbackQuery, session: AsyncSession, user: User) -> None:
+async def show_tracker(event: Message | CallbackQuery, session: AsyncSession, user: Optional[User] = None) -> None:
     message = event if isinstance(event, Message) else event.message
     if isinstance(event, CallbackQuery):
         await event.answer()
 
-    # Check entitlement
-    has_access = await SubscriptionRepository.has_entitlement(session, user.telegram_id, "kanban_tracker")
-    has_active_sub = await SubscriptionRepository.has_active_subscription(session, user.telegram_id)
+    if user is None:
+        from_user = event.from_user
+        if from_user:
+            user = await UserRepository.get_or_create_user(
+                session=session,
+                telegram_id=from_user.id,
+                username=from_user.username,
+                first_name=from_user.first_name
+            )
 
-    applications = await TrackerRepository.get_user_applications(session, user.telegram_id)
+    user_id = user.telegram_id if user else (event.from_user.id if event.from_user else 0)
+
+    # Check entitlement
+    has_access = await SubscriptionRepository.has_entitlement(session, user_id, "kanban_tracker")
+    has_active_sub = await SubscriptionRepository.has_active_subscription(session, user_id)
+
+    applications = await TrackerRepository.get_user_applications(session, user_id)
 
     # Status breakdown
     counts = {s: 0 for s in STATUS_CYCLE}
@@ -120,7 +134,15 @@ async def show_tracker(event: Message | CallbackQuery, session: AsyncSession, us
 
 
 @router.callback_query(F.data.startswith("view_app:"))
-async def on_view_application(call: CallbackQuery, session: AsyncSession, user: User) -> None:
+async def on_view_application(call: CallbackQuery, session: AsyncSession, user: Optional[User] = None) -> None:
+    if user is None:
+        user = await UserRepository.get_or_create_user(
+            session=session,
+            telegram_id=call.from_user.id,
+            username=call.from_user.username,
+            first_name=call.from_user.first_name
+        )
+
     app_id = int(call.data.split(":")[1])
     stmt = select(JobApplicationTracker).where(
         JobApplicationTracker.id == app_id,
@@ -152,7 +174,15 @@ async def on_view_application(call: CallbackQuery, session: AsyncSession, user: 
 
 
 @router.callback_query(F.data.startswith("set_status:"))
-async def on_set_status(call: CallbackQuery, session: AsyncSession, user: User) -> None:
+async def on_set_status(call: CallbackQuery, session: AsyncSession, user: Optional[User] = None) -> None:
+    if user is None:
+        user = await UserRepository.get_or_create_user(
+            session=session,
+            telegram_id=call.from_user.id,
+            username=call.from_user.username,
+            first_name=call.from_user.first_name
+        )
+
     parts = call.data.split(":")
     app_id = int(parts[1])
     new_status = parts[2]
@@ -167,7 +197,15 @@ async def on_set_status(call: CallbackQuery, session: AsyncSession, user: User) 
 
 
 @router.callback_query(F.data.startswith("del_app:"))
-async def on_delete_application(call: CallbackQuery, session: AsyncSession, user: User) -> None:
+async def on_delete_application(call: CallbackQuery, session: AsyncSession, user: Optional[User] = None) -> None:
+    if user is None:
+        user = await UserRepository.get_or_create_user(
+            session=session,
+            telegram_id=call.from_user.id,
+            username=call.from_user.username,
+            first_name=call.from_user.first_name
+        )
+
     app_id = int(call.data.split(":")[1])
     deleted = await TrackerRepository.delete_application(session, app_id, user.telegram_id)
     if deleted:
@@ -178,7 +216,15 @@ async def on_delete_application(call: CallbackQuery, session: AsyncSession, user
 
 
 @router.callback_query(F.data.startswith("track_vac:"))
-async def on_track_vacancy(call: CallbackQuery, session: AsyncSession, user: User) -> None:
+async def on_track_vacancy(call: CallbackQuery, session: AsyncSession, user: Optional[User] = None) -> None:
+    if user is None:
+        user = await UserRepository.get_or_create_user(
+            session=session,
+            telegram_id=call.from_user.id,
+            username=call.from_user.username,
+            first_name=call.from_user.first_name
+        )
+
     vac_id = call.data.split(":", 1)[1]
     stmt = select(Vacancy).where(Vacancy.id == vac_id)
     res = await session.execute(stmt)
@@ -203,12 +249,21 @@ async def on_track_vacancy(call: CallbackQuery, session: AsyncSession, user: Use
 
 
 @router.callback_query(F.data.startswith("ai_letter:"))
-async def on_ai_cover_letter(call: CallbackQuery, session: AsyncSession, user: User) -> None:
-    # Check entitlement
+async def on_ai_cover_letter(call: CallbackQuery, session: AsyncSession, user: Optional[User] = None) -> None:
+    if user is None:
+        user = await UserRepository.get_or_create_user(
+            session=session,
+            telegram_id=call.from_user.id,
+            username=call.from_user.username,
+            first_name=call.from_user.first_name
+        )
+
+    # Check entitlement or admin bypass
+    is_admin = user and (user.telegram_id in settings.ADMIN_IDS)
     has_ent = await SubscriptionRepository.has_entitlement(session, user.telegram_id, "ai_cover_letter")
     has_sub = await SubscriptionRepository.has_active_subscription(session, user.telegram_id)
 
-    if not (has_ent or has_sub):
+    if not (is_admin or has_ent or has_sub):
         await call.answer("Доступно только в подписке PRO!", show_alert=True)
         await call.message.answer(
             "⭐ <b>AI-сопроводительные письма доступны в подписке PRO</b>\n\n"
@@ -225,14 +280,14 @@ async def on_ai_cover_letter(call: CallbackQuery, session: AsyncSession, user: U
     res = await session.execute(stmt)
     vac = res.scalar_one_or_none()
 
-    resume = await ResumeRepository.get_resume(session, user.telegram_id)
     if not vac:
         await call.answer("Вакансия не найдена.", show_alert=True)
         return
 
+    resume = await ResumeRepository.get_resume(session, user.telegram_id)
     await call.answer("Генерирую сопроводительное письмо...")
 
-    cand_skills = ", ".join(resume.skills[:7]) if resume and resume.skills else "Python, FastAPI, SQL"
+    cand_skills = ", ".join(resume.skills[:7]) if resume and resume.skills else "Python, Java, SQL"
     cand_role = resume.title if resume else "Разработчик"
 
     provider = get_llm_provider()
@@ -243,7 +298,17 @@ async def on_ai_cover_letter(call: CallbackQuery, session: AsyncSession, user: U
         f"Описание позиции: {vac.description[:400] if vac.description else vac.title}."
     )
 
-    letter = await provider.complete(prompt, max_tokens=350)
+    letter = None
+    if provider.is_available:
+        try:
+            resume_text = f"Кандидат: {cand_role}. Ключевые навыки: {cand_skills}."
+            vac_text = f"Вакансия: {vac.title} в {vac.company}.\n{vac.description[:1000] if vac.description else vac.title}"
+            letter = await provider.generate_cover_letter(resume_text, vac_text)
+            if not letter:
+                letter = await provider.complete(prompt, max_tokens=350)
+        except Exception as e:
+            logger.warning(f"Error generating AI cover letter: {e}")
+
     if not letter:
         letter = (
             f"Здравствуйте!\n\n"
@@ -269,11 +334,21 @@ async def on_ai_cover_letter(call: CallbackQuery, session: AsyncSession, user: U
 
 
 @router.callback_query(F.data.startswith("ai_gap:"))
-async def on_ai_gap_analysis(call: CallbackQuery, session: AsyncSession, user: User) -> None:
+async def on_ai_gap_analysis(call: CallbackQuery, session: AsyncSession, user: Optional[User] = None) -> None:
+    if user is None:
+        user = await UserRepository.get_or_create_user(
+            session=session,
+            telegram_id=call.from_user.id,
+            username=call.from_user.username,
+            first_name=call.from_user.first_name
+        )
+
+    # Check entitlement or admin bypass
+    is_admin = user and (user.telegram_id in settings.ADMIN_IDS)
     has_ent = await SubscriptionRepository.has_entitlement(session, user.telegram_id, "ai_gap_analysis")
     has_sub = await SubscriptionRepository.has_active_subscription(session, user.telegram_id)
 
-    if not (has_ent or has_sub):
+    if not (is_admin or has_ent or has_sub):
         await call.answer("Доступно только в подписке PRO!", show_alert=True)
         await call.message.answer(
             "⭐ <b>AI Gap-анализ доступен в подписке PRO</b>\n\n"
@@ -290,33 +365,53 @@ async def on_ai_gap_analysis(call: CallbackQuery, session: AsyncSession, user: U
     res = await session.execute(stmt)
     vac = res.scalar_one_or_none()
 
-    resume = await ResumeRepository.get_resume(session, user.telegram_id)
     if not vac:
         await call.answer("Вакансия не найдена.", show_alert=True)
         return
 
+    resume = await ResumeRepository.get_resume(session, user.telegram_id)
     await call.answer("Выполняю Gap-анализ требований...")
 
     user_skills = set(resume.skills) if resume and resume.skills else set()
     req_skills = set(vac.skills or vac.requirements or [])
     missing = list(req_skills - user_skills)
 
-    analysis_points = []
-    if missing:
-        analysis_points.append(f"• <b>Недостающие требования стека:</b> {', '.join(missing[:5])}")
+    provider = get_llm_provider()
+    cand_skills = ", ".join(resume.skills[:10]) if resume and resume.skills else "Не указаны"
+    cand_role = resume.title if resume else "Разработчик"
+
+    ai_explanation = None
+    if provider.is_available:
+        try:
+            cand_info = f"Позиция: {cand_role}. Ключевые навыки: {cand_skills}."
+            vac_info = f"Вакансия: {vac.title} в {vac.company}.\nТребования: {vac.description[:1000] if vac.description else vac.title}"
+            ai_explanation = await provider.explain_match(cand_info, vac_info)
+        except Exception as e:
+            logger.warning(f"Error calling explain_match in gap analysis: {e}")
+
+    if ai_explanation:
+        report = (
+            f"🔍 <b>AI Gap-анализ для «{html.escape(vac.title)}»:</b>\n\n"
+            f"{html.escape(ai_explanation)}\n\n"
+            f"<i>Готовьтесь к техническому интервью сфокусированно!</i>"
+        )
     else:
-        analysis_points.append("• <b>Стек полностью соответствует</b> заявленным требованиям!")
+        analysis_points = []
+        if missing:
+            analysis_points.append(f"• <b>Недостающие требования стека:</b> {', '.join(missing[:5])}")
+        else:
+            analysis_points.append("• <b>Стек полностью соответствует</b> заявленным требованиям!")
 
-    if vac.required_experience:
-        analysis_points.append(f"• <b>Требуемый опыт:</b> {vac.required_experience}")
+        if vac.required_experience:
+            analysis_points.append(f"• <b>Требуемый опыт:</b> {vac.required_experience}")
 
-    analysis_points.append("• <b>Рекомендация:</b> Сделайте акцент в резюме на релевантных кейсах и архитектурных решениях.")
+        analysis_points.append("• <b>Рекомендация:</b> Сделайте акцент в резюме на релевантных кейсах и архитектурных решениях.")
 
-    report = (
-        f"🔍 <b>AI Gap-анализ для «{html.escape(vac.title)}»:</b>\n\n"
-        + "\n".join(analysis_points) +
-        "\n\n<i>Готовьтесь к техническому интервью сфокусированно!</i>"
-    )
+        report = (
+            f"🔍 <b>AI Gap-анализ для «{html.escape(vac.title)}»:</b>\n\n"
+            + "\n".join(analysis_points) +
+            "\n\n<i>Готовьтесь к техническому интервью сфокусированно!</i>"
+        )
 
     await call.message.answer(
         report,
@@ -325,3 +420,4 @@ async def on_ai_gap_analysis(call: CallbackQuery, session: AsyncSession, user: U
             InlineKeyboardButton(text="📌 Добавить в трекер", callback_data=f"track_vac:{vac.id}")
         ]])
     )
+

@@ -1,12 +1,16 @@
 import pytest
 import datetime
+from unittest.mock import MagicMock, AsyncMock
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
+from aiogram.types import CallbackQuery, Message, User as TgUser
 
 from core.database.models import Base, User, Vacancy, Resume, Subscription, JobApplicationTracker
-from core.database.repository import SubscriptionRepository, TrackerRepository
+from core.database.repository import SubscriptionRepository, TrackerRepository, ResumeRepository
 from services.payment.stars import TelegramStarsProvider
 from services.payment.yookassa import YooKassaProvider
 from services.payment.cryptobot import CryptoBotProvider
+from bot.handlers.tracker import on_ai_cover_letter, on_ai_gap_analysis, on_track_vacancy, show_tracker
+from bot.handlers.premium import cmd_premium
 
 
 @pytest.fixture
@@ -150,3 +154,99 @@ async def test_job_application_tracker_crud(async_db):
 
     apps_after = await TrackerRepository.get_user_applications(session, user.telegram_id)
     assert len(apps_after) == 0
+
+
+@pytest.mark.asyncio
+async def test_ai_handlers_free_and_pro(async_db):
+    session, user = async_db
+
+    # Create dummy vacancy
+    vac = Vacancy(
+        id="test_vac_123",
+        source="hh",
+        title="Senior Python Backend Developer",
+        company="TechCorp",
+        url="https://hh.ru/vacancy/test_vac_123",
+        description="Требуется опытный разработчик со знанием Python, FastAPI, Docker, PostgreSQL.",
+        skills=["Python", "FastAPI", "Docker", "PostgreSQL", "Kubernetes"]
+    )
+    session.add(vac)
+    await session.commit()
+
+    # Create dummy resume
+    await ResumeRepository.save_or_update_resume(
+        session=session,
+        user_id=user.telegram_id,
+        title="Python Backend Engineer",
+        grade="Middle",
+        years_of_experience=3.0,
+        skills=["Python", "FastAPI", "Docker"],
+        raw_text="Python Backend Engineer, 3 years experience. Stack: Python, FastAPI, Docker."
+    )
+
+    # 1. Test CallbackQuery for Free user (missing PRO entitlement)
+    cb_msg = MagicMock(spec=Message)
+    cb_msg.answer = AsyncMock()
+
+    cb_letter = MagicMock(spec=CallbackQuery)
+    cb_letter.data = "ai_letter:test_vac_123"
+    cb_letter.from_user = TgUser(id=user.telegram_id, is_bot=False, first_name="Tester")
+    cb_letter.answer = AsyncMock()
+    cb_letter.message = cb_msg
+
+    # Call handler WITHOUT 'user' kwarg (simulating aiogram invocation)
+    await on_ai_cover_letter(cb_letter, session)
+    assert cb_letter.answer.called
+    assert "PRO" in cb_letter.answer.call_args[0][0]
+
+    cb_gap = MagicMock(spec=CallbackQuery)
+    cb_gap.data = "ai_gap:test_vac_123"
+    cb_gap.from_user = TgUser(id=user.telegram_id, is_bot=False, first_name="Tester")
+    cb_gap.answer = AsyncMock()
+    cb_gap.message = cb_msg
+
+    await on_ai_gap_analysis(cb_gap, session)
+    assert cb_gap.answer.called
+    assert "PRO" in cb_gap.answer.call_args[0][0]
+
+    # 2. Grant PRO subscription
+    await SubscriptionRepository.create_or_update_subscription(
+        session=session,
+        user_id=user.telegram_id,
+        plan="pro",
+        duration_days=30
+    )
+
+    # Call AI letter again
+    cb_letter.answer.reset_mock()
+    cb_msg.answer.reset_mock()
+    await on_ai_cover_letter(cb_letter, session)
+    assert cb_msg.answer.called
+    assert "Сопроводительное письмо" in cb_msg.answer.call_args[0][0]
+
+    # Call AI gap analysis again
+    cb_gap.answer.reset_mock()
+    cb_msg.answer.reset_mock()
+    await on_ai_gap_analysis(cb_gap, session)
+    assert cb_msg.answer.called
+    assert "Gap-анализ" in cb_msg.answer.call_args[0][0]
+
+    # 3. Test on_track_vacancy
+    cb_track = MagicMock(spec=CallbackQuery)
+    cb_track.data = "track_vac:test_vac_123"
+    cb_track.from_user = TgUser(id=user.telegram_id, is_bot=False, first_name="Tester")
+    cb_track.answer = AsyncMock()
+    await on_track_vacancy(cb_track, session)
+    assert cb_track.answer.called
+    assert "трекер" in cb_track.answer.call_args[0][0].lower()
+
+    # 4. Test show_tracker and cmd_premium
+    msg = MagicMock(spec=Message)
+    msg.from_user = TgUser(id=user.telegram_id, is_bot=False, first_name="Tester")
+    msg.answer = AsyncMock()
+
+    await show_tracker(msg, session)
+    assert msg.answer.called
+
+    await cmd_premium(msg, session)
+    assert msg.answer.called
