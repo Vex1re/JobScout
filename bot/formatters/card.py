@@ -115,6 +115,8 @@ def format_vacancy_card(vacancy: Vacancy, match_info: Dict[str, Any]) -> str:
         skills_text += f"\n✅ <b>Ваши навыки:</b> {', '.join(matched_skills[:8])}"
     if missing_skills:
         skills_text += f"\n⚡ <b>В вакансии требуется еще:</b> {', '.join(missing_skills[:5])}"
+    elif not matched_skills and getattr(vacancy, "requirements", None):
+        skills_text += f"\n🛠 <b>Требуемые навыки:</b> {', '.join(vacancy.requirements[:8])}"
 
     # Growth / adaptive recommendation note
     growth_info = ""
@@ -130,6 +132,8 @@ def format_vacancy_card(vacancy: Vacancy, match_info: Dict[str, Any]) -> str:
     clean_desc = re.sub(r"(удаленно|удалённо)([А-ЯA-Z])", r"\1 • \2", clean_desc, flags=re.IGNORECASE)
     if len(clean_desc) > 300:
         clean_desc = clean_desc[:297] + "..."
+    if not clean_desc:
+        clean_desc = "Описание доступно по ссылке на вакансию."
     clean_desc = html.escape(clean_desc)
 
     card = (

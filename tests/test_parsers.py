@@ -636,3 +636,72 @@ async def test_trudvsem_pagination_and_500_fallback():
         assert results[0]["id"] == "trudvsem_page1-vac"
 
 
+@pytest.mark.asyncio
+async def test_hh_web_enrichment_description_and_skills():
+    """
+    Verifies that HeadHunter parser enriches vacancies with full description
+    and required skills when scraping via web fallback.
+    """
+    parser = HeadHunterParser()
+    parser._api_disabled = True
+
+    search_html = """
+    <html>
+      <body>
+        <article class="magritte-card vacancy-serp__vacancy">
+          <a href="https://hh.ru/vacancy/555123">Senior Java Engineer</a>
+          <span data-qa="vacancy-serp__vacancy-employer-text">СберТех</span>
+          <span data-qa="vacancy-serp__vacancy-compensation">от 300 000 руб.</span>
+          <span data-qa="vacancy-serp__vacancy-address">Москва</span>
+        </article>
+      </body>
+    </html>
+    """
+
+    detail_html = """
+    <html>
+      <body>
+        <div data-qa="vacancy-title">Senior Java Engineer</div>
+        <div data-qa="vacancy-company-name">СберТех</div>
+        <div data-qa="vacancy-description">
+          Мы ищем опытного инженера. Стек: Java, Spring Boot, Apache Kafka, PostgreSQL, Docker, Kubernetes.
+          Обязанности: проектирование микросервисов и высоконагруженных систем.
+        </div>
+        <div class="skills">
+          <span data-qa="skills-element">Java</span>
+          <span data-qa="skills-element">Spring Boot</span>
+          <span data-qa="bloko-tag__text">Kafka</span>
+        </div>
+      </body>
+    </html>
+    """
+
+    search_resp = MagicMock()
+    search_resp.status_code = 200
+    search_resp.text = search_html
+
+    detail_resp = MagicMock()
+    detail_resp.status_code = 200
+    detail_resp.text = detail_html
+
+    async def mock_get(url, *args, **kwargs):
+        if "vacancy/555123" in str(url):
+            return detail_resp
+        return search_resp
+
+    with patch("httpx.AsyncClient.get", new_callable=AsyncMock, side_effect=mock_get):
+        results = await parser.fetch_vacancies(query="Java", limit=5)
+
+    assert len(results) == 1
+    vac = results[0]
+    assert vac["id"] == "hh_555123"
+    assert vac["title"] == "Senior Java Engineer"
+    assert vac["company"] == "СберТех"
+    assert "Java, Spring Boot" in vac["description"]
+    assert "Java" in vac["requirements"]
+    assert "Spring Boot" in vac["requirements"]
+    assert "PostgreSQL" in vac["requirements"]
+    assert "Docker" in vac["requirements"]
+
+
+
