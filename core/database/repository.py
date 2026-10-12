@@ -170,7 +170,7 @@ class UserRepository:
 
     @staticmethod
     async def delete_user_all_data(session: AsyncSession, telegram_id: int) -> bool:
-        """Deletes all user personal data, resume, history, and matches (GDPR / 152-ФЗ compliance)."""
+        """Deletes all user personal data, resume, history, and matches."""
         await session.execute(delete(Resume).where(Resume.user_id == telegram_id))
         await session.execute(delete(UserFavorite).where(UserFavorite.user_id == telegram_id))
         await session.execute(delete(UserHidden).where(UserHidden.user_id == telegram_id))

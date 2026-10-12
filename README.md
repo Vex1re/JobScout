@@ -208,80 +208,10 @@ $$\text{Final Score} = 0.45 \times \text{Skills} + 0.25 \times \text{Role} + 0.3
 
 ---
 
-## 🚀 Быстрый запуск
-
-### Вариант 1. Развёртывание через Docker Compose (Рекомендуемый)
-```bash
-# 1. Клонирование репозитория
-git clone https://github.com/your-username/jobscout-bot.git
-cd jobscout-bot
-
-# 2. Настройка переменных окружения
-cp .env.example .env
-# Укажите ваш BOT_TOKEN в файле .env
-
-# 3. Запуск полного стека (Бот, PostgreSQL, PgBouncer, Redis, Scheduler, Workers)
-docker compose up -d --build
-```
-
-### Вариант 2. Локальный запуск разработчика (Zero-Dependencies)
-Работает сразу на встроенном SQLite (WAL) без необходимости поднимать базы данных:
-```bash
-# 1. Создание окружения и установка зависимостей
-python -m venv .venv
-source .venv/bin/activate  # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-
-# 2. Запуск тестов (181 тест)
-pytest -v
-
-# 3. Запуск бота
-python main.py
-```
-
----
-
-## 🧩 Расширяемость: Как добавить свой источник
-
-Благодаря интерфейсу `BaseVacanciesParser` подключение нового агрегатора занимает 15 минут:
-
-```python
-from services.parser.base import BaseVacanciesParser
-from core.database.models import Vacancy
-
-class CustomJobBoardParser(BaseVacanciesParser):
-    source_name = "custom_board"
-
-    async def search_vacancies(self, query: str, city: str = None, limit: int = 50) -> list[Vacancy]:
-        # 1. Выполнение запроса к API или HTML
-        data = await self._fetch_json(f"https://api.custom.com/jobs?q={query}")
-        # 2. Преобразование в единый формат Vacancy
-        return [self._parse_item(item) for item in data["items"]]
-```
-Зарегистрируйте класс в `services/parser/manager.py` — и новый источник автоматически получит дедупликацию, Circuit Breaker, скоринг и кэширование.
-
----
-
-## 📚 Документация и ресурсы
-
-* 📐 [Архитектурные решения (ADR 001–005)](docs/ARCHITECTURE_DECISIONS.md) — обоснование выбора arq, PgBouncer, Telegram Stars и SimHash.
-* 🛠️ [Инструкции по эксплуатации (Runbooks)](docs/OPERATIONS.md) — миграции Alembic, бэкапы PostgreSQL, масштабирование и плейбуки аварий.
-* 📋 [Руководство по внешней настройке](MANUAL_STEPS.md) — получение токенов, настройка BotFather и подключение GigaChat.
-* 🗺️ [План развития (Roadmap)](ROADMAP.md) — статус этапов и запланированные фичи (векторный поиск `pgvector`, MTProto каналы).
-* 🗂️ [Структура репозитория](PROJECT_STRUCTURE.md) — детальное описание каждого каталога и файла.
-
----
-
 ## 🤝 Участие в разработке (Contributing)
 
-Мы приветствуем Pull Requests, новые парсеры площадок и предложения по улучшению матчинга:
+Я приветствую Pull Requests, новые парсеры площадок и предложения по улучшению матчинга:
 1. Сделайте Fork репозитория.
 2. Создайте функциональную ветку (`git checkout -b feat/new-parser`).
 3. Убедитесь, что все тесты проходят (`pytest -v`).
 4. Отправьте Pull Request с понятным описанием изменений.
-
----
-
-## 📄 Лицензия
-
-Проект распространяется под открытой лицензией [MIT License](LICENSE). Вы можете свободно использовать, модифицировать и развёртывать JobScout как для личных, так и для коммерческих целей.

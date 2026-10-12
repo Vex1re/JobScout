@@ -28,7 +28,7 @@ Test1/
 │   │   ├── favorites.py                # Просмотр и управление избранным
 │   │   ├── tracker.py                  # /tracker: Канбан-трекер откликов, AI сопроводительные и Gap-анализ
 │   │   ├── premium.py                  # /premium: Подписки Telegram Stars (XTR), покупка, обработка платежей
-│   │   └── settings.py                 # Выбор городов, удалёнки, агрегаторов и 152-ФЗ (/delete_me)
+│   │   └── settings.py                 # Выбор городов, удалёнки, агрегаторов и удаление данных (/delete_me)
 │   ├── keyboards/                      # Разметка клавиатур
 │   │   ├── __init__.py
 │   │   ├── reply.py                    # Постоянное нижнее меню (ReplyKeyboard)
@@ -129,7 +129,7 @@ Test1/
 │   ├── test_notifier.py                # Тесты Telegram rate limiting и дайджестов
 │   ├── test_observability.py           # Тесты /healthz, /metrics, PII маскирования
 │   ├── test_parsers.py                 # Тесты унификации вакансий парсерами
-│   ├── test_prod_stability.py          # Тесты троттлинга, 152-ФЗ, сессий
+│   ├── test_prod_stability.py          # Тесты троттлинга, удаления профиля, сессий
 │   ├── test_qa_suite.py                # Комплексный QA сьют граничных случаев
 │   ├── test_red_flags.py               # Тесты детектора скама и ред-флагов
 │   ├── test_resilience.py              # Тесты TokenBucket и Circuit Breaker

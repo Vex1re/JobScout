@@ -231,7 +231,7 @@ def get_settings_keyboard(user: User) -> InlineKeyboardMarkup:
             ],
             [
                 InlineKeyboardButton(
-                    text="🗑️ Удалить мои данные (152-ФЗ)",
+                    text="🗑️ Удалить мои данные",
                     callback_data="request_delete_account"
                 )
             ]
